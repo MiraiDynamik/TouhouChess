@@ -1,0 +1,321 @@
+# 本文件由 lab/rulebook.py 从 rules/rulebook.md 生成，不要手改。
+# 改规则请改 Markdown，然后重跑：python lab/rulebook.py
+#
+# 只含「必须和规则书一致」的声明性字段。走法几何不在这里 ——
+# 恋的洪水填充、紫的边缘瞬移没法声明式表达，几何在 engine/geometry.ts，
+# 两边的键集合由构建步骤交叉检查，少一边就报错。
+#
+# cost  = 部署花费（规则，玩家可见，必须等于规则书）
+# value = 引擎估价，默认等于 cost，标定时独立变动 → engine/weights.json
+
+[meta]
+budget = 45
+bodies = 16
+deploy_notes = [
+  "部署在车位的子可以和部署在王位的王或贤者易位",
+]
+
+[slots]
+# 白方格子（黑方镜像）。行末注释是规则书原文。
+king = ["e1"]   # e1, e8
+queen = ["d1"]   # d1, d8
+rook = ["a1", "h1"]   # a1, h1, a8, h8
+minor = ["b1", "c1", "f1", "g1"]   # b-c1, f-g1, b-c8, f-g8
+pawn = ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2"]   # 2行和7行
+
+[tier_notes]
+"贤者级" = "会被将军, 如果部署在王位可以易位, 仅能选择一个, 和王互斥"
+
+[[piece]]
+name = "王"
+tier = "香草级"
+cost = 4
+slots = ["king"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "后"
+tier = "香草级"
+cost = 9
+slots = ["queen"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "车"
+tier = "香草级"
+cost = 5
+slots = ["rook"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "马"
+tier = "香草级"
+cost = 3
+slots = ["minor"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "主教"
+tier = "香草级"
+cost = 3
+slots = ["minor"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "兵"
+tier = "香草级"
+cost = 1
+slots = ["pawn"]
+desc = "能且只能在原版国际象棋的位置部署或打入"
+
+[[piece]]
+name = "毛玉"
+en = "Kedama"
+tier = "毛玉级"
+cost = 0.5
+slots = ["pawn"]
+desc = "只能往左边攻击的兵, 走到底线下一回合消失"
+
+[[piece]]
+name = "阴阳玉"
+en = "Yin-Yang Orb"
+tier = "毛玉级"
+cost = 0.5
+slots = ["pawn"]
+desc = "只能往右边攻击的兵, 走到底线下一回合消失"
+
+[[piece]]
+name = "幽灵"
+en = "Ghost"
+tier = "毛玉级"
+cost = 0.5
+slots = ["pawn"]
+desc = "可以向左前或右前移动1距离, 第一次移动可以选择移动2距离, 攻击正前方1格, 走到底线下一回合消失"
+
+[[piece]]
+name = "Master Spark"
+tier = "毛玉级"
+cost = 1
+slots = []
+desc = "不可操作, 出现1回合后消失"
+
+[[piece]]
+name = "山"
+en = "Yama"
+tier = "毛玉级"
+cost = 2
+slots = []
+desc = "不可操作, 不可被吃, 除此之外和任何棋子相同"
+
+[[piece]]
+name = "弹幕"
+en = "Danmaku"
+tier = "毛玉级"
+cost = 1
+slots = []
+desc = "同主教, 进行任何操作后消失"
+
+[[piece]]
+name = "人偶"
+en = "Doll"
+tier = "妖精级"
+cost = 0.5
+slots = []
+desc = "可以向前移动1格, 吃走相同, 到底线升变为上海人偶"
+
+[[piece]]
+name = "上海人偶"
+en = "Shanghai"
+tier = "妖精级"
+cost = 1.5
+slots = []
+desc = "仅可以向后滑动, 吃走相同, 相当于反向的香"
+
+[[piece]]
+name = "兔子"
+en = "Rabbit"
+tier = "妖精级"
+cost = 1
+slots = ["minor", "pawn"]
+desc = "向左前或右前移动2格，可跳。向左前或右前1格处攻击, 可吃过路兵 到底线或次底线升变为因幡帝"
+
+[[piece]]
+name = "妖精"
+en = "Fairy"
+tier = "妖精级"
+cost = 1.5
+slots = ["minor", "pawn"]
+desc = "同ferz, 仅能移动(+-1, +-1)"
+
+[[piece]]
+name = "大妖精"
+en = "Daiyousei"
+tier = "妖精级"
+cost = 2
+slots = ["minor", "pawn"]
+desc = "同银将"
+
+[[piece]]
+name = "桑尼米尔克"
+en = "Sunny"
+tier = "妖精级"
+cost = 1.5
+slots = ["minor", "pawn"]
+desc = "同妖精, 但在移动范围内消除露米娅的黑暗效果"
+
+[[piece]]
+name = "露娜切露德"
+en = "Luna"
+tier = "妖精级"
+cost = 1.5
+slots = ["minor", "pawn"]
+desc = "同妖精, 但存在时游戏bgm和音效会停止"
+
+[[piece]]
+name = "琪露诺"
+en = "Cirno"
+tier = "妖精级"
+cost = 3
+slots = ["pawn"]
+per_square_color = 1
+desc = "同妖精, 使移动范围内的双方非王棋子不可操作"
+
+[[piece]]
+name = "灵梦"
+en = "Reimu"
+tier = "人类级"
+cost = 7
+slots = ["king", "queen", "rook", "minor"]
+desc = "移动范围相当于不可阻挡的车，攻击范围相当于ferz + 马 + alfil 在空中飞行程度的能力-不会阻挡双方不可跳棋子(比如车 主教 早苗)，不可挡将，不可和其他棋子重叠"
+
+[[piece]]
+name = "早苗"
+en = "Sanae"
+tier = "人类级"
+cost = 6
+slots = ["king", "queen", "rook"]
+desc = "在前, 左, 右, 左后, 右后五条线上移动和吃子, 不可跳 相当于3/4个车和1/2个主教"
+
+[[piece]]
+name = "咲夜"
+en = "Sakuya"
+tier = "人类级"
+cost = 5
+slots = ["rook", "minor"]
+desc = "前后左右移动1-2格, 吃子后可以移动第二次，但第二次移动的目标只能是空格，不可跳"
+
+[[piece]]
+name = "妖梦&半灵"
+en = "Youmu&Half Spirit"
+tier = "人类级"
+cost = 3
+slots = ["minor", "pawn"]
+max_pairs = 1
+desc = "妖梦是wazir，会同时移动半灵，除非本体吃子或半灵移动受阻碍，半灵是ferz，不会同时移动妖梦，如果妖梦或半灵其中一个被吃而另一个没有被任何棋子威胁，仅在下一回合，可以在没有被吃的部分的可移动范围内的空格重新打入被吃的部分"
+
+[[piece]]
+name = "露米娅"
+en = "Rumia"
+tier = "妖怪级"
+cost = 4
+slots = ["king", "queen", "rook", "minor", "pawn"]
+max = 1
+desc = "走法同王，使周围8格双方棋子不可见，但可以正常操作"
+
+[[piece]]
+name = "伊吹萃香"
+en = "Suika"
+tier = "妖怪级"
+cost = 3
+slots = ["minor"]
+desc = "移动方式同马但无法攻击 户隐山之投-将移动范围内的一个己方棋子放在移动范围内的另一格上，如果目标格有对方棋子，那么吃子"
+
+[[piece]]
+name = "古明地恋"
+en = "Koishi"
+tier = "妖怪级"
+cost = 1
+slots = ["minor", "pawn"]
+desc = "每回合可以进行无限次正交方向2格跳跃，但不能攻击，在不攻击的情况下是双重色盲 玛丽小姐的电话-对后方, 左后, 右后1格进行吃子"
+
+[[piece]]
+name = "永江衣玖"
+en = "Iku"
+tier = "妖怪级"
+cost = 5.5
+slots = ["rook"]
+desc = "同将棋飞车, 到底线可以选择升变为将棋龙王, 移动目标为底线的每一步都可以升变"
+
+[[piece]]
+name = "龙王"
+en = "Dragon King"
+tier = "妖怪级"
+cost = 6
+slots = []
+desc = "同将棋龙王"
+
+[[piece]]
+name = "因幡帝"
+en = "Tewi"
+tier = "妖怪级"
+cost = 2.5
+slots = []
+desc = "ferz 并alfil 跳跃子"
+
+[[piece]]
+name = "雾雨魔理沙"
+en = "Marisa"
+tier = "魔法使级"
+cost = 3
+slots = ["rook", "minor"]
+desc = "移动方式同车但无法攻击，可以在一条正交直线上打入1-7枚Master Spark，必须一直打到边缘，如果剩余点数不足以使Master Spark排到边缘则无法发射 点数足够Master Spark发射且魔理沙到达对方王或贤者所在直线时，构成将军，立刻扣除Master Spark所需点数，不论在下一回合是否发动Master Spark, 点数永久扣除"
+
+[[piece]]
+name = "帕秋莉诺蕾姬"
+en = "Patchouli"
+tier = "魔法使级"
+cost = 2
+slots = ["minor"]
+desc = "移动方式同妖精但无法攻击，可以在移动范围的空格消耗1费打入弹幕"
+
+[[piece]]
+name = "爱丽丝玛格特罗伊德"
+en = "Alice"
+tier = "魔法使级"
+cost = 2.5
+slots = ["minor", "pawn"]
+desc = "走法同金将，可以在移动范围内的空格消耗0.5费打入人偶, 对于任意一方, 每列最多存在1个己方人偶, 不可在对方底线打入人偶"
+
+[[piece]]
+name = "洩矢诹访子"
+en = "Suwako"
+tier = "贤者级"
+cost = 6
+slots = ["king"]
+desc = "走法同蚂蚱和马的并集, 吃走相同, 可以在周围8格打入山"
+
+[[piece]]
+name = "八云紫"
+en = "Yukari"
+tier = "贤者级"
+cost = 7
+slots = ["queen", "rook"]
+files = ["d", "h"]
+desc = "在所在棋盘边缘移动任意格, 不可跳, 可以瞬移到相对边缘的同一行或列, 吃走相同, 不可离开棋盘边缘"
+
+[[piece]]
+name = "西行寺幽幽子"
+en = "Yuyuko"
+tier = "贤者级"
+cost = 10
+slots = ["king"]
+desc = "移动方式同王, 吃走相同, 如果上一回合被吃子, 可以在周围空格重新打入"
+
+[[piece]]
+name = "赫卡提亚拉碧斯拉祖利"
+en = "Hecatia"
+tier = "贤者级"
+cost = 14
+slots = ["king", "queen", "rook", "minor"]
+desc = "移动方式同王, 吃走相同, 可以且仅可以部署3枚, 只有任意两个被吃之后, 最后一个才能被将杀"
+

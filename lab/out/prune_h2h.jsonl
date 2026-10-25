@@ -1,0 +1,4 @@
+{"i": 0, "side": "w", "result": "w", "score": 1, "code": "mates", "plies": 123, "matFirst": 0, "matLast": 8, "ammo": [2, 2], "tag": "p6vse5"}
+{"i": 1, "side": "b", "result": "w", "score": 0, "code": "adjudicated", "plies": 140, "matFirst": 0, "matLast": 3, "ammo": [2, 2], "tag": "p6vse5"}
+{"i": 2, "side": "w", "result": "w", "score": 1, "code": "mates", "plies": 97, "matFirst": 0, "matLast": 16, "ammo": [2, 2], "tag": "p6vse5"}
+{"i": 3, "side": "b", "result": "b", "score": 1, "code": "adjudicated", "plies": 140, "matFirst": 0, "matLast": -10, "ammo": [2, 2], "tag": "p6vse5"}

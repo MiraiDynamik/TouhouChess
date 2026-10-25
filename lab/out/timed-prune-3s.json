@@ -1,0 +1,2373 @@
+{
+  "metadata": {
+    "date": "2026-10-25T23:23:05.869Z",
+    "node": "v22.13.1",
+    "cpu": "Apple M2",
+    "timeMs": 3000,
+    "repeats": 3,
+    "defaultInner": 0,
+    "rootPrune": 1,
+    "level": "eirin",
+    "cases": [
+      {
+        "name": "香草开局",
+        "state": {
+          "b": [
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "q",
+              "c": "b"
+            },
+            {
+              "t": "k",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "q",
+              "c": "w"
+            },
+            {
+              "t": "k",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            }
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": true,
+            "w7": true,
+            "b0": true,
+            "b7": true
+          },
+          "ep": null,
+          "half": 0,
+          "full": 1,
+          "ammo": {
+            "w": 2,
+            "b": 2
+          }
+        },
+        "hist": [
+          "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wp,wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2,2"
+        ]
+      },
+      {
+        "name": "香草展开后",
+        "state": {
+          "b": [
+            {
+              "t": "r",
+              "c": "b"
+            },
+            null,
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "q",
+              "c": "b"
+            },
+            null,
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "k",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            {
+              "t": "n",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            null,
+            {
+              "t": "n",
+              "c": "w"
+            },
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "q",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            },
+            null,
+            {
+              "t": "k",
+              "c": "w"
+            },
+            null
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": false,
+            "w7": false,
+            "b0": false,
+            "b7": false
+          },
+          "ep": null,
+          "half": 1,
+          "full": 9,
+          "ammo": {
+            "w": 2,
+            "b": 2
+          },
+          "_cap": null
+        },
+        "hist": [
+          "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wp,wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2,2",
+          "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,....................wp,...........wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|44|2,2",
+          "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,............bp,.......wp,...........wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|20|2,2",
+          "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,............bp,.......wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,wb,.wr,|1111|-|2,2",
+          "w|br,.bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,..bn,.........bp,.......wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,wb,.wr,|1111|-|2,2",
+          "b|br,.bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,..bn,......wb,..bp,.......wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,..wr,|1111|-|2,2",
+          "w|br,.bb,bq,bk,bb,bn,br,.bp,bp,bp,.bp,bp,bp,bp,.bn,......wb,..bp,.......wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,..wr,|1111|-|2,2",
+          "b|br,.bb,bq,bk,bb,bn,br,.bp,bp,bp,.bp,bp,bp,bp,.bn,.........bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,..wr,|1111|-|2,2",
+          "w|br,.bb,bq,bk,bb,.br,.bp,bp,bp,.bp,bp,bp,bp,.bn,..bn,......bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wk,..wr,|1111|-|2,2",
+          "b|br,.bb,bq,bk,bb,.br,.bp,bp,bp,.bp,bp,bp,bp,.bn,..bn,......bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,.wr,wk,.|0011|-|2,2",
+          "w|br,.bb,bq,bk,..br,.bp,bp,bp,bb,bp,bp,bp,bp,.bn,..bn,......bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,.wr,wk,.|0011|-|2,2",
+          "b|br,.bb,bq,bk,..br,.bp,bp,bp,bb,bp,bp,bp,bp,.bn,..bn,......bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0011|-|2,2",
+          "w|br,.bb,bq,bk,..br,..bp,bp,bb,bp,bp,bp,bp,.bn,..bn,...bp,..bp,...wb,...wp,........wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0011|17|2,2",
+          "b|br,.bb,bq,bk,..br,..bp,bp,bb,bp,bp,bp,bp,.bn,..bn,...bp,..bp,.......wp,....wb,...wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0011|-|2,2",
+          "w|br,.bb,bq,bk,..br,..bp,.bb,bp,bp,bp,bp,.bn,bp,.bn,...bp,..bp,.......wp,....wb,...wn,..wp,wp,wp,wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0011|-|2,2",
+          "b|br,.bb,bq,bk,..br,..bp,.bb,bp,bp,bp,bp,.bn,bp,.bn,...bp,..bp,.......wp,....wb,wp,..wn,..wp,wp,.wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0011|-|2,2",
+          "w|br,.bb,bq,.br,bk,...bp,.bb,bp,bp,bp,bp,.bn,bp,.bn,...bp,..bp,.......wp,....wb,wp,..wn,..wp,wp,.wp,.wp,wp,wp,wr,wn,wb,wq,wr,.wk,.|0000|-|2,2"
+        ]
+      },
+      {
+        "name": "灵梦透明穿透",
+        "state": {
+          "b": [
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "q",
+              "c": "b"
+            },
+            {
+              "t": "k",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "reimu",
+              "c": "w"
+            },
+            {
+              "t": "k",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            }
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": true,
+            "w7": true,
+            "b0": true,
+            "b7": true
+          },
+          "ep": null,
+          "half": 0,
+          "full": 1,
+          "ammo": {
+            "w": 5,
+            "b": 2
+          }
+        },
+        "hist": [
+          "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wreimu,wk,wb,wn,wr,|1111|-|5,2"
+        ]
+      },
+      {
+        "name": "爱丽丝可打入",
+        "state": {
+          "b": [
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "q",
+              "c": "b"
+            },
+            {
+              "t": "k",
+              "c": "b"
+            },
+            {
+              "t": "b",
+              "c": "b"
+            },
+            {
+              "t": "n",
+              "c": "b"
+            },
+            {
+              "t": "r",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            {
+              "t": "alice",
+              "c": "w"
+            },
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            {
+              "t": "r",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "q",
+              "c": "w"
+            },
+            {
+              "t": "k",
+              "c": "w"
+            },
+            {
+              "t": "b",
+              "c": "w"
+            },
+            {
+              "t": "n",
+              "c": "w"
+            },
+            {
+              "t": "r",
+              "c": "w"
+            }
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": true,
+            "w7": true,
+            "b0": true,
+            "b7": true
+          },
+          "ep": null,
+          "half": 0,
+          "full": 1,
+          "ammo": {
+            "w": 2.5,
+            "b": 2
+          }
+        },
+        "hist": [
+          "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,.................................wp,wp,wp,wp,walice,wp,.wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2.5,2"
+        ]
+      },
+      {
+        "name": "王车对王",
+        "state": {
+          "b": [
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "k",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "r",
+              "c": "w"
+            },
+            null,
+            null,
+            null,
+            {
+              "t": "k",
+              "c": "w"
+            },
+            null,
+            null,
+            null
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": true,
+            "w7": false,
+            "b0": false,
+            "b7": false
+          },
+          "ep": null,
+          "half": 0,
+          "full": 1,
+          "ammo": {
+            "w": 36,
+            "b": 41
+          }
+        },
+        "hist": [
+          "w|....bk,...................................................wr,...wk,...|1000|-|36,41"
+        ]
+      },
+      {
+        "name": "兵残局",
+        "state": {
+          "b": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "k",
+              "c": "b"
+            },
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "b"
+            },
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            {
+              "t": "k",
+              "c": "w"
+            },
+            null,
+            null,
+            null,
+            {
+              "t": "p",
+              "c": "w"
+            },
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "turn": "w",
+          "cas": {
+            "w0": false,
+            "w7": false,
+            "b0": false,
+            "b7": false
+          },
+          "ep": null,
+          "half": 0,
+          "full": 1,
+          "ammo": {
+            "w": 38,
+            "b": 38
+          }
+        },
+        "hist": [
+          "w|................bp,....bk,bp,....bp,....wp,..wp,......wk,...wp,.................|0000|-|38,38"
+        ]
+      }
+    ]
+  },
+  "rows": [
+    {
+      "name": "香草开局",
+      "repeat": 1,
+      "seed": 20261025,
+      "off": {
+        "depth": 5,
+        "ms": 3002,
+        "score": 14,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.5107500000001437
+          },
+          {
+            "depth": 2,
+            "ms": 7.285750000000007
+          },
+          {
+            "depth": 3,
+            "ms": 36.021416000000045
+          },
+          {
+            "depth": 4,
+            "ms": 203.51025000000004
+          },
+          {
+            "depth": 5,
+            "ms": 795.0980830000001
+          }
+        ]
+      },
+      "on": {
+        "depth": 7,
+        "ms": 3003,
+        "score": 29,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.5685829999993075
+          },
+          {
+            "depth": 2,
+            "ms": 7.66308299999946
+          },
+          {
+            "depth": 3,
+            "ms": 38.24083299999984
+          },
+          {
+            "depth": 4,
+            "ms": 71.23895799999991
+          },
+          {
+            "depth": 5,
+            "ms": 181.58295799999996
+          },
+          {
+            "depth": 6,
+            "ms": 554.0197079999998
+          },
+          {
+            "depth": 7,
+            "ms": 1472.3304579999995
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "香草展开后",
+      "repeat": 1,
+      "seed": 20261026,
+      "on": {
+        "depth": 6,
+        "ms": 3002,
+        "score": -18,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.009041000000252
+          },
+          {
+            "depth": 2,
+            "ms": 29.44220800000039
+          },
+          {
+            "depth": 3,
+            "ms": 214.7602910000005
+          },
+          {
+            "depth": 4,
+            "ms": 498.26504100000056
+          },
+          {
+            "depth": 5,
+            "ms": 1116.4868749999996
+          },
+          {
+            "depth": 6,
+            "ms": 2730.328541
+          }
+        ]
+      },
+      "off": {
+        "depth": 4,
+        "ms": 3002,
+        "score": -22,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.1883749999997235
+          },
+          {
+            "depth": 2,
+            "ms": 30.578749999998763
+          },
+          {
+            "depth": 3,
+            "ms": 215.3312079999996
+          },
+          {
+            "depth": 4,
+            "ms": 830.5683749999989
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "灵梦透明穿透",
+      "repeat": 1,
+      "seed": 20261027,
+      "off": {
+        "depth": 5,
+        "ms": 3001,
+        "score": -263,
+        "move": "♞g1-f3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.176167000001442
+          },
+          {
+            "depth": 2,
+            "ms": 11.526667000000089
+          },
+          {
+            "depth": 3,
+            "ms": 71.25654200000099
+          },
+          {
+            "depth": 4,
+            "ms": 383.72962499999994
+          },
+          {
+            "depth": 5,
+            "ms": 1657.2234580000004
+          }
+        ]
+      },
+      "on": {
+        "depth": 7,
+        "ms": 3001,
+        "score": -261,
+        "move": "♞g1-f3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.9119589999991149
+          },
+          {
+            "depth": 2,
+            "ms": 11.176499999999578
+          },
+          {
+            "depth": 3,
+            "ms": 71.05308399999922
+          },
+          {
+            "depth": 4,
+            "ms": 151.62474999999904
+          },
+          {
+            "depth": 5,
+            "ms": 333.1979169999995
+          },
+          {
+            "depth": 6,
+            "ms": 850.1935419999991
+          },
+          {
+            "depth": 7,
+            "ms": 2998.9336249999997
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "爱丽丝可打入",
+      "repeat": 1,
+      "seed": 20261028,
+      "on": {
+        "depth": 7,
+        "ms": 3002,
+        "score": 75,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.7235419999997248
+          },
+          {
+            "depth": 2,
+            "ms": 17.942291999999725
+          },
+          {
+            "depth": 3,
+            "ms": 138.66612499999974
+          },
+          {
+            "depth": 4,
+            "ms": 311.94474999999875
+          },
+          {
+            "depth": 5,
+            "ms": 452.44633299999987
+          },
+          {
+            "depth": 6,
+            "ms": 1592.7700829999994
+          },
+          {
+            "depth": 7,
+            "ms": 2763.4052919999995
+          }
+        ]
+      },
+      "off": {
+        "depth": 5,
+        "ms": 3000,
+        "score": 55,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.157999999999447
+          },
+          {
+            "depth": 2,
+            "ms": 16.782875000000786
+          },
+          {
+            "depth": 3,
+            "ms": 131.7427499999976
+          },
+          {
+            "depth": 4,
+            "ms": 549.2893750000003
+          },
+          {
+            "depth": 5,
+            "ms": 1482.5925419999985
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "王车对王",
+      "repeat": 1,
+      "seed": 20261029,
+      "off": {
+        "depth": 7,
+        "ms": 3010,
+        "score": 531,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.2935829999987618
+          },
+          {
+            "depth": 2,
+            "ms": 1.047500000000582
+          },
+          {
+            "depth": 3,
+            "ms": 7.02837499999805
+          },
+          {
+            "depth": 4,
+            "ms": 17.90179100000023
+          },
+          {
+            "depth": 5,
+            "ms": 74.1114579999994
+          },
+          {
+            "depth": 6,
+            "ms": 183.309957999998
+          },
+          {
+            "depth": 7,
+            "ms": 1229.3992499999986
+          }
+        ]
+      },
+      "on": {
+        "depth": 9,
+        "ms": 3000,
+        "score": 537,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.44020799999998417
+          },
+          {
+            "depth": 2,
+            "ms": 1.0925000000024738
+          },
+          {
+            "depth": 3,
+            "ms": 23.312583000002633
+          },
+          {
+            "depth": 4,
+            "ms": 38.11433300000135
+          },
+          {
+            "depth": 5,
+            "ms": 113.04054200000246
+          },
+          {
+            "depth": 6,
+            "ms": 178.41158300000097
+          },
+          {
+            "depth": 7,
+            "ms": 456.4312080000018
+          },
+          {
+            "depth": 8,
+            "ms": 798.114375000001
+          },
+          {
+            "depth": 9,
+            "ms": 2551.720250000002
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "兵残局",
+      "repeat": 1,
+      "seed": 20261030,
+      "on": {
+        "depth": 12,
+        "ms": 3001,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.11125000000174623
+          },
+          {
+            "depth": 2,
+            "ms": 0.5589580000014394
+          },
+          {
+            "depth": 3,
+            "ms": 1.841707999999926
+          },
+          {
+            "depth": 4,
+            "ms": 5.739958000001934
+          },
+          {
+            "depth": 5,
+            "ms": 14.948667000000569
+          },
+          {
+            "depth": 6,
+            "ms": 26.529708000001847
+          },
+          {
+            "depth": 7,
+            "ms": 49.66179199999897
+          },
+          {
+            "depth": 8,
+            "ms": 95.95591699999932
+          },
+          {
+            "depth": 9,
+            "ms": 172.70587499999965
+          },
+          {
+            "depth": 10,
+            "ms": 423.78670799999963
+          },
+          {
+            "depth": 11,
+            "ms": 878.6497500000005
+          },
+          {
+            "depth": 12,
+            "ms": 1867.2683750000033
+          }
+        ]
+      },
+      "off": {
+        "depth": 10,
+        "ms": 3001,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.12304199999925913
+          },
+          {
+            "depth": 2,
+            "ms": 0.6022920000032173
+          },
+          {
+            "depth": 3,
+            "ms": 1.8818749999991269
+          },
+          {
+            "depth": 4,
+            "ms": 6.8289589999985765
+          },
+          {
+            "depth": 5,
+            "ms": 16.843709000000672
+          },
+          {
+            "depth": 6,
+            "ms": 36.62975000000006
+          },
+          {
+            "depth": 7,
+            "ms": 81.89929200000188
+          },
+          {
+            "depth": 8,
+            "ms": 209.30091700000048
+          },
+          {
+            "depth": 9,
+            "ms": 483.73295900000085
+          },
+          {
+            "depth": 10,
+            "ms": 1345.1360840000052
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "香草开局",
+      "repeat": 2,
+      "seed": 20261125,
+      "on": {
+        "depth": 7,
+        "ms": 3000,
+        "score": 29,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.5610000000015134
+          },
+          {
+            "depth": 2,
+            "ms": 7.723832999996375
+          },
+          {
+            "depth": 3,
+            "ms": 40.724999999998545
+          },
+          {
+            "depth": 4,
+            "ms": 82.91116599999805
+          },
+          {
+            "depth": 5,
+            "ms": 209.46504099999584
+          },
+          {
+            "depth": 6,
+            "ms": 618.179415999999
+          },
+          {
+            "depth": 7,
+            "ms": 1562.9425409999967
+          }
+        ]
+      },
+      "off": {
+        "depth": 5,
+        "ms": 3002,
+        "score": 14,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.6810420000037993
+          },
+          {
+            "depth": 2,
+            "ms": 7.460958000003302
+          },
+          {
+            "depth": 3,
+            "ms": 38.16704200000095
+          },
+          {
+            "depth": 4,
+            "ms": 212.62341700000252
+          },
+          {
+            "depth": 5,
+            "ms": 878.1720830000049
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "香草展开后",
+      "repeat": 2,
+      "seed": 20261126,
+      "off": {
+        "depth": 4,
+        "ms": 3003,
+        "score": -22,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.156582999996317
+          },
+          {
+            "depth": 2,
+            "ms": 33.39095799999632
+          },
+          {
+            "depth": 3,
+            "ms": 296.06470799999806
+          },
+          {
+            "depth": 4,
+            "ms": 1066.1617499999993
+          }
+        ]
+      },
+      "on": {
+        "depth": 6,
+        "ms": 3003,
+        "score": -18,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.0670420000024023
+          },
+          {
+            "depth": 2,
+            "ms": 30.610000000000582
+          },
+          {
+            "depth": 3,
+            "ms": 227.4666670000006
+          },
+          {
+            "depth": 4,
+            "ms": 520.6262500000012
+          },
+          {
+            "depth": 5,
+            "ms": 1159.311625000002
+          },
+          {
+            "depth": 6,
+            "ms": 2789.450042000004
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "灵梦透明穿透",
+      "repeat": 2,
+      "seed": 20261127,
+      "on": {
+        "depth": 7,
+        "ms": 3000,
+        "score": -259,
+        "move": "♞g1-f3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.8994999999995343
+          },
+          {
+            "depth": 2,
+            "ms": 10.645041000003403
+          },
+          {
+            "depth": 3,
+            "ms": 73.69545800000196
+          },
+          {
+            "depth": 4,
+            "ms": 153.1464580000029
+          },
+          {
+            "depth": 5,
+            "ms": 309.17645800000173
+          },
+          {
+            "depth": 6,
+            "ms": 811.2941659999997
+          },
+          {
+            "depth": 7,
+            "ms": 2990.024375000001
+          }
+        ]
+      },
+      "off": {
+        "depth": 5,
+        "ms": 3001,
+        "score": -263,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.8436670000010054
+          },
+          {
+            "depth": 2,
+            "ms": 10.971208000002662
+          },
+          {
+            "depth": 3,
+            "ms": 70.52924999999959
+          },
+          {
+            "depth": 4,
+            "ms": 334.2017080000005
+          },
+          {
+            "depth": 5,
+            "ms": 1576.8300830000007
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "爱丽丝可打入",
+      "repeat": 2,
+      "seed": 20261128,
+      "off": {
+        "depth": 5,
+        "ms": 3001,
+        "score": 55,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.205415999997058
+          },
+          {
+            "depth": 2,
+            "ms": 16.485915999997815
+          },
+          {
+            "depth": 3,
+            "ms": 132.26608299999498
+          },
+          {
+            "depth": 4,
+            "ms": 546.1003749999945
+          },
+          {
+            "depth": 5,
+            "ms": 1474.5280409999978
+          }
+        ]
+      },
+      "on": {
+        "depth": 7,
+        "ms": 3002,
+        "score": 75,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.1391249999942374
+          },
+          {
+            "depth": 2,
+            "ms": 15.807708000000275
+          },
+          {
+            "depth": 3,
+            "ms": 135.87024999999994
+          },
+          {
+            "depth": 4,
+            "ms": 335.799791999998
+          },
+          {
+            "depth": 5,
+            "ms": 534.7106669999994
+          },
+          {
+            "depth": 6,
+            "ms": 1503.862792
+          },
+          {
+            "depth": 7,
+            "ms": 2670.2422919999954
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "王车对王",
+      "repeat": 2,
+      "seed": 20261129,
+      "on": {
+        "depth": 9,
+        "ms": 3001,
+        "score": 537,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.21758399999816902
+          },
+          {
+            "depth": 2,
+            "ms": 0.7207090000010794
+          },
+          {
+            "depth": 3,
+            "ms": 4.097999999998137
+          },
+          {
+            "depth": 4,
+            "ms": 12.022499999999127
+          },
+          {
+            "depth": 5,
+            "ms": 38.56266699999833
+          },
+          {
+            "depth": 6,
+            "ms": 86.26208400000178
+          },
+          {
+            "depth": 7,
+            "ms": 310.15725000000384
+          },
+          {
+            "depth": 8,
+            "ms": 684.885500000004
+          },
+          {
+            "depth": 9,
+            "ms": 2392.0809169999993
+          }
+        ]
+      },
+      "off": {
+        "depth": 7,
+        "ms": 3001,
+        "score": 531,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.18366600000445032
+          },
+          {
+            "depth": 2,
+            "ms": 0.6182079999998678
+          },
+          {
+            "depth": 3,
+            "ms": 4.056291000000783
+          },
+          {
+            "depth": 4,
+            "ms": 11.929500000005646
+          },
+          {
+            "depth": 5,
+            "ms": 66.41854100000637
+          },
+          {
+            "depth": 6,
+            "ms": 173.02875000000495
+          },
+          {
+            "depth": 7,
+            "ms": 1228.0792080000028
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "兵残局",
+      "repeat": 2,
+      "seed": 20261130,
+      "off": {
+        "depth": 10,
+        "ms": 3001,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.12479200000234414
+          },
+          {
+            "depth": 2,
+            "ms": 0.5709999999962747
+          },
+          {
+            "depth": 3,
+            "ms": 1.8435830000089481
+          },
+          {
+            "depth": 4,
+            "ms": 6.92020799999591
+          },
+          {
+            "depth": 5,
+            "ms": 16.97729199999594
+          },
+          {
+            "depth": 6,
+            "ms": 36.99341700000514
+          },
+          {
+            "depth": 7,
+            "ms": 81.92462499999965
+          },
+          {
+            "depth": 8,
+            "ms": 207.01479200000176
+          },
+          {
+            "depth": 9,
+            "ms": 484.13779200000863
+          },
+          {
+            "depth": 10,
+            "ms": 1338.0274999999965
+          }
+        ]
+      },
+      "on": {
+        "depth": 12,
+        "ms": 3001,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.14387500000884756
+          },
+          {
+            "depth": 2,
+            "ms": 0.6820420000003651
+          },
+          {
+            "depth": 3,
+            "ms": 2.0820420000090962
+          },
+          {
+            "depth": 4,
+            "ms": 6.4681669999990845
+          },
+          {
+            "depth": 5,
+            "ms": 15.858875000005355
+          },
+          {
+            "depth": 6,
+            "ms": 27.6507500000007
+          },
+          {
+            "depth": 7,
+            "ms": 51.465500000005704
+          },
+          {
+            "depth": 8,
+            "ms": 97.26004200000898
+          },
+          {
+            "depth": 9,
+            "ms": 174.1373339999991
+          },
+          {
+            "depth": 10,
+            "ms": 428.96887500000594
+          },
+          {
+            "depth": 11,
+            "ms": 885.9242499999964
+          },
+          {
+            "depth": 12,
+            "ms": 1881.163625000001
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "香草开局",
+      "repeat": 3,
+      "seed": 20261225,
+      "off": {
+        "depth": 5,
+        "ms": 3001,
+        "score": 14,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.5817090000055032
+          },
+          {
+            "depth": 2,
+            "ms": 6.997875000000931
+          },
+          {
+            "depth": 3,
+            "ms": 37.96774999999616
+          },
+          {
+            "depth": 4,
+            "ms": 225.24233399999503
+          },
+          {
+            "depth": 5,
+            "ms": 951.7220839999936
+          }
+        ]
+      },
+      "on": {
+        "depth": 7,
+        "ms": 3003,
+        "score": 29,
+        "move": "♞b1-c3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.5742500000051223
+          },
+          {
+            "depth": 2,
+            "ms": 7.529374999998254
+          },
+          {
+            "depth": 3,
+            "ms": 40.619250000003376
+          },
+          {
+            "depth": 4,
+            "ms": 77.5710420000105
+          },
+          {
+            "depth": 5,
+            "ms": 199.07466700000805
+          },
+          {
+            "depth": 6,
+            "ms": 607.1582500000077
+          },
+          {
+            "depth": 7,
+            "ms": 1559.9167920000036
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "香草展开后",
+      "repeat": 3,
+      "seed": 20261226,
+      "on": {
+        "depth": 6,
+        "ms": 3002,
+        "score": -18,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.0158749999973224
+          },
+          {
+            "depth": 2,
+            "ms": 30.604707999998936
+          },
+          {
+            "depth": 3,
+            "ms": 226.52637500000128
+          },
+          {
+            "depth": 4,
+            "ms": 523.1979160000046
+          },
+          {
+            "depth": 5,
+            "ms": 1165.3151660000003
+          },
+          {
+            "depth": 6,
+            "ms": 2800.689624999999
+          }
+        ]
+      },
+      "off": {
+        "depth": 4,
+        "ms": 3001,
+        "score": -22,
+        "move": "♟d2-d4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 3.2251669999968726
+          },
+          {
+            "depth": 2,
+            "ms": 32.104999999995925
+          },
+          {
+            "depth": 3,
+            "ms": 222.567584000004
+          },
+          {
+            "depth": 4,
+            "ms": 859.9160419999971
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "灵梦透明穿透",
+      "repeat": 3,
+      "seed": 20261227,
+      "off": {
+        "depth": 5,
+        "ms": 3001,
+        "score": -263,
+        "move": "♞g1-f3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.0574170000036247
+          },
+          {
+            "depth": 2,
+            "ms": 10.661999999996624
+          },
+          {
+            "depth": 3,
+            "ms": 70.99908300000243
+          },
+          {
+            "depth": 4,
+            "ms": 340.66879199999676
+          },
+          {
+            "depth": 5,
+            "ms": 1601.9168749999953
+          }
+        ]
+      },
+      "on": {
+        "depth": 6,
+        "ms": 3003,
+        "score": -275,
+        "move": "♞g1-f3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.8618750000023283
+          },
+          {
+            "depth": 2,
+            "ms": 11.226208000007318
+          },
+          {
+            "depth": 3,
+            "ms": 74.627542000002
+          },
+          {
+            "depth": 4,
+            "ms": 152.35658300000068
+          },
+          {
+            "depth": 5,
+            "ms": 317.9417919999978
+          },
+          {
+            "depth": 6,
+            "ms": 879.007666999998
+          }
+        ]
+      },
+      "gain": 1
+    },
+    {
+      "name": "爱丽丝可打入",
+      "repeat": 3,
+      "seed": 20261228,
+      "on": {
+        "depth": 7,
+        "ms": 3002,
+        "score": 75,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.1176669999986188
+          },
+          {
+            "depth": 2,
+            "ms": 16.32391700000153
+          },
+          {
+            "depth": 3,
+            "ms": 134.44237499999872
+          },
+          {
+            "depth": 4,
+            "ms": 309.3912500000006
+          },
+          {
+            "depth": 5,
+            "ms": 449.9835000000021
+          },
+          {
+            "depth": 6,
+            "ms": 1576.2592080000031
+          },
+          {
+            "depth": 7,
+            "ms": 2773.4874580000032
+          }
+        ]
+      },
+      "off": {
+        "depth": 5,
+        "ms": 3002,
+        "score": 55,
+        "move": "☗*e3",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 1.0967499999969732
+          },
+          {
+            "depth": 2,
+            "ms": 16.978625000003376
+          },
+          {
+            "depth": 3,
+            "ms": 132.73533399999724
+          },
+          {
+            "depth": 4,
+            "ms": 566.679959000001
+          },
+          {
+            "depth": 5,
+            "ms": 1502.1287920000032
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "王车对王",
+      "repeat": 3,
+      "seed": 20261229,
+      "off": {
+        "depth": 7,
+        "ms": 3001,
+        "score": 531,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.1981250000098953
+          },
+          {
+            "depth": 2,
+            "ms": 0.7483329999959096
+          },
+          {
+            "depth": 3,
+            "ms": 4.1408749999973224
+          },
+          {
+            "depth": 4,
+            "ms": 11.742542000007234
+          },
+          {
+            "depth": 5,
+            "ms": 66.06916700000875
+          },
+          {
+            "depth": 6,
+            "ms": 180.08766699999978
+          },
+          {
+            "depth": 7,
+            "ms": 1268.3814580000035
+          }
+        ]
+      },
+      "on": {
+        "depth": 9,
+        "ms": 3001,
+        "score": 537,
+        "move": "♜a1-a7",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.21762500000477303
+          },
+          {
+            "depth": 2,
+            "ms": 0.7413329999981215
+          },
+          {
+            "depth": 3,
+            "ms": 4.343082999999751
+          },
+          {
+            "depth": 4,
+            "ms": 12.946041000002879
+          },
+          {
+            "depth": 5,
+            "ms": 39.567250000007334
+          },
+          {
+            "depth": 6,
+            "ms": 87.82633300000452
+          },
+          {
+            "depth": 7,
+            "ms": 315.1783330000035
+          },
+          {
+            "depth": 8,
+            "ms": 694.0869999999995
+          },
+          {
+            "depth": 9,
+            "ms": 2544.8457500000077
+          }
+        ]
+      },
+      "gain": 2
+    },
+    {
+      "name": "兵残局",
+      "repeat": 3,
+      "seed": 20261230,
+      "on": {
+        "depth": 12,
+        "ms": 3000,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.10816699999850243
+          },
+          {
+            "depth": 2,
+            "ms": 0.5594579999888083
+          },
+          {
+            "depth": 3,
+            "ms": 2.0467919999937294
+          },
+          {
+            "depth": 4,
+            "ms": 6.343457999988459
+          },
+          {
+            "depth": 5,
+            "ms": 14.439624999999069
+          },
+          {
+            "depth": 6,
+            "ms": 24.281749999994645
+          },
+          {
+            "depth": 7,
+            "ms": 46.91766700000153
+          },
+          {
+            "depth": 8,
+            "ms": 89.35979199998837
+          },
+          {
+            "depth": 9,
+            "ms": 161.66387499999837
+          },
+          {
+            "depth": 10,
+            "ms": 388.3184170000022
+          },
+          {
+            "depth": 11,
+            "ms": 842.6189169999998
+          },
+          {
+            "depth": 12,
+            "ms": 1814.1692919999914
+          }
+        ]
+      },
+      "off": {
+        "depth": 11,
+        "ms": 3000,
+        "score": 0,
+        "move": "♚c3-b4",
+        "layers": [
+          {
+            "depth": 1,
+            "ms": 0.13437499999417923
+          },
+          {
+            "depth": 2,
+            "ms": 0.5365000000019791
+          },
+          {
+            "depth": 3,
+            "ms": 1.6860840000008466
+          },
+          {
+            "depth": 4,
+            "ms": 6.414875000002212
+          },
+          {
+            "depth": 5,
+            "ms": 15.155541999993147
+          },
+          {
+            "depth": 6,
+            "ms": 32.962209000004805
+          },
+          {
+            "depth": 7,
+            "ms": 73.2389589999948
+          },
+          {
+            "depth": 8,
+            "ms": 186.19333399999596
+          },
+          {
+            "depth": 9,
+            "ms": 432.5085839999956
+          },
+          {
+            "depth": 10,
+            "ms": 1197.3268339999922
+          },
+          {
+            "depth": 11,
+            "ms": 2879.3677089999983
+          }
+        ]
+      },
+      "gain": 1
+    }
+  ]
+}

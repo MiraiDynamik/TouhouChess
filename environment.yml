@@ -1,0 +1,5 @@
+name: TouhouChess
+channels:
+  - defaults
+dependencies:
+  - python=3.12

@@ -1,0 +1,35 @@
+{
+  "name": "touhou-chess",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run check:generated && node --import tsx tests/golden.test.ts",
+    "test:bundle": "node --import tsx tests/bundle.test.ts",
+    "build:engine": "esbuild engine/index.ts --bundle --format=esm --outfile=web/engine.mjs --target=es2020 && esbuild engine/index.ts --bundle --format=iife --global-name=TouhouChess --outfile=web/engine.js --target=es2020",
+    "rules": "conda run -n TouhouChess python lab/rulebook.py && conda run -n TouhouChess python lab/gen_costs.py && conda run -n TouhouChess python lab/check_rules.py",
+    "bench": "node --import tsx tests/bench.ts",
+    "drop": "node --import tsx tests/drop.test.ts",
+    "accept": "conda run -n TouhouChess python lab/accept.py",
+    "h2h": "conda run -n TouhouChess python lab/accept.py --h2h",
+    "firstmove": "node --import tsx tests/firstmove.ts",
+    "dolls": "conda run -n TouhouChess python lab/dolls.py",
+    "tune": "conda run -n TouhouChess python lab/tune.py",
+    "build": "npm run build:engine && node scripts/build-html.mjs",
+    "test:integration": "node --import tsx tests/integration.mjs",
+    "check:generated": "node scripts/build-html.mjs --check",
+    "test:all": "npm test && npm run test:bundle && npm run test:integration && npm run test:timed",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:timed": "node --import tsx tests/timed.test.mjs"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "esbuild": "^0.25.0",
+    "svelte": "^5.57.2",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vite": "^7.3.7"
+  }
+}

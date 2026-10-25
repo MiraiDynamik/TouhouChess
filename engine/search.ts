@@ -1,0 +1,349 @@
+/* 搜索。从单文件版抽取，砍掉了界面胶水（botMaybe 那一段属于 web/）。
+
+   srchEnd 是搜索时限：界面线程里跑的分析搜索必须能被打断，
+   否则深一层就会把页面冻住。srchEnd=0 表示不限时（批量测试走这条）。 */
+import {P} from './pieces.js';
+import {applyMove,hasLegal,inCheck,legalMoves,posHist,posKey,pseudoAll,tryMove,vanishPass} from './rules.js';
+import {MATE,OPT,evalPos} from './eval.js';
+
+
+
+
+
+
+
+/* ---- 走法排序：杀手走法 + 历史启发 ----
+   这两样只改枚举顺序，不改搜索的返回值 —— 全窗口的 alpha-beta 根值
+   与枚举顺序无关。所以 tests/golden.test.ts 的 280 项必须一字不变，
+   变了就是实现错了。这是个很硬的判据，所以先做这一批，
+   置换表和空着法剪枝留到后面（前者要增量哈希，后者会改变返回值）。 */
+const KMAX=64;                                  // 最大 ply
+const K1=new Int32Array(KMAX), K2=new Int32Array(KMAX);   // 每层两个杀手
+const HIST=new Int32Array(64*64);
+/* 走法签名：同一层里区分「同一个起终点的不同升变/打入」没必要，
+   排序只需要粗粒度相同即可 */
+const sig=m=>(m.from<<6)|m.to;
+export function clearOrderTables(){
+  K1.fill(0);K2.fill(0);HIST.fill(0);}
+/* 吃子/升变/打入用静态分值；安静走法用杀手和历史。
+   分层：吃子 >= 1000 > 杀手 900/850 > 历史 < 800，所以吃子永远先试。 */
+export function mscore(s,m,ply=0){const vic=s.b[m.to];let v=0;
+  if(vic)v+=1000+P[vic.t].value*10-P[s.b[m.from].t].value;
+  if(m.promo)v+=500;
+  if(m.drop)v+=P[m.drop].value*10;   // 打入是净得子，排序别把它压到最后
+  if(!vic&&!m.promo&&!m.drop){
+    const g=sig(m);
+    if(ply<KMAX&&K1[ply]===g)v+=900;
+    else if(ply<KMAX&&K2[ply]===g)v+=850;
+    else{const h=HIST[g];v+=h>799?799:h;}   // 历史不许越过杀手
+  }
+  return v;}
+export const order=(s,ms,ply=0)=>ms.sort((a,b)=>mscore(s,b,ply)-mscore(s,a,ply));
+/* beta 截断时记下这个安静走法：同一层下次先试它 */
+function onCut(s,m,d,ply){
+  if(s.b[m.to]||m.promo||m.drop)return;        // 吃子已经排在最前，不用记
+  const g=sig(m);
+  if(ply<KMAX&&K1[ply]!==g){K2[ply]=K1[ply];K1[ply]=g;}
+  HIST[g]+=d*d;                                 // 深层的截断更有信息量
+}
+export const kid=m=>vanishPass(m._n);
+export function qsearch(s,alpha,beta,ply){
+  checkDeadline();
+  let best=evalPos(s);
+  if(ply>6||best>=beta)return best;
+  if(best>alpha)alpha=best;
+  /* 先按伪合法筛出吃子再验证 —— 原来是算完整合法表再扔掉非吃子，
+     等于给所有非吃子白付了合法性验证 */
+  const ms=order(s,pseudoAll(s).filter(m=>s.b[m.to]||m.epc));
+  for(const m of ms){
+    const ns=tryMove(s,m);
+    if(!ns)continue;
+    const sc=-qsearch(vanishPass(ns),-beta,-alpha,ply+1);
+    if(sc>best)best=sc;
+    if(best>alpha)alpha=best;
+    if(alpha>=beta)break;}
+  return best;}
+export let srchRep=null;
+/* 搜索时限。evalPanel 这种在界面线程里跑的搜索必须能被打断：
+   每 256 个搜索/静态搜索结点查一次钟，超时就抛 EVABORT，调用方丢弃这次的部分结果。
+   srchEnd=0 表示不限时（固定深度离线测试使用）。 */
+export let srchEnd=0,srchNodes=0;
+export const EVABORT={abort:1};
+/** Mutable module bindings must be changed here, never on a bundled export copy. */
+export function setSearchState({end=0,rep=null,nodes=0}={}) {
+  srchEnd=end; srchRep=rep; srchNodes=nodes;
+}
+export function clearSearchDeadline(){srchEnd=0;}
+function checkDeadline(force=false){
+  if(srchEnd&&(force||!(++srchNodes&255))&&performance.now()>=srchEnd)throw EVABORT;
+}
+export function negamax(s,d,alpha,beta,ply){
+  checkDeadline();
+  if(ply&&ply<=2&&srchRep&&srchRep.has(posKey(s)))return 0;   /* 踩回已出现过的局面当和棋算 */
+  if(!(d>0)){
+    /* 原版在 d<=0 之前就算完整合法表（为了认出将杀），所以地平线结点
+       全额付费。这里只问「有没有」，找到第一个合法走法就停。 */
+    if(!hasLegal(s))return inCheck(s,s.turn)?-(MATE-ply):0;
+    return qsearch(s,alpha,beta,0);}
+  const ms=pseudoAll(s);
+  order(s,ms,ply);
+  let best=-Infinity,any=false,tried=0;
+  const pr=PRUNE.inner;
+  /* 被将军时一律不剪：那时候每一手都可能是唯一解 */
+  const chk=pr?!!inCheck(s,s.turn):false;
+  /* 阶段：开局剪得狠，中局残局手松。用场上非王子力判断 */
+  let fDepth=PRUNE.futilityDepth,fMargin=PRUNE.futilityMargin,lAfter=PRUNE.lmrAfter;
+  if(pr){
+    let mat=0;
+    for(let i=0;i<64;i++){const q=s.b[i];if(q&&!P[q.t].royal)mat+=P[q.t].value;}
+    if(mat>=PRUNE.openMaterial){
+      fDepth=PRUNE.openFutilityDepth;
+      fMargin=PRUNE.openFutilityMargin;
+      lAfter=PRUNE.openLmrAfter;}}
+  let stat=null;                        // 静态评估，按需算一次
+  for(const m of ms){
+    const ns=tryMove(s,m);
+    if(!ns)continue;                    // 非法，跳过
+    any=true;tried++;
+    const quiet=!s.b[m.to]&&!m.promo&&!m.drop&&!m.epc;
+    /* futility：浅层处，静态评估加余量都追不上 alpha，这手安静走法就不看了 */
+    if(pr&&quiet&&!chk&&d<=fDepth&&tried>1){
+      if(stat===null)stat=evalPos(s);
+      if(stat+fMargin*d<=alpha)continue;}
+    /* LMR：排序靠后的安静走法先用削减深度看一眼，高于 alpha 才全深度重搜 */
+    let red=0;
+    if(pr&&quiet&&!chk&&d>=PRUNE.lmrMinDepth&&tried>lAfter)
+      red=tried>lAfter*2?2:1;
+    if(red>=d)red=d-1;
+    let sc=-negamax(vanishPass(ns),d-1-red,-beta,-alpha,ply+1);
+    if(red&&sc>alpha)sc=-negamax(vanishPass(ns),d-1,-beta,-alpha,ply+1);
+    if(sc>best)best=sc;
+    if(best>alpha)alpha=best;
+    if(alpha>=beta){onCut(s,m,d,ply);break;}}
+  if(!any)return inCheck(s,s.turn)?-(MATE-ply):0;   // 一个合法走法都没有
+  if(best===-Infinity)return alpha;   // 全被 futility 跳过：返回下界
+  return best;}
+/* 四档棋力：
+   d       = 搜索深度
+   blunder = 每手直接随机走一步合法棋的概率（真失误，会白送子）
+   subopt  = 没有失误时，按这个概率改走次优手——从第2名、以及分数在第2名
+             1 分以内的那些手里随机抽一个，所以是「差一点」而不是又一次失误 */
+/* 四个难度按东方的分级命名，和棋子分级是同一套体系：
+     琪露诺   妖精级     笨蛋，大量随机失误
+     霖之助   人类       部分失误
+     帕秋莉   魔法使级   少量失误
+     永琳     贤者级     零失误
+   注意：琪露诺和帕秋莉同时也是棋子键（在 P 里），但那是另一个命名空间。 */
+export const LEVELS={cirno:{d:3,timeMs:500,blunder:.35,subopt:.85},
+              rinnosuke:{d:4,timeMs:1000,blunder:.12,subopt:.50},
+              patchouli:{d:5,timeMs:2000,blunder:.08,subopt:.20,deepen:1},
+              eirin:{d:5,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1},
+  /* 开发者级：研究阵容和子力用的测量仪器，不出现在玩家界面。
+     不求最强，但设计必须正确 —— 只保留全程生效、几何推导的项
+     （子力 + 机动性 + 王安全 + 残局将杀驱动），不含手写开局原则项。
+     那五项的符号随阵容翻转（香草 +21.7pp、灵梦3枚 -20.0pp），
+     拿带这种偏差的引擎去给阵容排名，量的是偏差不是阵容。 */
+              dev:{d:4,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1,plain:1}};
+/* 开发者级的唯一入口。研究脚本只调这个，不自己去动 OPT —— 忘记关是个静默错误 */
+/* 固定深度的开发者级。测量用：各阶段同一个深度，成本可预估。
+   devMove 走 depthFor，会按子数加深（4/5/6），深度6 约是深度4 的 25 倍。 */
+/* 旧名别名 —— 研究脚本里散落着 level='human' 之类，不该因为改名而断 */
+export const LEVEL_ALIAS={baka:'cirno',human:'rinnosuke',youkai:'patchouli',sage:'eirin'};
+export const resolveLevel=k=>LEVEL_ALIAS[k]||k;
+
+export function devMoveAt(s,depth){
+  const save=OPT.open;OPT.open=0;
+  try{return pickMove(s,depth,0,0);}
+  finally{OPT.open=save;}}
+export function devMove(s,extraDepth){
+  const save=OPT.open;OPT.open=0;
+  try{return pickMove(s,depthFor(LEVELS.dev,s)+(extraDepth||0),0,0);}
+  finally{OPT.open=save;}}
+/* 固定深度入口按少子局面加深；交互永琳使用 timedMove 的时间预算，无固定深度上限。 */
+export function depthFor(lv,s){
+  if(!lv.deepen)return lv.d;
+  let n=0;for(let i=0;i<64;i++)if(s.b[i])n++;
+  return lv.d+(n<=7?2:n<=18?1:0);}
+/* 根节点逐手全窗口打分并降序排列。不能用 alpha-beta：
+   被剪枝的走法拿到的是界限不是真值，排名不可信 */
+export function rankMoves(s,d){
+  const ms=legalMoves(s);if(!ms.length)return[];
+  for(let i=ms.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));
+    const t=ms[i];ms[i]=ms[j];ms[j]=t;}            /* 同分随机 */
+  const sc=ms.map(m=>{checkDeadline(true);return {m,v:-negamax(kid(m),d-1,-Infinity,Infinity,1)};});
+  sc.sort((a,b)=>b.v-a.v);
+  return sc;}
+/* ---- 根节点迭代加深 + 候选收窄（前向剪枝） ----
+   逐层加深，每层结束后把落后最佳超过阈值的候选丢掉，不再进下一层。
+   Mirai 的设定：第3层落后 2 分、第4层 0.7 分、第5层 0.3 分就不再往下算。
+
+   这是**启发式**剪枝，和 alpha-beta 性质不同：alpha-beta 剪掉的是已经
+   证明无关的分支（精确，不改结果），这里剪掉的是「浅层看着差」的分支
+   （会漏东西，换来深度）。漏的主要是弃子杀、弃子兑、牺牲短期优势换局面、
+   五步以上长战术 —— 对一个不面向 GM 的对手引擎，这个交换是划算的。
+
+   实现上的要点：阈值直接当搜索窗口用。每个候选用窗口
+   (最佳-阈值, 最佳+1) 搜 —— 返回值 ≤ 最佳-阈值 就说明它至少落后那么多，
+   可以安全丢掉；高于最佳则重搜确认。先全窗口算准再丢会贵得多，
+   而且非最佳走法在收窄窗口下拿到的只是上界，没法比较落后幅度。
+
+   negamax 本身没动，所以 tests/golden.test.ts 的搜索值仍然有效 ——
+   这里改变的是**选哪一手**，不是某个深度的搜索值。 */
+export const PRUNE={
+  on:1,                /* 根节点候选收窄 */
+  /* 树内部的前向剪枝。只跳过安静走法（非吃子非升变非打入），
+     而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
+     不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
+     inner=0 时 negamax 走精确路径，tests/golden.test.ts 测的就是那条。 */
+  inner:0,
+  futilityDepth:2,     /* 剩余深度 ≤ 这个值才做 futility */
+  futilityMargin:120,  /* 每层余量（评估单位）。静态评估 + 余量仍低于 alpha 就跳过 */
+  lmrAfter:3,          /* 前这么多手不削减 */
+  lmrMinDepth:3,       /* 剩余深度 ≥ 这个值才削减 */
+  /* 开局剪得更狠：开局分支因子最高，而多考虑一个开局候选的边际价值最低 ——
+     只要剩下的开局成立就够，砍掉大部分开局不影响棋力。
+     判据用场上子力（和 depthFor 用的是同一个信号）。 */
+  openMaterial:55,     /* 双方非王子力合计 ≥ 这个值算开局 */
+  openLmrAfter:1,      /* 开局阶段：第 2 手起就削减 */
+  openFutilityDepth:3, /* 开局阶段：剩余深度 ≤3 都做 futility */
+  openFutilityMargin:220,
+  /* 层数 → 阈值（评估单位，100 = 1 分）。没列到的层沿用最后一个。
+     越深阈值越紧：深层评估更可信，可以剪得更狠。 */
+  margins:{1:1e9,2:1e9,3:200,4:70,5:30},
+  minCand:2,          /* 至少留这么多候选，否则没有替代选择 */
+};
+function marginAt(d,mg){
+  if(mg[d]!==undefined)return mg[d];
+  const ks=Object.keys(mg).map(Number).sort((a,b)=>a-b);
+  return mg[ks[ks.length-1]];}
+
+/* 返回 {move, score, depth, cand, nodes}。cand = 最后一层剩下几个候选 */
+export function idSearch(s,maxDepth,opt){
+  opt=opt||{};
+  const prune=opt.prune!==undefined?opt.prune:PRUNE.on;
+  const mg=opt.margins||PRUNE.margins;
+  const minC=opt.minCand!==undefined?opt.minCand:PRUNE.minCand;
+  let cand=legalMoves(s);
+  if(!cand.length)return{move:null,score:0,depth:0,cand:0};
+  for(let i=cand.length-1;i>0;i--){            /* 同分随机，免得每局一样 */
+    const j=Math.floor(Math.random()*(i+1));
+    const t=cand[i];cand[i]=cand[j];cand[j]=t;}
+  let sc=cand.map(m=>({m,v:0}));
+  let bm=sc[0].m,bv=0,reached=0;
+  for(let d=1;d<=maxDepth;d++){
+    checkDeadline(true);
+    sc.sort((a,b)=>b.v-a.v);                   /* 上一层最佳排最前 */
+    const margin=marginAt(d,mg);
+    /* 第一个候选全窗口，拿到可比的基准 */
+    bv=-negamax(kid(sc[0].m),d-1,-Infinity,Infinity,1);
+    sc[0].v=bv;bm=sc[0].m;
+    for(let i=1;i<sc.length;i++){
+      checkDeadline(true);
+      const lo=bv-margin;
+      let v=-negamax(kid(sc[i].m),d-1,-(bv+1),-lo,1);
+      if(v>bv){                                /* 可能更好，重搜确认 */
+        v=-negamax(kid(sc[i].m),d-1,-Infinity,Infinity,1);
+        if(v>bv){bv=v;bm=sc[i].m;}}
+      sc[i].v=v;}
+    reached=d;
+    opt.onDepth?.({move:bm,score:bv,depth:d,cand:sc.length});
+    if(opt.stopOnMate&&Math.abs(bv)>MATE/2)break;
+    if(prune&&d<maxDepth){
+      const keep=sc.filter(e=>e.v>bv-margin);
+      sc=keep.length>=minC?keep:sc.slice(0,Math.max(minC,1));
+      if(sc.length<=1)break;}                  /* 只剩一手，不用再深 */
+  }
+  return{move:bm,score:bv,depth:reached,cand:sc.length};}
+
+export function pickMove(s,d,blunder,subopt){
+  srchRep=new Set(posHist);
+  const ms=legalMoves(s);if(!ms.length)return null;
+  if(blunder&&Math.random()<blunder)return ms[Math.floor(Math.random()*ms.length)];
+  if(subopt){
+    const r=rankMoves(s,d);
+    if(!r.length)return null;
+    if(r.length>1&&Math.random()<subopt){
+      const lo=r[1].v-100;                       /* 评估里 1 分 = 100 */
+      const pool=r.filter((x,i)=>i>0&&x.v>=lo);
+      return pool[Math.floor(Math.random()*pool.length)].m;}
+    return r[0].m;}
+  /* 零失误档：根节点迭代加深 + 候选收窄（剪枝由 PRUNE.on 控制） */
+  const r=idSearch(s,d,{prune:PRUNE.on});
+  return r.move||ms[0];}
+
+/** Analysis root search moved unchanged from the old HTML Worker.
+ * Yields between root moves so the UI fallback can schedule short slices.
+ * Worker and fallback consume this one implementation; neither implements search.
+ */
+export function* analysisSteps(s,{hist=[],plain=false}={}){
+  srchRep=new Set(hist);
+  clearOrderTables();
+  let prev=null;
+  for(let depth=1;;depth++){
+    const start=performance.now(),ms=pseudoAll(s);
+    if(!ms.length)return;
+    if(prev){const j=ms.findIndex(m=>m.from===prev.from&&m.to===prev.to);
+      if(j>0)[ms[0],ms[j]]=[ms[j],ms[0]];}
+    let best=null,bv=-Infinity,legal=0;
+    for(const m of ms){
+      const ns=tryMove(s,m);
+      if(!ns)continue;
+      legal++;
+      const saved=OPT.open;
+      let v;
+      try{
+        OPT.open=plain?0:1;
+        if(legal===1)v=-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
+        else{
+          v=-negamax(vanishPass(ns),depth-1,-(bv+1),-bv,1);
+          if(v>bv)v=-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
+        }
+      }finally{OPT.open=saved;}
+      if(v>bv){bv=v;best=m;}
+      yield {progress:true};
+    }
+    if(!legal)return;
+    prev=best;
+    yield {depth,score:bv,ms:performance.now()-start,
+      move:{from:best.from,to:best.to,promo:best.promo||null,
+        drop:best.drop||null,castle:best.castle}};
+  }
+}
+
+/** Interactive selection: keep only completed iterations on timeout.
+ * Fixed-depth research entry points remain available and do not gain a time limit.
+ */
+export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{}}={}){
+  const lv=LEVELS[resolveLevel(levelKey)]||LEVELS.rinnosuke;
+  const start=performance.now(),savedOpen=OPT.open;
+  const ms=legalMoves(s);
+  let completed={move:ms[0]||null,score:null,depth:0};
+  if(!ms.length)return {...completed,ms:performance.now()-start};
+  const budget=timeMs??lv.timeMs;
+  if(!Number.isFinite(budget)||budget<0)throw new Error('Invalid search time budget');
+  setSearchState({end:start+budget,rep:new Set(hist)});clearOrderTables();
+  OPT.open=lv.plain?0:1;
+  const remember=result=>{completed={...result};onDepth({...completed,ms:performance.now()-start});};
+  try{
+    checkDeadline(true);
+    if(lv.blunder&&Math.random()<lv.blunder){
+      completed.move=ms[Math.floor(Math.random()*ms.length)];
+    }else if(lv.subopt){
+      const chooseSuboptimal=Math.random()<lv.subopt;
+      for(let depth=1;depth<=depthFor(lv,s);depth++){
+        checkDeadline(true);
+        const ranked=rankMoves(s,depth);
+        let chosen=ranked[0];
+        if(chooseSuboptimal&&ranked.length>1){
+          const pool=ranked.slice(1).filter(x=>x.v>=ranked[1].v-100);
+          chosen=pool[Math.floor(Math.random()*pool.length)];
+        }
+        remember({move:chosen.m,score:chosen.v,depth});
+      }
+    }else{
+      idSearch(s,lv.timeOnly?Infinity:depthFor(lv,s),{onDepth:remember,stopOnMate:true});
+    }
+  }catch(error){if(error!==EVABORT)throw error;}
+  finally{OPT.open=savedOpen;clearSearchDeadline();srchRep=null;}
+  return {...completed,ms:performance.now()-start};
+}

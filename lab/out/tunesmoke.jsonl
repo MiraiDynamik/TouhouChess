@@ -1,0 +1,6 @@
+{"i": 0, "side": "w", "result": "b", "score": 0, "code": "mates", "plies": 56, "matFirst": 0, "matLast": -7, "ammo": [2, 2], "tag": "ab:mobility=1.0:香草"}
+{"i": 1, "side": "b", "result": "b", "score": 1, "code": "mates", "plies": 132, "matFirst": 0, "matLast": -11, "ammo": [2, 2], "tag": "ab:mobility=1.0:香草"}
+{"i": 0, "side": "w", "result": "w", "score": 1, "code": "adjudicated", "plies": 160, "matFirst": 0, "matLast": 8, "ammo": [2, 2], "tag": "ab:mobility=2.0:香草"}
+{"i": 1, "side": "b", "result": "w", "score": 0, "code": "mates", "plies": 103, "matFirst": 0, "matLast": 28, "ammo": [2, 2], "tag": "ab:mobility=2.0:香草"}
+{"i": 0, "side": "w", "result": "w", "score": 1, "code": "mates", "plies": 69, "matFirst": 0, "matLast": 24, "ammo": [2, 2], "tag": "ab:mobility=4.0:香草"}
+{"i": 1, "side": "b", "result": "w", "score": 0, "code": "mates", "plies": 153, "matFirst": 0, "matLast": 16, "ammo": [2, 2], "tag": "ab:mobility=4.0:香草"}

@@ -28,3 +28,10 @@
 - Python 通过薄的 Node CLI 调用引擎，JSON 输入、JSONL 输出；交互式局面探索主要在浏览器完成，不另建 Python 棋局引擎。
 - 评估参数通过数据文件调整，区分规则价格 cost 与引擎估价 value；用户继续提供 Markdown 规则，工具负责结构化转换和一致性检查。
 - Svelte 5 + Tailwind 界面已落地；根目录 HTML 是同一应用的生成物。DRF 业务后端尚未实现，不虚报框架落地。
+
+## 文档分工
+
+- 根目录 `README.md` 面向游戏使用者，保留项目介绍、玩法与启动方法。
+- 开发与 AI 交接文档统一放在 `docs/`，入口为 `docs/README.md`。
+- 实现决策和开发进度记入 `docs/DEVELOPMENT_LOG.md`；研究结论记入 `docs/RESEARCH.md`。
+- 本文件留在根目录，供开发工具自动发现。

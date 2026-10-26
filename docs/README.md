@@ -6,6 +6,7 @@
 |---|---|
 | [开发日志](DEVELOPMENT_LOG.md) | 从原 README 整理的架构与开发背景，以及后续变更记录 |
 | [前端开发说明](FRONTEND.md) | Svelte 组件、界面修改入口、Worker、构建与测试 |
+| [置换表](TRANSPOSITION_TABLE.md) | 缓存实现、东方棋适配、生命周期与性能验证 |
 | [Windows 等时对局](TIMED_H2H.md) | 三秒永琳剪枝对照实验、续跑、Markdown/CSV 报告 |
 | [Stockfish 对局](STOCKFISH_MATCH.md) | 开发者开启剪枝对阵 1320/1500 限强档位 |
 | [研究记录](RESEARCH.md) | 实验结论、证据、已作废结论和待研究事项 |

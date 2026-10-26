@@ -97,7 +97,7 @@ const matDiff = (s: any) => {
 const LV = resolveLevel(spec.level ?? 'lunatic');
 const DB = spec.depthBonus ?? 0;
 const FD = spec.fixedDepth ?? 0;
-const BASE_PRUNE = spec.prune ? 1 : 0;
+const BASE_PRUNE = spec.prune === undefined ? PRUNE.inner : (spec.prune ? 1 : 0);
 PRUNE.inner = BASE_PRUNE;
 /* 等时对局：被测方可以用不同的剪枝/深度，按行棋方逐手切换 */
 const PA = (spec.pruneA === null || spec.pruneA === undefined) ? null : (spec.pruneA ? 1 : 0);

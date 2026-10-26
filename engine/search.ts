@@ -10,6 +10,7 @@ import {TT,newTranspositionSearch,ttPositionKey,probeTransposition,storeTranspos
 export {TT,clearTranspositionTable,transpositionStats} from './transposition.js';
 
 let cacheContext=null;
+let lastCacheHistory='',cacheHistoryVersion=0;
 /** Scope cache use so raw negamax remains a useful uncached reference.
  * Evaluator/weights/pruning changes invalidate scores and move ordering together.
  * Root-relative repetition logic affects plies 0..2 only. Those entries carry
@@ -20,7 +21,11 @@ export function withSearchCache(run,{hist=[],enabled=TT.enabled,newSearch=true}=
   if(enabled){
     if(newSearch)newTranspositionSearch(JSON.stringify([OPT,WEIGHTS,PRUNE,
       Object.entries(P).map(([t,p])=>[t,p.value,p.cost])]));
-    cacheContext={history:JSON.stringify([...new Set(hist)].sort())};
+    const history=JSON.stringify([...new Set(hist)].sort());
+    // Compare the full history once, then use a collision-free session token.
+    // Do not duplicate a potentially long game history into every shallow key.
+    if(history!==lastCacheHistory){lastCacheHistory=history;cacheHistoryVersion++;}
+    cacheContext={history:cacheHistoryVersion};
   }else cacheContext=null;
   try{return run();}finally{cacheContext=saved;}
 }
@@ -100,12 +105,7 @@ function checkDeadline(force=false){
 export function negamax(s,d,alpha,beta,ply){
   checkDeadline();
   if(ply&&ply<=2&&srchRep&&srchRep.has(posKey(s)))return 0;   /* 踩回已出现过的局面当和棋算 */
-  if(!(d>0)){
-    /* 原版在 d<=0 之前就算完整合法表（为了认出将杀），所以地平线结点
-       全额付费。这里只问「有没有」，找到第一个合法走法就停。 */
-    if(!hasLegal(s))return inCheck(s,s.turn)?-(MATE-ply):0;
-    return qsearch(s,alpha,beta,0);}
-  const originalAlpha=alpha,key=cacheContext?cacheKey(s,ply):null;
+  const originalAlpha=alpha,key=cacheContext?cacheKey(s,ply)+(d>0?'':'|qroot'):null;
   const cached=key?probeTransposition(key):null;
   // Equal remaining depth preserves the fixed-horizon reference semantics.
   // Different-depth entries still provide a move-ordering hint below.
@@ -114,6 +114,12 @@ export function negamax(s,d,alpha,beta,ply){
     if(cached.bound==='exact'||cached.bound==='lower'&&value>=beta||cached.bound==='upper'&&value<=alpha){
       countTTCutoff();return value;
     }
+  }
+  if(!(d>0)){
+    // Cache only a fresh qsearch root, never a partially consumed qsearch horizon.
+    const value=!hasLegal(s)?(inCheck(s,s.turn)?-(MATE-ply):0):qsearch(s,alpha,beta,0);
+    if(key)storeTransposition(key,d,value,value<=originalAlpha?'upper':value>=beta?'lower':'exact',null,ply);
+    return value;
   }
   const ms=pseudoAll(s);
   order(s,ms,ply);
@@ -224,7 +230,7 @@ export const PRUNE={
      而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
      不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
      inner=0 时 negamax 走精确路径，tests/golden.test.ts 测的就是那条。 */
-  inner:0,
+  inner:1,             /* 用户授权默认开启 futility + LMR；实验可显式关闭 */
   futilityDepth:2,     /* 剩余深度 ≤ 这个值才做 futility */
   futilityMargin:120,  /* 每层余量（评估单位）。静态评估 + 余量仍低于 alpha 就跳过 */
   lmrAfter:3,          /* 前这么多手不削减 */

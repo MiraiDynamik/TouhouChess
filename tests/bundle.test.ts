@@ -2,7 +2,9 @@
    产物能 import 不等于行为一致 —— 这个文件就是用来证明一致的。
    断言数必须和 golden.test.ts 完全相同。 */
 import {readFileSync} from 'node:fs';
-import {B,P,W,applyMove,applyWeights,buildState,evalPos,inCheck,legalMoves,mirrorSq,negamax,notate,posKey,setPosHist,vanishPass} from '../web/engine.mjs';
+import {B,P,W,PRUNE,applyMove,applyWeights,buildState,evalPos,inCheck,legalMoves,mirrorSq,negamax,notate,posKey,setPosHist,vanishPass} from '../web/engine.mjs';
+// Keep the same explicit non-selective baseline as golden.test.ts.
+PRUNE.inner=0;
 
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';

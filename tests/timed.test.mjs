@@ -8,6 +8,7 @@ const game=createGame();game.preset();game.selectSide('b');game.preset();game.st
 const position=get(game).position,hist=get(game).posHist;
 const signature=m=>JSON.stringify([m.from,m.to,m.promo||null,m.drop||null,m.castle??null]);
 const legal=new Set(get(game).legal.map(signature));
+assert.equal(E.PRUNE.inner,1,'futility/LMR are enabled by default');
 // Eirin, developer and legacy sage share config and deterministic search results.
 assert.deepEqual(Object.keys(E.LEVELS),['easy','normal','hard','lunatic']);
 for(const name of ['eirin','dev','sage'])assert.equal(E.resolveLevel(name),'lunatic');
@@ -52,9 +53,19 @@ const answer=await new Promise((resolve,reject)=>{
  worker.on('error',e=>{clearTimeout(timeout);reject(e);});
  worker.on('message',m=>{if(m.progress)depths.push(m.depth);else{clearTimeout(timeout);resolve(m);}});
  worker.postMessage({state:position,hist,level:'lunatic'});
-}).finally(()=>worker.terminate());
+});
 assert(!answer.error,answer.error);assert(legal.has(signature(answer.move)));
 assert.equal(answer.depth,depths.at(-1));assert(answer.depth>0);assert(answer.ms<5000);
+// A second request on the same real Worker must retain the table.
+worker.removeAllListeners('message');
+const again=await new Promise((resolve,reject)=>{
+ const timeout=setTimeout(()=>reject(Error('Retained bot worker timed out')),10000);
+ worker.once('error',e=>{clearTimeout(timeout);reject(e);});
+ worker.on('message',m=>{if(!m.progress){clearTimeout(timeout);resolve(m);}});
+ worker.postMessage({state:position,hist,level:'lunatic'});
+}).finally(()=>worker.terminate());
+assert(!again.error,again.error);assert(legal.has(signature(again.move)));
+assert(again.tt.generation>answer.tt.generation);assert(again.tt.hits>answer.tt.hits);
 // Session must discard results even if a cancelled transport delivers them late.
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const jobs=[];

@@ -19,7 +19,9 @@ import {buildState, mirrorSq} from '../engine/deploy.js';
 import {legalMoves, applyMove, vanishPass, inCheck, notate,
         posKey, setPosHist} from '../engine/rules.js';
 import {evalPos} from '../engine/eval.js';
-import {negamax} from '../engine/search.js';
+import {negamax,PRUNE} from '../engine/search.js';
+// Historical golden scores describe the non-selective search, not difficulty defaults.
+PRUNE.inner=0;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const gold = JSON.parse(readFileSync(join(here, 'golden.json'), 'utf8'));

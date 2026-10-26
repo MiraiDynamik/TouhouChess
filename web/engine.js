@@ -46,6 +46,7 @@ var TouhouChess = (() => {
     SANAE: () => SANAE,
     SILVER: () => SILVER,
     TEWI: () => TEWI,
+    TT: () => TT,
     W: () => W,
     WEIGHTS: () => WEIGHTS,
     analysisSteps: () => analysisSteps,
@@ -57,6 +58,7 @@ var TouhouChess = (() => {
     canDeploy: () => canDeploy,
     clearOrderTables: () => clearOrderTables,
     clearSearchDeadline: () => clearSearchDeadline,
+    clearTranspositionTable: () => clearTranspositionTable,
     darkSet: () => darkSet,
     def: () => def,
     depthFor: () => depthFor,
@@ -116,8 +118,10 @@ var TouhouChess = (() => {
     srchRep: () => srchRep,
     timedMove: () => timedMove,
     transparent: () => transparent,
+    transpositionStats: () => transpositionStats,
     tryMove: () => tryMove,
-    vanishPass: () => vanishPass
+    vanishPass: () => vanishPass,
+    withSearchCache: () => withSearchCache
   });
 
   // engine/board.ts
@@ -955,7 +959,94 @@ var TouhouChess = (() => {
     return v;
   }
 
+  // engine/transposition.ts
+  var TT = { enabled: true, slots: 32768 };
+  var moveKey = (m) => m ? JSON.stringify([
+    m.from,
+    m.to,
+    m.promo ?? null,
+    m.drop ?? null,
+    m.cost ?? null,
+    m.castle ?? null,
+    m.epc ?? null,
+    m.dbl ?? null
+  ]) : null;
+  var ttPositionKey = (s) => posKey(s) + "|half:" + s.half;
+  var scoreToTT = (v, ply) => v > MATE / 2 ? v + ply : v < -MATE / 2 ? v - ply : v;
+  var scoreFromTT = (v, ply) => v > MATE / 2 ? v - ply : v < -MATE / 2 ? v + ply : v;
+  var table = [];
+  var configuration = "";
+  var generation = 0;
+  var used = 0;
+  var counters = { probes: 0, hits: 0, cutoffs: 0, stores: 0 };
+  function clearTranspositionTable() {
+    table = [];
+    configuration = "";
+    generation = 0;
+    used = 0;
+    counters = { probes: 0, hits: 0, cutoffs: 0, stores: 0 };
+  }
+  var transpositionStats = () => ({ ...counters, entries: used, capacity: TT.slots, generation });
+  function newTranspositionSearch(config) {
+    if (!Number.isInteger(TT.slots) || TT.slots < 1 || TT.slots > 1048576) throw Error("Invalid TT slot count");
+    const identity = config + "|slots:" + TT.slots;
+    if (identity !== configuration) {
+      clearTranspositionTable();
+      configuration = identity;
+    }
+    generation++;
+  }
+  function index(key) {
+    let h = 2166136261;
+    for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
+    return (h >>> 0) % TT.slots;
+  }
+  function probeTransposition(key) {
+    counters.probes++;
+    const e = table[index(key)];
+    if (e?.key !== key) return null;
+    counters.hits++;
+    return e;
+  }
+  function countTTCutoff() {
+    counters.cutoffs++;
+  }
+  function storeTransposition(key, depth, value, bound, move, ply) {
+    if (!Number.isFinite(value)) return;
+    const i = index(key), old = table[i];
+    if (old && old.generation === generation && old.depth > depth && bound !== "exact") return;
+    if (!old) used++;
+    table[i] = { key, depth, value: scoreToTT(value, ply), bound, move: moveKey(move), generation };
+    counters.stores++;
+  }
+
   // engine/search.ts
+  var cacheContext = null;
+  var lastCacheHistory = "";
+  var cacheHistoryVersion = 0;
+  function withSearchCache(run, { hist = [], enabled = TT.enabled, newSearch = true } = {}) {
+    const saved = cacheContext;
+    if (enabled) {
+      if (newSearch) newTranspositionSearch(JSON.stringify([
+        OPT,
+        WEIGHTS,
+        PRUNE,
+        Object.entries(P).map(([t, p]) => [t, p.value, p.cost])
+      ]));
+      const history = JSON.stringify([...new Set(hist)].sort());
+      if (history !== lastCacheHistory) {
+        lastCacheHistory = history;
+        cacheHistoryVersion++;
+      }
+      cacheContext = { history: cacheHistoryVersion };
+    } else cacheContext = null;
+    try {
+      return run();
+    } finally {
+      cacheContext = saved;
+    }
+  }
+  var cacheKey = (s, ply) => ttPositionKey(s) + (ply <= 2 ? "|root:" + ply + "|hist:" + cacheContext.history : "|deep");
   var KMAX = 64;
   var K1 = new Int32Array(KMAX);
   var K2 = new Int32Array(KMAX);
@@ -1028,13 +1119,27 @@ var TouhouChess = (() => {
   function negamax(s, d, alpha, beta, ply) {
     checkDeadline();
     if (ply && ply <= 2 && srchRep && srchRep.has(posKey(s))) return 0;
+    const originalAlpha = alpha, key = cacheContext ? cacheKey(s, ply) + (d > 0 ? "" : "|qroot") : null;
+    const cached = key ? probeTransposition(key) : null;
+    if (cached && cached.depth === d) {
+      const value = scoreFromTT(cached.value, ply);
+      if (cached.bound === "exact" || cached.bound === "lower" && value >= beta || cached.bound === "upper" && value <= alpha) {
+        countTTCutoff();
+        return value;
+      }
+    }
     if (!(d > 0)) {
-      if (!hasLegal(s)) return inCheck(s, s.turn) ? -(MATE - ply) : 0;
-      return qsearch(s, alpha, beta, 0);
+      const value = !hasLegal(s) ? inCheck(s, s.turn) ? -(MATE - ply) : 0 : qsearch(s, alpha, beta, 0);
+      if (key) storeTransposition(key, d, value, value <= originalAlpha ? "upper" : value >= beta ? "lower" : "exact", null, ply);
+      return value;
     }
     const ms = pseudoAll(s);
     order(s, ms, ply);
-    let best = -Infinity, any = false, tried = 0;
+    if (cached?.move) {
+      const i = ms.findIndex((m) => moveKey(m) === cached.move);
+      if (i > 0) ms.unshift(...ms.splice(i, 1));
+    }
+    let best = -Infinity, bestMove = null, any = false, tried = 0;
     const pr = PRUNE.inner;
     const chk = pr ? !!inCheck(s, s.turn) : false;
     let fDepth = PRUNE.futilityDepth, fMargin = PRUNE.futilityMargin, lAfter = PRUNE.lmrAfter;
@@ -1067,15 +1172,19 @@ var TouhouChess = (() => {
       if (red >= d) red = d - 1;
       let sc = -negamax(vanishPass(ns), d - 1 - red, -beta, -alpha, ply + 1);
       if (red && sc > alpha) sc = -negamax(vanishPass(ns), d - 1, -beta, -alpha, ply + 1);
-      if (sc > best) best = sc;
+      if (sc > best) {
+        best = sc;
+        bestMove = m;
+      }
       if (best > alpha) alpha = best;
       if (alpha >= beta) {
         onCut(s, m, d, ply);
         break;
       }
     }
-    if (!any) return inCheck(s, s.turn) ? -(MATE - ply) : 0;
+    if (!any) best = inCheck(s, s.turn) ? -(MATE - ply) : 0;
     if (best === -Infinity) return alpha;
+    if (key) storeTransposition(key, d, best, best <= originalAlpha ? "upper" : best >= beta ? "lower" : "exact", bestMove, ply);
     return best;
   }
   var LEVELS = {
@@ -1138,7 +1247,8 @@ var TouhouChess = (() => {
        而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
        不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
        inner=0 时 negamax 走精确路径，tests/golden.test.ts 测的就是那条。 */
-    inner: 0,
+    inner: 1,
+    /* 用户授权默认开启 futility + LMR；实验可显式关闭 */
     futilityDepth: 2,
     /* 剩余深度 ≤ 这个值才做 futility */
     futilityMargin: 120,
@@ -1216,6 +1326,9 @@ var TouhouChess = (() => {
   }
   function pickMove(s, d, blunder, subopt) {
     srchRep = new Set(posHist);
+    return withSearchCache(() => pickMoveImpl(s, d, blunder, subopt), { hist: posHist });
+  }
+  function pickMoveImpl(s, d, blunder, subopt) {
     const ms = legalMoves(s);
     if (!ms.length) return null;
     if (blunder && Math.random() < blunder) return ms[Math.floor(Math.random() * ms.length)];
@@ -1252,11 +1365,14 @@ var TouhouChess = (() => {
         let v;
         try {
           OPT.open = plain ? 0 : 1;
-          if (legal === 1) v = -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
-          else {
-            v = -negamax(vanishPass(ns), depth - 1, -(bv + 1), -bv, 1);
-            if (v > bv) v = -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
-          }
+          v = withSearchCache(() => {
+            if (legal === 1) return -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
+            else {
+              v = -negamax(vanishPass(ns), depth - 1, -(bv + 1), -bv, 1);
+              if (v > bv) v = -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
+              return v;
+            }
+          }, { hist });
         } finally {
           OPT.open = saved;
         }
@@ -1283,7 +1399,7 @@ var TouhouChess = (() => {
     }
   }
   function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
-  } } = {}) {
+  }, tt = TT.enabled } = {}) {
     const lv = LEVELS[resolveLevel(levelKey)] || LEVELS.normal;
     const start = performance.now(), savedOpen = OPT.open;
     const ms = legalMoves(s);
@@ -1299,24 +1415,26 @@ var TouhouChess = (() => {
       onDepth({ ...completed, ms: performance.now() - start });
     };
     try {
-      checkDeadline(true);
-      if (lv.blunder && Math.random() < lv.blunder) {
-        completed.move = ms[Math.floor(Math.random() * ms.length)];
-      } else if (lv.subopt) {
-        const chooseSuboptimal = Math.random() < lv.subopt;
-        for (let depth = 1; depth <= depthFor(lv, s); depth++) {
-          checkDeadline(true);
-          const ranked = rankMoves(s, depth);
-          let chosen = ranked[0];
-          if (chooseSuboptimal && ranked.length > 1) {
-            const pool = ranked.slice(1).filter((x) => x.v >= ranked[1].v - 100);
-            chosen = pool[Math.floor(Math.random() * pool.length)];
+      withSearchCache(() => {
+        checkDeadline(true);
+        if (lv.blunder && Math.random() < lv.blunder) {
+          completed.move = ms[Math.floor(Math.random() * ms.length)];
+        } else if (lv.subopt) {
+          const chooseSuboptimal = Math.random() < lv.subopt;
+          for (let depth = 1; depth <= depthFor(lv, s); depth++) {
+            checkDeadline(true);
+            const ranked = rankMoves(s, depth);
+            let chosen = ranked[0];
+            if (chooseSuboptimal && ranked.length > 1) {
+              const pool = ranked.slice(1).filter((x) => x.v >= ranked[1].v - 100);
+              chosen = pool[Math.floor(Math.random() * pool.length)];
+            }
+            remember({ move: chosen.m, score: chosen.v, depth });
           }
-          remember({ move: chosen.m, score: chosen.v, depth });
+        } else {
+          idSearch(s, lv.timeOnly ? Infinity : depthFor(lv, s), { onDepth: remember, stopOnMate: true });
         }
-      } else {
-        idSearch(s, lv.timeOnly ? Infinity : depthFor(lv, s), { onDepth: remember, stopOnMate: true });
-      }
+      }, { hist, enabled: tt });
     } catch (error) {
       if (error !== EVABORT) throw error;
     } finally {
@@ -1324,7 +1442,7 @@ var TouhouChess = (() => {
       clearSearchDeadline();
       srchRep = null;
     }
-    return { ...completed, ms: performance.now() - start };
+    return { ...completed, ms: performance.now() - start, tt: transpositionStats() };
   }
 
   // engine/index.ts

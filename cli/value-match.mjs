@@ -7,14 +7,18 @@ const sq=s=>(8-Number(s[1]))*8+'abcdefgh'.indexOf(s[0]);
 const signature=m=>JSON.stringify([m.from,m.to,m.promo??null,m.drop??null,m.castle??null]);
 const print=x=>process.stdout.write(JSON.stringify(x)+'\n');
 const wait=new Int32Array(new SharedArrayBuffer(4));
-function save(path,data){
+function saveText(path,content){
  const tmp=path+'.'+process.pid+'.tmp';
- for(let attempt=0;;attempt++){
-  try{fs.writeFileSync(tmp,JSON.stringify(data));fs.renameSync(tmp,path);return;}
+ function retry(operation){for(let attempt=0;;attempt++){
+  try{return operation();}
   catch(e){if(!['EPERM','EACCES','EBUSY'].includes(e.code)||attempt===7)throw e;
    Atomics.wait(wait,0,0,Math.min(50*2**attempt,500));}
- }
+ }}
+ // Match timed-match.mjs: retry replacement without rewriting the temporary file.
+ retry(()=>fs.writeFileSync(tmp,content));
+ retry(()=>fs.renameSync(tmp,path));
 }
+const save=(path,data)=>saveText(path,JSON.stringify(data));
 function initial(spec){
  const dep={w:new Map(),b:new Map()};
  for(const c of ['w','b']){
@@ -39,7 +43,7 @@ function writePGN(checkpoint,data){
   headers:{Event:'Fairy value calibration',Site:'Local',Round:data.spec.id,White:'Eirin',Black:'Eirin',
    TFCExperiment:data.spec.id,Termination:data.result?.code||'unterminated'}});
  const path=checkpoint.replace(/\.json$/,'.pgn');
- fs.writeFileSync(path+'.tmp',pgn);fs.renameSync(path+'.tmp',path);
+ saveText(path,pgn);
 }
 if(input.mode==='validate'){
  for(const spec of input.specs)initial(spec);

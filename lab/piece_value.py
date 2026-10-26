@@ -13,12 +13,48 @@ import random
 import statistics
 import subprocess
 import sys
+import time
+from contextlib import contextmanager
 
 import timed_h2h as runner
 
 ROOT = Path(__file__).resolve().parent.parent
 COMMAND = [runner.NODE, '--import', 'tsx', str(ROOT / 'cli/value-match.mjs')]
 CONTEXTS = ['pawn', 'minor', 'pawn-no-bishops', 'minor-no-bishops']
+
+
+@contextmanager
+def output_lock(out):
+    """All commands writing an experiment directory share this lock."""
+    lock = out / '.running.lock'
+    try:
+        fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        raise RuntimeError(f'{lock} exists; stop its runner before exporting or rebuilding reports') from None
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            stream.write(str(os.getpid()))
+        yield
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def replace_report(tmp, path):
+    for attempt in range(8):
+        try:
+            tmp.replace(path)
+            return
+        except PermissionError:
+            if attempt == 7:
+                runner.emit(f'Report busy: close {path.name}; checkpoints are safe. Run --summary later.')
+                return
+            time.sleep(min(.05 * 2**attempt, .5))
+
+
+def validate_ids(manifest):
+    ids = [s['id'] for s in manifest['specs']]
+    if len(ids) != len(set(ids)):
+        raise ValueError('Duplicate game IDs would write the same checkpoint; choose distinct priors')
 
 
 def source_hash():
@@ -78,8 +114,10 @@ def make_manifest(config):
                         context=context, prior=prior, equivalent=equiv, pairIndex=pair,
                         seed=seed, armyA=a, armyB=b, onSide=side,
                         timeMs=config['time_ms'], maxPly=config['max_ply'], source=config['source']))
-    return dict(config=config, specs=specs, host=dict(platform=platform.platform(),
+    manifest = dict(config=config, specs=specs, host=dict(platform=platform.platform(),
         python=platform.python_version(), node=config['node']))
+    validate_ids(manifest)
+    return manifest
 
 
 def load_record(out, spec):
@@ -189,18 +227,15 @@ def report(out, manifest):
         '- 步数上限只记未决，绝不按被测估值或子力裁胜；暂停续跑会丢失内存置换表，后续着法可能与不中断运行不同。',
         '- 每手时间是搜索预算，系统调度可能稍超时；降低 workers 可减轻 CPU 竞争。短时 smoke 结果不能用于估值。']
     def write_csv(name, data):
-        tmp = out / (name+'.tmp')
+        tmp = out / (name+f'.{os.getpid()}.tmp')
         with tmp.open('w', encoding='utf-8-sig', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=list(data[0]))
             writer.writeheader(); writer.writerows(data)
-        try:
-            tmp.replace(out / name)
-        except PermissionError:
-            runner.emit(f'Report busy: close {name} in Excel; checkpoints are safe. Run --summary later.')
+        replace_report(tmp, out / name)
     write_csv('games.csv', rows)
     write_csv('summary.csv', summary)
-    tmp = out / 'report.md.tmp'
-    tmp.write_text('\n'.join(text)+'\n', encoding='utf-8'); tmp.replace(out / 'report.md')
+    tmp = out / f'report.md.{os.getpid()}.tmp'
+    tmp.write_text('\n'.join(text)+'\n', encoding='utf-8'); replace_report(tmp, out / 'report.md')
 
 
 def main():
@@ -225,12 +260,14 @@ def main():
     out = Path(args.out).expanduser().resolve()
     manifest_path = out / 'manifest.json'
     if args.export_pgn:
-        for path in sorted((out / 'games').glob('*.json')):
-            subprocess.run(COMMAND, cwd=ROOT, input=json.dumps(dict(mode='export', checkpoint=str(path))),
-                           text=True, encoding='utf-8', check=True)
+        with output_lock(out):
+            for path in sorted((out / 'games').glob('*.json')):
+                subprocess.run(COMMAND, cwd=ROOT, input=json.dumps(dict(mode='export', checkpoint=str(path))),
+                               text=True, encoding='utf-8', check=True)
         return
     if args.summary:
-        report(out, json.loads(manifest_path.read_text(encoding='utf-8')))
+        with output_lock(out):
+            report(out, json.loads(manifest_path.read_text(encoding='utf-8')))
         print(out / 'report.md'); return
     pieces = ['fairy']  # Koishi needs the independently calibrated fairy anchor first.
     contexts = list(dict.fromkeys(args.contexts.split(',')))
@@ -263,6 +300,7 @@ def main():
                 capture_output=True, text=True, encoding='utf-8', check=True)
             runner.emit(validation.stdout.strip())
             runner.atomic_json(manifest_path, manifest)
+        validate_ids(manifest)
         (out / 'games').mkdir(exist_ok=True)
         report(out, manifest)
         runner.emit(f"Plan: {len(manifest['specs'])} games; {args.workers} workers; output {out}")

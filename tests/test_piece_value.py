@@ -13,6 +13,48 @@ import piece_value as experiment
 
 
 class ValueExperimentTests(unittest.TestCase):
+    def test_windows_write_retry(self):
+        subprocess.run([experiment.runner.NODE, str(ROOT/'tests/value-write.test.mjs')],
+                       cwd=ROOT, capture_output=True, text=True, check=True)
+
+    def test_all_output_modes_respect_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            with experiment.output_lock(out):
+                lock_text = (out/'.running.lock').read_text()
+                for mode in ['--summary', '--export-pgn', '--plan']:
+                    proc = subprocess.run([sys.executable, str(ROOT/'lab/piece_value.py'),
+                        '--out', tmp, mode], cwd=ROOT, capture_output=True, text=True)
+                    self.assertNotEqual(proc.returncode, 0)
+                    self.assertIn('.running.lock', proc.stderr)
+                    self.assertEqual((out/'.running.lock').read_text(), lock_text)
+                self.assertEqual(len(list(out.iterdir())), 1)
+            self.assertFalse((out/'.running.lock').exists())
+
+    def test_duplicate_names_rejected(self):
+        config = self.config()
+        config['priors'] = [1.0000001, 1.0000002]  # Both round to v1 in filenames.
+        with self.assertRaisesRegex(ValueError, 'Duplicate game IDs'):
+            experiment.make_manifest(config)
+
+    def test_twelve_workers_and_report_regeneration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            command = [sys.executable, str(ROOT/'lab/piece_value.py'), '--out', tmp,
+                '--workers', '12', '--pairs', '1', '--priors', '1',
+                '--equivalents', '0,2,4', '--time-ms', '5', '--max-ply', '2']
+            subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=True)
+            games = list((Path(tmp)/'games').glob('*.json'))
+            self.assertEqual(len(games), 12)
+            for path in games:
+                record = json.loads(path.read_text())
+                self.assertEqual(len(record['moves']), 2)
+                self.assertIsNotNone(record['result'])
+                self.assertTrue(path.with_suffix('.pgn').exists())
+            for mode in ['--summary', '--export-pgn']:
+                subprocess.run([sys.executable, str(ROOT/'lab/piece_value.py'), '--out', tmp, mode],
+                               cwd=ROOT, capture_output=True, text=True, check=True)
+            self.assertFalse((Path(tmp)/'.running.lock').exists())
+
     def config(self):
         return dict(pieces=['fairy'], contexts=experiment.CONTEXTS,
                     priors=[1., 2.], equivalents=list(range(9)), pairs=2,

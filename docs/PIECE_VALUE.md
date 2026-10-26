@@ -38,6 +38,7 @@ python lab/piece_value.py --workers 12 --pairs 20 --out lab/out/fairy-20pairs
 - 可以改变 `--workers`；其他参数、引擎及实验源码、Node 版本必须一致。修改这些内容请使用新输出目录。
 - 续跑不会恢复内存置换表，因此之后的着法可能与连续运行不同。
 - 每个目录仅允许一个运行器。异常退出留下 `.running.lock` 时，先确认对应程序已停止，再删除锁文件。
+- `--summary` 和 `--export-pgn` 也使用同一把目录锁；请停止对局后再单独执行。运行时主进程会自动更新报告，不需要另外开汇总命令。
 - `games/*.json` 是进度和完整棋谱；`report.md` 是人类可读报告，`summary.csv` 是分组统计，`games.csv` 是逐局结果与阵容。不要只保存报告而丢弃 JSON。
 - 每局结束同时输出 `games/*.pgn`；普通兵对照为标准 PGN，妖精组为仙灵扩展。已有 JSON 可用同一命令加 `--export-pgn` 单独转换，不必重跑。格式及导入永琳分析的方法见 [PGN 文档](PGN.md)。
 - Windows 的 Excel 占用 CSV 时，程序会跳过该次 CSV 更新，不影响对局；关闭 Excel 后重新生成即可。
@@ -79,3 +80,5 @@ python -m unittest discover -s tests -p test_piece_value.py
 ```
 
 覆盖阵容合法性、换色一致性、名义补偿、未决统计、逐手保存续跑和报告生成。开发机已进行短时端到端试跑；尚未在 Windows 实机验证或完成正式价值测量。
+
+并发回归还覆盖 12 workers 的 12 局短测试、三个写入入口的锁互斥、重复对局 ID 拒绝，以及模拟 Windows 文件占用后的替换重试。JSON/PGN 临时文件按进程 ID 区分，写入与替换分别重试；CSV/Markdown 由主线程串行更新。文件锁测试不能代替 Windows 实机验证。

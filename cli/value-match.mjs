@@ -33,9 +33,20 @@ function initial(spec){
  s.ammo={w:2,b:2};
  return s;
 }
+function writePGN(checkpoint,data){
+ const result=!data.result||data.result.code==='unresolved'?'*':data.result.winner===null?'1/2-1/2':data.result.winner==='w'?'1-0':'0-1';
+ const pgn=E.exportPGN({initial:initial(data.spec),moves:data.moves,result,
+  headers:{Event:'Fairy value calibration',Site:'Local',Round:data.spec.id,White:'Eirin',Black:'Eirin',
+   TFCExperiment:data.spec.id,Termination:data.result?.code||'unterminated'}});
+ const path=checkpoint.replace(/\.json$/,'.pgn');
+ fs.writeFileSync(path+'.tmp',pgn);fs.renameSync(path+'.tmp',path);
+}
 if(input.mode==='validate'){
  for(const spec of input.specs)initial(spec);
  print({validated:input.specs.length});
+}else if(input.mode==='export'){
+ const data=JSON.parse(fs.readFileSync(input.checkpoint,'utf8'));
+ writePGN(input.checkpoint,data);print({exported:input.checkpoint});
 }else if(input.mode==='game'){
  const {spec,checkpoint}=input;
  if(!(spec.timeMs>0)||!Number.isInteger(spec.maxPly)||spec.maxPly<1)throw Error('Bad search limits');
@@ -68,5 +79,6 @@ if(input.mode==='validate'){
   data.state=next;data.hist.push(E.posKey(next));save(checkpoint,data);
   print({kind:'progress',id:spec.id,ply:data.moves.length,depth:found.depth,ms:found.ms});
  }
+ writePGN(checkpoint,data);
  print({kind:'result',id:spec.id,...data.result,plies:data.moves.length});
 }else throw Error('Unknown mode');

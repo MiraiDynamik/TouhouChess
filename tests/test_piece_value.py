@@ -72,6 +72,10 @@ class ValueExperimentTests(unittest.TestCase):
             self.assertEqual(len(done['hist']), len(done['moves'])+1)
             self.assertEqual(done['result']['code'], 'unresolved')
             self.assertIsNone(done['result']['score'])
+            pgn = checkpoint.with_suffix('.pgn').read_text(encoding='utf-8')
+            self.assertIn('[Result "*"]', pgn)
+            self.assertIn('[SetUp "1"]', pgn)  # Pawn-odds initial position.
+            self.assertNotIn('[Variant ', pgn)
             again = subprocess.run(experiment.COMMAND, cwd=ROOT, input=payload,
                 capture_output=True, text=True, encoding='utf-8', check=True)
             self.assertEqual(len(again.stdout.splitlines()), 1)

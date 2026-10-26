@@ -5,7 +5,8 @@ import * as E from './engine.js';
 export function createGame({loadBot=()=>import('./bot.js')}={}){
   let state={phase:'deploy',side:E.W,pick:null,deploy:{w:new Map(),b:new Map()},
     position:null,legal:[],selected:null,lastMove:null,history:[],log:[],posHist:[],
-    choices:null,flipped:false,lang:'zh',botSide:'',botLevel:'normal',thinking:false,botError:false};
+    choices:null,flipped:false,lang:'zh',botSide:'',botLevel:'normal',thinking:false,botError:false,
+    record:null,cursor:0};
   // Published snapshots must never be mutated by the next action. Svelte may
   // still be reading the previous snapshot while derived values are updating.
   const store=writable({...state});
@@ -45,11 +46,26 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
     const s=state.position,dark=E.darkSet(s),hidden=dark.has(move.from)||dark.has(move.to);
     const next=move._n||E.applyMove(s,move);
     state.history=[...state.history,{position:s,lastMove:state.lastMove,log:state.log}];
-    state.log=[...state.log,hidden?'⋯':E.notate(s,move,next,E.legalMoves(next))];
+    state.log=[...state.log,hidden?'⋯':E.san(s,move,state.legal)];
     state.position=E.vanishPass(next);
+    const moves=[...state.record.moves.slice(0,state.cursor),E.recordedMove(move)];
+    state.record={...state.record,moves,result:'*'};state.cursor=moves.length;
     state.posHist=[...state.posHist,E.posKey(state.position)];sync();
     state.lastMove={from:move.from,to:move.to};state.selected=null;state.choices=null;
     state.legal=E.legalMoves(state.position);scheduleBot();publish();
+  }
+  function seek(ply){
+    if(!state.record||!Number.isInteger(ply)||ply<0||ply>state.record.moves.length)return;
+    stopBot();state.botSide='';
+    let position=state.record.initial,lastMove=null,log=[],history=[],hist=[E.posKey(position)];
+    for(const record of state.record.moves.slice(0,ply)){
+      const move=E.resolveRecordedMove(position,record);
+      history.push({position,lastMove,log});
+      log=[...log,E.san(position,move)];position=E.nextPosition(position,move);
+      lastMove={from:move.from,to:move.to};hist.push(E.posKey(position));
+    }
+    Object.assign(state,{position,lastMove,log,history,posHist:hist,cursor:ply,selected:null,choices:null});
+    sync();state.legal=E.legalMoves(position);publish();
   }
   return {
     subscribe:store.subscribe,
@@ -88,6 +104,7 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
       if(!E.readySide(state.deploy.w)||!E.readySide(state.deploy.b))return;
       stopBot();botAPI?.dispose?.();state.position=E.buildState(state.deploy.w,state.deploy.b);
       state.history=[];state.log=[];state.lastMove=null;state.selected=null;state.choices=null;
+      state.record={initial:state.position,moves:[],headers:{},result:'*'};state.cursor=0;
       state.posHist=[E.posKey(state.position)];sync();state.legal=E.legalMoves(state.position);
       state.phase='play';scheduleBot();publish();
     },
@@ -95,6 +112,7 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
       stopBot();if(!state.history.length){publish();return;}
       const previous=state.history.at(-1);
       state.history=state.history.slice(0,-1);state.position=previous.position;
+      state.cursor--;state.record={...state.record,moves:state.record.moves.slice(0,state.cursor),result:'*'};
       state.lastMove=previous.lastMove;state.log=previous.log;state.selected=null;state.choices=null;
       state.posHist=state.posHist.slice(0,-1);sync();state.legal=E.legalMoves(state.position);publish();
     },
@@ -103,6 +121,20 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
     toggleLanguage(){state.lang=state.lang==='zh'?'en':'zh';publish();},
     setBotSide(side){state.botSide=side;scheduleBot();publish();},
     setBotLevel(level){state.botLevel=level;scheduleBot();publish();},
+    importPGN(text){
+      const parsed=E.parsePGN(text); // Validate completely before replacing the current game.
+      stopBot();botAPI?.dispose?.();
+      state.record={initial:parsed.initial,moves:parsed.moves,headers:parsed.headers,result:parsed.result};
+      state.phase='play';seek(parsed.moves.length);return parsed.warnings;
+    },
+    exportPGN(){
+      if(!state.record)throw Error('No game to export');
+      let result=state.record.result;
+      if(state.cursor===state.record.moves.length){sync();const end=E.outcome(state.position,state.legal);
+        if(end.over)result=end.winner===E.W?'1-0':end.winner===E.B?'0-1':'1/2-1/2';}
+      return E.exportPGN({...state.record,result});
+    },
+    seek,
     dispose(){disposed=true;stopBot();botAPI?.dispose?.();},
   };
 }

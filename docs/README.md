@@ -9,6 +9,7 @@
 | [置换表](TRANSPOSITION_TABLE.md) | 缓存实现、东方棋适配、生命周期与性能验证 |
 | [Windows 等时对局](TIMED_H2H.md) | 三秒永琳剪枝对照实验、续跑、Markdown/CSV 报告 |
 | [棋子价值标定](PIECE_VALUE.md) | Windows 分阶段实验：先妖精对兵，再用兵与妖精标定恋 |
+| [PGN 棋谱格式](PGN.md) | 标准 SAN/FEN 互通、仙灵扩展 v1、导入分析和实验导出 |
 | [Stockfish 对局](STOCKFISH_MATCH.md) | 开发者开启剪枝对阵 1320/1500 限强档位 |
 | [研究记录](RESEARCH.md) | 实验结论、证据、已作废结论和待研究事项 |
 | [实验计划](EXPERIMENT_PLAN.md) | 交接时的实验路线、判据和历史运行记录 |

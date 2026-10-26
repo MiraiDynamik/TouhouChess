@@ -18,6 +18,7 @@ export * from './rules.js';
 export * from './deploy.js';
 export * from './eval.js';
 export * from './search.js';
+export * from './pgn.js';
 export {P, RULES, WEIGHTS, applyWeights} from './pieces.js';
 
 /* 权重是 JSON，不走 export *，否则 bundler 要把它当模块处理。

@@ -215,6 +215,7 @@ def main():
     ap.add_argument('--priors', default='1,2', help='Shared evaluator value; pawn is always 1')
     ap.add_argument('--equivalents', default='0,2,3,4,6', help='TOTAL pawn equivalence for TWO test pieces')
     ap.add_argument('--summary', action='store_true')
+    ap.add_argument('--export-pgn', action='store_true', help='Export saved games without resuming experiments')
     ap.add_argument('--plan', action='store_true', help='Save and validate manifest without playing')
     args = ap.parse_args()
     if Path(sys.prefix).name.lower() != 'touhouchess':
@@ -223,6 +224,11 @@ def main():
         ap.error('All limits must be positive')
     out = Path(args.out).expanduser().resolve()
     manifest_path = out / 'manifest.json'
+    if args.export_pgn:
+        for path in sorted((out / 'games').glob('*.json')):
+            subprocess.run(COMMAND, cwd=ROOT, input=json.dumps(dict(mode='export', checkpoint=str(path))),
+                           text=True, encoding='utf-8', check=True)
+        return
     if args.summary:
         report(out, json.loads(manifest_path.read_text(encoding='utf-8')))
         print(out / 'report.md'); return

@@ -6,6 +6,7 @@
   import Board from './components/Board.svelte';
   import Palette from './components/Palette.svelte';
   import AnalysisPanel from './components/AnalysisPanel.svelte';
+  import PgnPanel from './components/PgnPanel.svelte';
   const game=createGame();
   onDestroy(()=>game.dispose());
   const tr=(key,...args)=>translate($game.lang,key,...args);
@@ -84,11 +85,12 @@
     </div>
     {#if $game.phase==='play'}
       <div id="moves" class="max-h-[120px] overflow-auto border-t [border-top-style:solid] border-line pt-2.5 text-[13px] leading-[1.9] tabular-nums">
-        {#each $game.log.filter((_,i)=>i%2===0) as white,i}
-          <span class="m mr-3 whitespace-nowrap"><span class="n mr-1 text-subtle">{i+1}.</span>{white}{' '}{ $game.log[i*2+1]||''}</span>
+        {#each $game.log as move,i}
+          <span class="m mr-3 whitespace-nowrap"><span class="n mr-1 text-subtle">{$game.history[i].position.full}{$game.history[i].position.turn==='w'?'.':'...'}</span>{move}</span>
         {:else}<span class="text-subtle">{tr('noMoves')}</span>{/each}
       </div>
     {/if}
+    <PgnPanel {game} snapshot={$game}/>
     <p class="note mt-3.5 border-t [border-top-style:solid] border-line pt-2.5 text-[12.5px] text-muted" id="note">{note}</p>
   </main>
 </div>

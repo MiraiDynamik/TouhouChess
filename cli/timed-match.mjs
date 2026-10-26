@@ -5,7 +5,36 @@ import * as E from '../engine/index.ts';
 E.loadWeights(JSON.parse(fs.readFileSync(new URL('../engine/weights.json',import.meta.url),'utf8')));
 const input=JSON.parse(fs.readFileSync(0,'utf8'));
 const sq=s=>(8-Number(s[1]))*8+'abcdefgh'.indexOf(s[0]);
-const save=(path,value)=>{fs.writeFileSync(path+'.tmp',JSON.stringify(value));fs.renameSync(path+'.tmp',path);};
+const sleepBuffer = new Int32Array(new SharedArrayBuffer(4));
+const retryableErrors = new Set(['EPERM', 'EACCES', 'EBUSY']);
+
+function save(path, value) {
+  // 每个进程使用独立临时文件。
+  const tmp = `${path}.${process.pid}.tmp`;
+  const content = JSON.stringify(value);
+  const maxAttempts = 8;
+
+  function retry(operation) {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return operation();
+      } catch (error) {
+        if (
+          !retryableErrors.has(error.code) ||
+          attempt >= maxAttempts - 1
+        ) {
+          throw error;
+        }
+
+        const delayMs = Math.min(50 * 2 ** attempt, 500);
+        Atomics.wait(sleepBuffer, 0, 0, delayMs);
+      }
+    }
+  }
+
+  retry(() => fs.writeFileSync(tmp, content));
+  retry(() => fs.renameSync(tmp, path));
+}
 const print=value=>process.stdout.write(JSON.stringify(value)+'\n');
 const signature=m=>JSON.stringify([m.from,m.to,m.promo??null,m.drop??null,m.castle??null]);
 function deployment(army){

@@ -59,13 +59,13 @@ python -u lab/timed_h2h.py --pairs 5 --workers 1 --out lab/out/timed-h2h-3s
 如希望在 i9 上同时跑两局，使用一个新结果目录：
 
 ```bat
-python -u lab/timed_h2h.py --pairs 5 --workers 2 --out lab/out/timed-h2h-3s-w2
+python -u lab/timed_h2h.py --pairs 5 --workers 12 --out lab/out/timed-h2h-3s-w2
 ```
 
 较大的批次：
 
 ```bat
-python -u lab/timed_h2h.py --pairs 20 --workers 2 --out lab/out/timed-h2h-3s-80games
+python -u lab/timed_h2h.py --pairs 20 --workers 12 --out lab/out/timed-h2h-3s-80games
 ```
 
 建议接电运行，避免同时玩游戏、跑其他 CPU 密集任务或开启本项目电脑自对弈。并发高不代表同一 3 秒内搜索更深；不要直接按逻辑核心数拉满并发。

@@ -34,19 +34,19 @@
     return notate(position,found,next,legalMoves(next));
   }
 </script>
-<div id="evalWrap">
-  <label><input id="evSage" type="checkbox" bind:checked={sageOn}> <span>{tr('evSageL')}</span></label>
+<div id="evalWrap" class="mt-2.5">
+  <label class="mr-3 cursor-pointer select-none text-[12.5px] text-muted"><input id="evSage" type="checkbox" bind:checked={sageOn}> <span>{tr('evSageL')}</span></label>
   {#if active&&sageOn}
-    <div id="evalPanel" aria-live="polite">
-      <div class="eh">{tr('evHead')}</div>
+    <div id="evalPanel" class="mt-2 rounded-md border border-solid border-line bg-panel px-2.5 py-2 text-[12.5px] leading-[1.75]" aria-live="polite">
+      <div class="eh mb-1 text-[11.5px] text-muted">{tr('evHead')}</div>
       {#each [{key:'sage',enabled:sageOn,data:sage}] as panel (panel.key)}
         {#if panel.enabled}
           <div class="er flex gap-2.5 items-baseline whitespace-nowrap" data-analysis={panel.key}>
-            <span class="ed">{panel.data.depth?tr('evDepth',panel.data.depth):''}</span>
-            <span class="ev">{score(panel.data.score)}</span>
-            <span class="em">{outcome(position,legal).over?tr('evOver'):panel.data.depth?tr('evBest',moveText(panel.data.move)):tr('evThinking')}
-              {#if panel.data.noWorker}<span class="stop"> {tr('evMainThread')}</span>{/if}
-              {#if panel.data.done&&panel.data.depth}<span class="stop"> {tr('evStop')}</span>{/if}
+            <span class="ed w-[7em] flex-none tabular-nums">{panel.data.depth?tr('evDepth',panel.data.depth):''}</span>
+            <span class="ev w-[4.5em] flex-none font-semibold tabular-nums">{score(panel.data.score)}</span>
+            <span class="em flex-1 overflow-hidden text-ellipsis">{outcome(position,legal).over?tr('evOver'):panel.data.depth?tr('evBest',moveText(panel.data.move)):tr('evThinking')}
+              {#if panel.data.noWorker}<span class="stop text-stopped"> {tr('evMainThread')}</span>{/if}
+              {#if panel.data.done&&panel.data.depth}<span class="stop text-stopped"> {tr('evStop')}</span>{/if}
             </span>
           </div>
         {/if}

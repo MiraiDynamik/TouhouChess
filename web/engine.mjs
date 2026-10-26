@@ -350,7 +350,7 @@ def("koishi", {
     const seen = /* @__PURE__ */ new Set([i]), qq = [i];
     while (qq.length) {
       const cur = qq.shift();
-      for (const [dr, df] of ORTHO) {
+      for (const [dr, df] of ALL8) {
         const nr = rank(cur) + dr * 2, nf = file(cur) + df * 2;
         if (!ok(nr, nf)) continue;
         const t = at(nr, nf);

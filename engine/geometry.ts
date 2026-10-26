@@ -139,8 +139,9 @@ def('koishi',{n:'\u53E4\u660E\u5730\u604B',g:'☏',v:1,slots:['n','p'],
     return o;},
   gen:(s,i)=>{const me=s.b[i].c,opp=me===W?B:W,o=[],d=-fw(me),r=rank(i),f=file(i);
     const seen=new Set([i]),qq=[i];
+    // 每一跳的落点必须为空；斜跳可绕路，但不能跳后接吃子。
     while(qq.length){const cur=qq.shift();
-      for(const[dr,df]of ORTHO){const nr=rank(cur)+dr*2,nf=file(cur)+df*2;
+      for(const[dr,df]of ALL8){const nr=rank(cur)+dr*2,nf=file(cur)+df*2;
         if(!ok(nr,nf))continue;const t=at(nr,nf);
         if(s.b[t]||seen.has(t))continue;seen.add(t);qq.push(t);o.push({from:i,to:t});}}
     for(const df of[-1,0,1]){if(!ok(r+d,f+df))continue;

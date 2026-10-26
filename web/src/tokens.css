@@ -1,8 +1,20 @@
-:root{
-    --ink:#23252B; --paper:#F3EEE3; --light:#E4DAC6; --dark:#8E9B87;
-    --shu:#C0392B; --line:#C9C0AE; --sel:#D9A441; --fogc:#191A1F;
-  }
-:root { --muted:#6E6A60; --subtle:#8A8578; --panel:#FBFAF8;
- --font-ui:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
- --font-heading:"Noto Serif SC","Songti SC",serif;
- --font-piece:"Segoe UI Symbol","Apple Symbols","Noto Sans Symbols2","Noto Serif SC",serif; }
+/* 直接定义 Tailwind 主题；static 保留组件局部 CSS 引用的变量。 */
+@theme static {
+  --color-ink: #23252B;
+  --color-paper: #dce8e8;
+  --color-light: #edf5f3;
+  --color-dark: #8a2f33;
+  --color-shu: #C0392B;
+  --color-line: #C9C0AE;
+  --color-sel: #D9A441;
+  --color-fog: #191A1F;
+  --color-muted: #6E6A60;
+  --color-subtle: #8A8578;
+  --color-panel: #FBFAF8;
+  --color-stopped: #A8A29A;
+  --color-piece-white: #FCF9F2;
+  --font-ui: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-heading: "Noto Serif SC", "Songti SC", serif;
+  --font-piece: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols2", "Noto Serif SC", serif;
+  --font-glyph: "Noto Serif SC", serif;
+}

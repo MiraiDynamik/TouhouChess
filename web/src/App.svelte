@@ -36,51 +36,59 @@
   });
   $effect(()=>{document.documentElement.lang=$game.lang==='zh'?'zh-CN':'en';});
 </script>
-<svelte:head><title>{tr('title')}</title></svelte:head>
-<h1 id="title">{tr('title')}</h1>
-<div class="row flex flex-wrap gap-2 mb-2.5"><button id="lang" onclick={game.toggleLanguage}>{tr('langBtn')}</button></div>
-<p class="sub" id="phasehint">{tr($game.phase==='deploy'?'hintDeploy':'hintPlay')}</p>
-{#if $game.phase==='deploy'}
-  <div id="sideRow" class="row flex flex-wrap gap-2 mb-2.5">
-    {#each ['w','b'] as color}
-      <button id={color==='w'?'tabW':'tabB'} aria-pressed={$game.side===color} onclick={()=>game.selectSide(color)}>
-        {tr(color==='w'?'white':'black')} <span>{E.fmt(E.pointsOf($game.deploy[color]))}</span>/45
-      </button>
-    {/each}
-  </div>
-  <div id="deployRow" class="row flex flex-wrap gap-2 mb-2.5">
-    <button id="preset" onclick={game.preset}>{tr('preset')}</button>
-    <button id="clearSide" onclick={game.clear}>{tr('clearSide')}</button>
-    <button id="start" disabled={!E.readySide($game.deploy.w)||!E.readySide($game.deploy.b)} onclick={game.start}>{tr('start')}</button>
-  </div>
-{:else}
-  <div class="statusbar flex justify-between items-baseline gap-2.5 mb-2 min-h-6" id="bar">
-    <span id="status" class:alert={!!result?.alert}>{status}</span><span id="material">{material}</span>
-  </div>
-{/if}
-<Board game={$game} onSquare={game.click} onChoice={game.choose}/>
-{#if $game.phase==='deploy'}<Palette lang={$game.lang} pick={$game.pick} onPick={game.selectPiece}/>{/if}
-<!-- Keep the panel mounted so its checkbox preferences survive redeployment. -->
-<div id="playRow" class="row flex flex-wrap gap-2 mb-2.5" class:hide={$game.phase!=='play'}>
-  <button id="undo" disabled={!$game.history.length} onclick={game.undo}>{tr('undo')}</button>
-  <button id="flip" onclick={game.flip}>{tr('flip')}</button>
-  <button id="redeploy" onclick={game.redeploy}>{tr('redeploy')}</button>
-  <select id="botSide" aria-label={$game.lang==='zh'?'电脑执方':'CPU side'} value={$game.botSide} onchange={e=>game.setBotSide(e.currentTarget.value)}>
-    <option value="">{tr('botOff')}</option><option value="b">{tr('botB')}</option>
-    <option value="w">{tr('botW')}</option><option value="wb">{tr('botWB')}</option>
-  </select>
-  <select id="botLv" aria-label={$game.lang==='zh'?'电脑难度':'CPU difficulty'} value={$game.botLevel} onchange={e=>game.setBotLevel(e.currentTarget.value)}>
-    {#each ['easy','normal','hard','lunatic'] as level}
-      <option value={level}>{tr(level)}</option>
-    {/each}
-  </select>
-  <AnalysisPanel position={$game.position} hist={$game.posHist} legal={$game.legal} lang={$game.lang} active={$game.phase==='play'}/>
+<svelte:head><title>東方西洋棋 · Touhou Fairy Chess</title></svelte:head>
+<!-- 外层铺满窗口，内层限制棋盘与操作区的宽度。 -->
+<div class="min-h-dvh bg-paper font-ui text-[15px] leading-normal text-ink">
+  <main class="mx-auto bg-sel max-w-[540px] px-3 pt-3.5 pb-10">
+    <h1 id="title" class="m-0 mb-0.5 flex flex-wrap items-baseline gap-x-3 font-heading text-xl font-semibold leading-[1.5]">
+      <span lang="ja">東方西洋棋</span>
+      <span lang="en">Touhou Fairy Chess</span>
+    </h1>
+    <div class="row flex flex-wrap gap-2 mb-2.5"><button class="control" id="lang" onclick={game.toggleLanguage}>{tr('langBtn')}</button></div>
+    <p class="sub m-0 mb-3 text-[13px] text-muted" id="phasehint">{tr($game.phase==='deploy'?'hintDeploy':'hintPlay')}</p>
+    {#if $game.phase==='deploy'}
+      <div id="sideRow" class="row flex flex-wrap gap-2 mb-2.5">
+        {#each ['w','b'] as color}
+          <button class="control" id={color==='w'?'tabW':'tabB'} aria-pressed={$game.side===color} onclick={()=>game.selectSide(color)}>
+            {tr(color==='w'?'white':'black')} <span>{E.fmt(E.pointsOf($game.deploy[color]))}</span>/45
+          </button>
+        {/each}
+      </div>
+      <div id="deployRow" class="row flex flex-wrap gap-2 mb-2.5">
+        <button class="control" id="preset" onclick={game.preset}>{tr('preset')}</button>
+        <button class="control" id="clearSide" onclick={game.clear}>{tr('clearSide')}</button>
+        <button class="control" id="start" disabled={!E.readySide($game.deploy.w)||!E.readySide($game.deploy.b)} onclick={game.start}>{tr('start')}</button>
+      </div>
+    {:else}
+      <div class="statusbar flex justify-between items-baseline gap-2.5 mb-2 min-h-6" id="bar">
+        <span id="status" class="font-semibold" class:alert={!!result?.alert} class:text-shu={!!result?.alert}>{status}</span><span id="material" class="text-[13px] text-muted tabular-nums">{material}</span>
+      </div>
+    {/if}
+    <Board game={$game} onSquare={game.click} onChoice={game.choose}/>
+    {#if $game.phase==='deploy'}<Palette lang={$game.lang} pick={$game.pick} onPick={game.selectPiece}/>{/if}
+    <!-- Keep the panel mounted so its checkbox preferences survive redeployment. -->
+    <div id="playRow" class="row flex flex-wrap gap-2 mb-2.5" class:hidden={$game.phase!=='play'}>
+      <button class="control" id="undo" disabled={!$game.history.length} onclick={game.undo}>{tr('undo')}</button>
+      <button class="control" id="flip" onclick={game.flip}>{tr('flip')}</button>
+      <button class="control" id="redeploy" onclick={game.redeploy}>{tr('redeploy')}</button>
+      <select class="control rounded-none border border-solid border-ink bg-paper font-ui text-ink" id="botSide" aria-label={$game.lang==='zh'?'电脑执方':'CPU side'} value={$game.botSide} onchange={e=>game.setBotSide(e.currentTarget.value)}>
+        <option value="">{tr('botOff')}</option><option value="b">{tr('botB')}</option>
+        <option value="w">{tr('botW')}</option><option value="wb">{tr('botWB')}</option>
+      </select>
+      <select class="control rounded-none border border-solid border-ink bg-paper font-ui text-ink" id="botLv" aria-label={$game.lang==='zh'?'电脑难度':'CPU difficulty'} value={$game.botLevel} onchange={e=>game.setBotLevel(e.currentTarget.value)}>
+        {#each ['easy','normal','hard','lunatic'] as level}
+          <option value={level}>{tr(level)}</option>
+        {/each}
+      </select>
+      <AnalysisPanel position={$game.position} hist={$game.posHist} legal={$game.legal} lang={$game.lang} active={$game.phase==='play'}/>
+    </div>
+    {#if $game.phase==='play'}
+      <div id="moves" class="max-h-[120px] overflow-auto border-t [border-top-style:solid] border-line pt-2.5 text-[13px] leading-[1.9] tabular-nums">
+        {#each $game.log.filter((_,i)=>i%2===0) as white,i}
+          <span class="m mr-3 whitespace-nowrap"><span class="n mr-1 text-subtle">{i+1}.</span>{white}{' '}{ $game.log[i*2+1]||''}</span>
+        {:else}<span class="text-subtle">{tr('noMoves')}</span>{/each}
+      </div>
+    {/if}
+    <p class="note mt-3.5 border-t [border-top-style:solid] border-line pt-2.5 text-[12.5px] text-muted" id="note">{note}</p>
+  </main>
 </div>
-{#if $game.phase==='play'}
-  <div id="moves">
-    {#each $game.log.filter((_,i)=>i%2===0) as white,i}
-      <span class="m"><span class="n">{i+1}.</span>{white}{' '}{ $game.log[i*2+1]||''}</span>
-    {:else}<span style="color:var(--subtle)">{tr('noMoves')}</span>{/each}
-  </div>
-{/if}
-<p class="note" id="note">{note}</p>

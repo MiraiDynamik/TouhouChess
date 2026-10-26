@@ -9,7 +9,7 @@ export const EN={k:'King',q:'Queen',r:'Rook',b:'Bishop',n:'Knight',p:'Pawn',
 export const TXT={
   easy:['琪露诺','Cirno'], normal:['河城荷取','Nitori'],
   hard:['犬走椛','Momiji'], lunatic:['八意永琳','Eirin'],
-  title:['东方国际象棋','Touhou Chess'],
+  title:['東方西洋棋','Touhou Fairy Chess'],
   hintDeploy:['部署阶段 · 每方45点 · 先点棋子再点棋盘落子，点已放的子可移除',
     'Deployment · 45 points each · pick a piece, then a square; click a placed piece to remove it'],
   hintPlay:['对局中 · 点选己方棋子再点目标格','Playing · click your piece, then the target square'],

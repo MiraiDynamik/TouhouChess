@@ -141,3 +141,29 @@ npm run firstmove
 每半回合原子保存，支持 Ctrl+C 后从局中续跑；检查实验参数及源码摘要以避免混合结果。输出 Markdown 报告和 UTF-8 BOM CSV，明确区分自然终局、未决和未完成，不使用子力裁决。短测试覆盖中断/续跑、已完成跳过、配置不匹配及报告统计；未在本机启动正式胜率实验。
 
 Windows 安装、运行与报告口径见 [等时对局指南](TIMED_H2H.md)。
+
+## 2026-10-25：Stockfish 限强摸底
+
+新增 Python 调度 `lab/stockfish_match.py` 与薄 JSONL 边界 `cli/stockfish-bridge.mjs`，复用唯一引擎，测试开发者开启 futility/LMR 对阵 Stockfish。根据用户的目标玩家定位，先测 1320、1500 两档，各两对换色、每手 3 秒，不以高段棋手强度为开发目标。游戏默认参数和永琳不变。
+
+支持每半回合保存、源码与参数校验续跑、Markdown/CSV 报告。Stockfish 19 已在本机安装；合法走法互操作与续跑测试已通过。正式结果须以输出报告为准，不将少量限强对局虚报为真人 Elo。运行说明见 [Stockfish 对局](STOCKFISH_MATCH.md)。
+
+## 2026-10-25：用户授权永琳替换为开发者实现
+
+用户明确要求合并并舍弃旧永琳，取代此前暂缓合并的约束。eirin 与 dev 共用同一配置对象，名称解析统一到 dev，旧 sage 名称同样兼容。永琳使用开发者的通用评估，不再使用手写开局原则项；等时预算仍为每手 3 秒。固定深度 CLI 也统一走开发者入口，低难度不变。
+
+分析界面仅保留一个“引擎评估”开关及结果，不显示模型名称。futility/LMR 默认仍关闭，Windows 正在运行的旧版本实验不应中途更新源码。Stockfish 本机 8 局已完成。置换表尚未完成，本次不宣称已实现。
+
+## 2026-10-25：四档难度重命名
+
+按用户指定改为 Easy 琪露诺、Normal 帕秋莉、Hard 犬走椛、Lunatic 永琳。仅修改显示名称，保留各档搜索预算及失误参数。为兼容已有实验规格，内部历史键 rinnosuke 仍对应 Normal、patchouli 仍对应 Hard；棋子定义不变。
+
+## 2026-10-25：内部难度与显示名称分离
+
+内部配置、前端状态和研究工具统一使用 easy/normal/hard/lunatic；固定深度入口改名 lunaticMove/lunaticMoveAt。旧难度字符串仅在输入解析处兼容，不再作为内部配置键。棋子键不变。
+
+难度下拉框仅显示角色名称，不显示英文难度等级：中文为琪露诺、帕秋莉、犬走椛、八意永琳；英文为 Cirno、Patchouli、Momiji Inubashiri、Eirin Yagokoro，随界面语言切换。
+
+## 2026-10-25：Normal 显示角色改为河城荷取
+
+按用户要求，Normal 中文名称改为“河城荷取”，英文名称改为“Nitori Kawashiro”。内部键仍为 normal，棋力参数不变；README 同步更新。

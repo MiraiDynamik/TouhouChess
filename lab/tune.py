@@ -160,7 +160,7 @@ def main():
 
     for p in (a, v):
         p.add_argument('--out', default=str(ROOT / 'lab/out/tune.jsonl'))
-        p.add_argument('--level', default='dev')
+        p.add_argument('--level', default='lunatic')
         p.add_argument('--workers', type=int, default=None)
 
     args = ap.parse_args()

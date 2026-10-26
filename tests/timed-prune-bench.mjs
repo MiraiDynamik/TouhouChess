@@ -25,12 +25,12 @@ const cases=[fixture('香草开局'),middle,fixture('灵梦透明穿透'),fixtur
  sparse('王车对王',{e1:'k',a1:'r'},{e8:'k'}),
  sparse('兵残局',{c3:'k',a4:'p',d4:'p',g3:'p'},{f6:'k',a6:'p',d5:'p',g6:'p'})];
 const originalRandom=Math.random,originalInner=E.PRUNE.inner,rows=[];
-const metadata={date:new Date().toISOString(),node:process.version,cpu:os.cpus()[0]?.model,timeMs:3000,repeats:3,defaultInner:originalInner,rootPrune:E.PRUNE.on,level:'eirin',cases:cases.map(c=>({name:c.name,state:c.s,hist:c.hist}))};
+const metadata={date:new Date().toISOString(),node:process.version,cpu:os.cpus()[0]?.model,timeMs:3000,repeats:3,defaultInner:originalInner,rootPrune:E.PRUNE.on,level:'lunatic',cases:cases.map(c=>({name:c.name,state:c.s,hist:c.hist}))};
 function seedRandom(seed){let x=seed>>>0;Math.random=()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296;};}
 function run(c,enabled,seed,timeMs){
  seedRandom(seed);E.PRUNE.inner=enabled;E.setPosHist(c.hist);
  const layers=[];
- const r=E.timedMove(c.s,'eirin',{hist:c.hist,timeMs,onDepth:r=>layers.push({depth:r.depth,ms:r.ms})});
+ const r=E.timedMove(c.s,'lunatic',{hist:c.hist,timeMs,onDepth:r=>layers.push({depth:r.depth,ms:r.ms})});
  const legal=E.legalMoves(c.s);
  assert(r.move&&legal.some(m=>m.from===r.move.from&&m.to===r.move.to&&m.promo===r.move.promo&&m.drop===r.move.drop&&m.castle===r.move.castle));
  return {depth:r.depth,ms:Math.round(r.ms),score:r.score,move:E.notate(c.s,r.move,E.vanishPass(r.move._n),E.legalMoves(E.vanishPass(r.move._n))),layers};

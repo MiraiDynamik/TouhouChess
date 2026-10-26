@@ -60,8 +60,6 @@ var TouhouChess = (() => {
     darkSet: () => darkSet,
     def: () => def,
     depthFor: () => depthFor,
-    devMove: () => devMove,
-    devMoveAt: () => devMoveAt,
     dollDropOK: () => dollDropOK,
     evalPos: () => evalPos,
     file: () => file,
@@ -78,6 +76,8 @@ var TouhouChess = (() => {
     legalMoves: () => legalMoves,
     lf: () => lf,
     loadWeights: () => loadWeights,
+    lunaticMove: () => lunaticMove,
+    lunaticMoveAt: () => lunaticMoveAt,
     mirrorSq: () => mirrorSq,
     mscore: () => mscore,
     negamax: () => negamax,
@@ -1079,20 +1079,19 @@ var TouhouChess = (() => {
     return best;
   }
   var LEVELS = {
-    cirno: { d: 3, timeMs: 500, blunder: 0.35, subopt: 0.85 },
-    rinnosuke: { d: 4, timeMs: 1e3, blunder: 0.12, subopt: 0.5 },
-    patchouli: { d: 5, timeMs: 2e3, blunder: 0.08, subopt: 0.2, deepen: 1 },
-    eirin: { d: 5, timeMs: 3e3, timeOnly: 1, blunder: 0, subopt: 0, deepen: 1 },
-    /* 开发者级：研究阵容和子力用的测量仪器，不出现在玩家界面。
+    easy: { d: 3, timeMs: 500, blunder: 0.35, subopt: 0.85 },
+    normal: { d: 4, timeMs: 1e3, blunder: 0.12, subopt: 0.5 },
+    hard: { d: 5, timeMs: 2e3, blunder: 0.08, subopt: 0.2, deepen: 1 },
+    /* Lunatic 使用通用评估；角色名称仅在界面中管理。
        不求最强，但设计必须正确 —— 只保留全程生效、几何推导的项
        （子力 + 机动性 + 王安全 + 残局将杀驱动），不含手写开局原则项。
        那五项的符号随阵容翻转（香草 +21.7pp、灵梦3枚 -20.0pp），
        拿带这种偏差的引擎去给阵容排名，量的是偏差不是阵容。 */
-    dev: { d: 4, timeMs: 3e3, timeOnly: 1, blunder: 0, subopt: 0, deepen: 1, plain: 1 }
+    lunatic: { d: 4, timeMs: 3e3, timeOnly: 1, blunder: 0, subopt: 0, deepen: 1, plain: 1 }
   };
-  var LEVEL_ALIAS = { baka: "cirno", human: "rinnosuke", youkai: "patchouli", sage: "eirin" };
+  var LEVEL_ALIAS = { cirno: "easy", baka: "easy", rinnosuke: "normal", human: "normal", patchouli: "hard", youkai: "hard", dev: "lunatic", eirin: "lunatic", sage: "lunatic" };
   var resolveLevel = (k) => LEVEL_ALIAS[k] || k;
-  function devMoveAt(s, depth) {
+  function lunaticMoveAt(s, depth) {
     const save = OPT.open;
     OPT.open = 0;
     try {
@@ -1101,11 +1100,11 @@ var TouhouChess = (() => {
       OPT.open = save;
     }
   }
-  function devMove(s, extraDepth) {
+  function lunaticMove(s, extraDepth) {
     const save = OPT.open;
     OPT.open = 0;
     try {
-      return pickMove(s, depthFor(LEVELS.dev, s) + (extraDepth || 0), 0, 0);
+      return pickMove(s, depthFor(LEVELS.lunatic, s) + (extraDepth || 0), 0, 0);
     } finally {
       OPT.open = save;
     }
@@ -1233,7 +1232,7 @@ var TouhouChess = (() => {
     const r = idSearch(s, d, { prune: PRUNE.on });
     return r.move || ms[0];
   }
-  function* analysisSteps(s, { hist = [], plain = false } = {}) {
+  function* analysisSteps(s, { hist = [], plain = true } = {}) {
     srchRep = new Set(hist);
     clearOrderTables();
     let prev = null;
@@ -1285,7 +1284,7 @@ var TouhouChess = (() => {
   }
   function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
   } } = {}) {
-    const lv = LEVELS[resolveLevel(levelKey)] || LEVELS.rinnosuke;
+    const lv = LEVELS[resolveLevel(levelKey)] || LEVELS.normal;
     const start = performance.now(), savedOpen = OPT.open;
     const ms = legalMoves(s);
     let completed = { move: ms[0] || null, score: null, depth: 0 };

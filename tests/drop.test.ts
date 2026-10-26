@@ -12,7 +12,7 @@ import {buildState, mirrorSq} from '../engine/deploy.js';
 import {legalMoves, applyMove, vanishPass, outcome, posKey,
         setPosHist, pushPos} from '../engine/rules.js';
 import {evalPos} from '../engine/eval.js';
-import {devMove} from '../engine/search.js';
+import {lunaticMove} from '../engine/search.js';
 
 applyWeights(JSON.parse(readFileSync(new URL('../engine/weights.json', import.meta.url), 'utf8')));
 const sqi = (s: string) => (8 - (+s[1])) * 8 + 'abcdefgh'.indexOf(s[0]);
@@ -37,7 +37,7 @@ let drops = 0, promos = 0;
 for (let ply = 0; ply < 40; ply++) {
   const ms = legalMoves(s);
   if (!ms.length) break;
-  const m: any = devMove(s, 0);
+  const m: any = lunaticMove(s, 0);
   if (!m) break;
   if (m.drop) { drops++;
     console.log(`  第${ply+1}手 打入${P[m.drop].name} → 余弹药 ${(s.ammo[s.turn]-(m.cost??0)).toFixed(1)}`); }

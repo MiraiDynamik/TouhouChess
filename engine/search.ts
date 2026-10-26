@@ -2,9 +2,29 @@
 
    srchEnd 是搜索时限：界面线程里跑的分析搜索必须能被打断，
    否则深一层就会把页面冻住。srchEnd=0 表示不限时（批量测试走这条）。 */
-import {P} from './pieces.js';
+import {P,WEIGHTS} from './pieces.js';
 import {applyMove,hasLegal,inCheck,legalMoves,posHist,posKey,pseudoAll,tryMove,vanishPass} from './rules.js';
 import {MATE,OPT,evalPos} from './eval.js';
+import {TT,newTranspositionSearch,ttPositionKey,probeTransposition,storeTransposition,
+  scoreFromTT,moveKey,countTTCutoff,transpositionStats} from './transposition.js';
+export {TT,clearTranspositionTable,transpositionStats} from './transposition.js';
+
+let cacheContext=null;
+/** Scope cache use so raw negamax remains a useful uncached reference.
+ * Evaluator/weights/pruning changes invalidate scores and move ordering together.
+ * Root-relative repetition logic affects plies 0..2 only. Those entries carry
+ * both ply and the exact history set; deeper nodes can safely survive new turns.
+ */
+export function withSearchCache(run,{hist=[],enabled=TT.enabled,newSearch=true}={}){
+  const saved=cacheContext;
+  if(enabled){
+    if(newSearch)newTranspositionSearch(JSON.stringify([OPT,WEIGHTS,PRUNE,
+      Object.entries(P).map(([t,p])=>[t,p.value,p.cost])]));
+    cacheContext={history:JSON.stringify([...new Set(hist)].sort())};
+  }else cacheContext=null;
+  try{return run();}finally{cacheContext=saved;}
+}
+const cacheKey=(s,ply)=>ttPositionKey(s)+(ply<=2?'|root:'+ply+'|hist:'+cacheContext.history:'|deep');
 
 
 
@@ -16,7 +36,7 @@ import {MATE,OPT,evalPos} from './eval.js';
    这两样只改枚举顺序，不改搜索的返回值 —— 全窗口的 alpha-beta 根值
    与枚举顺序无关。所以 tests/golden.test.ts 的 280 项必须一字不变，
    变了就是实现错了。这是个很硬的判据，所以先做这一批，
-   置换表和空着法剪枝留到后面（前者要增量哈希，后者会改变返回值）。 */
+   置换表独立管理搜索结果；原始 negamax 可作为无缓存的回归参照。 */
 const KMAX=64;                                  // 最大 ply
 const K1=new Int32Array(KMAX), K2=new Int32Array(KMAX);   // 每层两个杀手
 const HIST=new Int32Array(64*64);
@@ -85,9 +105,21 @@ export function negamax(s,d,alpha,beta,ply){
        全额付费。这里只问「有没有」，找到第一个合法走法就停。 */
     if(!hasLegal(s))return inCheck(s,s.turn)?-(MATE-ply):0;
     return qsearch(s,alpha,beta,0);}
+  const originalAlpha=alpha,key=cacheContext?cacheKey(s,ply):null;
+  const cached=key?probeTransposition(key):null;
+  // Equal remaining depth preserves the fixed-horizon reference semantics.
+  // Different-depth entries still provide a move-ordering hint below.
+  if(cached&&cached.depth===d){
+    const value=scoreFromTT(cached.value,ply);
+    if(cached.bound==='exact'||cached.bound==='lower'&&value>=beta||cached.bound==='upper'&&value<=alpha){
+      countTTCutoff();return value;
+    }
+  }
   const ms=pseudoAll(s);
   order(s,ms,ply);
-  let best=-Infinity,any=false,tried=0;
+  if(cached?.move){const i=ms.findIndex(m=>moveKey(m)===cached.move);
+    if(i>0)ms.unshift(...ms.splice(i,1));}
+  let best=-Infinity,bestMove=null,any=false,tried=0;
   const pr=PRUNE.inner;
   /* 被将军时一律不剪：那时候每一手都可能是唯一解 */
   const chk=pr?!!inCheck(s,s.turn):false;
@@ -117,47 +149,44 @@ export function negamax(s,d,alpha,beta,ply){
     if(red>=d)red=d-1;
     let sc=-negamax(vanishPass(ns),d-1-red,-beta,-alpha,ply+1);
     if(red&&sc>alpha)sc=-negamax(vanishPass(ns),d-1,-beta,-alpha,ply+1);
-    if(sc>best)best=sc;
+    if(sc>best){best=sc;bestMove=m;}
     if(best>alpha)alpha=best;
     if(alpha>=beta){onCut(s,m,d,ply);break;}}
-  if(!any)return inCheck(s,s.turn)?-(MATE-ply):0;   // 一个合法走法都没有
-  if(best===-Infinity)return alpha;   // 全被 futility 跳过：返回下界
+  if(!any)best=inCheck(s,s.turn)?-(MATE-ply):0;
+  if(best===-Infinity)return alpha; // No completed score: don't cache it.
+  if(key)storeTransposition(key,d,best,best<=originalAlpha?'upper':best>=beta?'lower':'exact',bestMove,ply);
   return best;}
 /* 四档棋力：
    d       = 搜索深度
    blunder = 每手直接随机走一步合法棋的概率（真失误，会白送子）
    subopt  = 没有失误时，按这个概率改走次优手——从第2名、以及分数在第2名
              1 分以内的那些手里随机抽一个，所以是「差一点」而不是又一次失误 */
-/* 四个难度按东方的分级命名，和棋子分级是同一套体系：
-     琪露诺   妖精级     笨蛋，大量随机失误
-     霖之助   人类       部分失误
-     帕秋莉   魔法使级   少量失误
-     永琳     贤者级     零失误
-   注意：琪露诺和帕秋莉同时也是棋子键（在 P 里），但那是另一个命名空间。 */
-export const LEVELS={cirno:{d:3,timeMs:500,blunder:.35,subopt:.85},
-              rinnosuke:{d:4,timeMs:1000,blunder:.12,subopt:.50},
-              patchouli:{d:5,timeMs:2000,blunder:.08,subopt:.20,deepen:1},
-              eirin:{d:5,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1},
-  /* 开发者级：研究阵容和子力用的测量仪器，不出现在玩家界面。
+/* 难度键与角色显示名称无关；棋子键属于独立命名空间。 */
+export const LEVELS={easy:{d:3,timeMs:500,blunder:.35,subopt:.85},
+              normal:{d:4,timeMs:1000,blunder:.12,subopt:.50},
+              hard:{d:5,timeMs:2000,blunder:.08,subopt:.20,deepen:1},
+  /* Lunatic 使用通用评估；角色名称仅在界面中管理。
      不求最强，但设计必须正确 —— 只保留全程生效、几何推导的项
      （子力 + 机动性 + 王安全 + 残局将杀驱动），不含手写开局原则项。
      那五项的符号随阵容翻转（香草 +21.7pp、灵梦3枚 -20.0pp），
      拿带这种偏差的引擎去给阵容排名，量的是偏差不是阵容。 */
-              dev:{d:4,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1,plain:1}};
+              lunatic:{d:4,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1,plain:1}};
 /* 开发者级的唯一入口。研究脚本只调这个，不自己去动 OPT —— 忘记关是个静默错误 */
 /* 固定深度的开发者级。测量用：各阶段同一个深度，成本可预估。
-   devMove 走 depthFor，会按子数加深（4/5/6），深度6 约是深度4 的 25 倍。 */
+   lunaticMove 走 depthFor，会按子数加深（4/5/6），深度6 约是深度4 的 25 倍。 */
 /* 旧名别名 —— 研究脚本里散落着 level='human' 之类，不该因为改名而断 */
-export const LEVEL_ALIAS={baka:'cirno',human:'rinnosuke',youkai:'patchouli',sage:'eirin'};
+// 仅在输入边界兼容历史实验规格；内部配置只有四档。
+
+export const LEVEL_ALIAS={cirno:"easy",baka:"easy",rinnosuke:"normal",human:"normal",patchouli:"hard",youkai:"hard",dev:"lunatic",eirin:"lunatic",sage:"lunatic"};
 export const resolveLevel=k=>LEVEL_ALIAS[k]||k;
 
-export function devMoveAt(s,depth){
+export function lunaticMoveAt(s,depth){
   const save=OPT.open;OPT.open=0;
   try{return pickMove(s,depth,0,0);}
   finally{OPT.open=save;}}
-export function devMove(s,extraDepth){
+export function lunaticMove(s,extraDepth){
   const save=OPT.open;OPT.open=0;
-  try{return pickMove(s,depthFor(LEVELS.dev,s)+(extraDepth||0),0,0);}
+  try{return pickMove(s,depthFor(LEVELS.lunatic,s)+(extraDepth||0),0,0);}
   finally{OPT.open=save;}}
 /* 固定深度入口按少子局面加深；交互永琳使用 timedMove 的时间预算，无固定深度上限。 */
 export function depthFor(lv,s){
@@ -257,6 +286,9 @@ export function idSearch(s,maxDepth,opt){
 
 export function pickMove(s,d,blunder,subopt){
   srchRep=new Set(posHist);
+  return withSearchCache(()=>pickMoveImpl(s,d,blunder,subopt),{hist:posHist});
+}
+function pickMoveImpl(s,d,blunder,subopt){
   const ms=legalMoves(s);if(!ms.length)return null;
   if(blunder&&Math.random()<blunder)return ms[Math.floor(Math.random()*ms.length)];
   if(subopt){
@@ -275,7 +307,7 @@ export function pickMove(s,d,blunder,subopt){
  * Yields between root moves so the UI fallback can schedule short slices.
  * Worker and fallback consume this one implementation; neither implements search.
  */
-export function* analysisSteps(s,{hist=[],plain=false}={}){
+export function* analysisSteps(s,{hist=[],plain=true}={}){
   srchRep=new Set(hist);
   clearOrderTables();
   let prev=null;
@@ -293,11 +325,13 @@ export function* analysisSteps(s,{hist=[],plain=false}={}){
       let v;
       try{
         OPT.open=plain?0:1;
-        if(legal===1)v=-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
+        v=withSearchCache(()=>{
+        if(legal===1)return -negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
         else{
           v=-negamax(vanishPass(ns),depth-1,-(bv+1),-bv,1);
           if(v>bv)v=-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
-        }
+          return v;
+        }},{hist});
       }finally{OPT.open=saved;}
       if(v>bv){bv=v;best=m;}
       yield {progress:true};
@@ -313,8 +347,8 @@ export function* analysisSteps(s,{hist=[],plain=false}={}){
 /** Interactive selection: keep only completed iterations on timeout.
  * Fixed-depth research entry points remain available and do not gain a time limit.
  */
-export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{}}={}){
-  const lv=LEVELS[resolveLevel(levelKey)]||LEVELS.rinnosuke;
+export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{},tt=TT.enabled}={}){
+  const lv=LEVELS[resolveLevel(levelKey)]||LEVELS.normal;
   const start=performance.now(),savedOpen=OPT.open;
   const ms=legalMoves(s);
   let completed={move:ms[0]||null,score:null,depth:0};
@@ -325,6 +359,7 @@ export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{}}={}){
   OPT.open=lv.plain?0:1;
   const remember=result=>{completed={...result};onDepth({...completed,ms:performance.now()-start});};
   try{
+    withSearchCache(()=>{
     checkDeadline(true);
     if(lv.blunder&&Math.random()<lv.blunder){
       completed.move=ms[Math.floor(Math.random()*ms.length)];
@@ -343,7 +378,8 @@ export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{}}={}){
     }else{
       idSearch(s,lv.timeOnly?Infinity:depthFor(lv,s),{onDepth:remember,stopOnMate:true});
     }
+    },{hist,enabled:tt});
   }catch(error){if(error!==EVABORT)throw error;}
   finally{OPT.open=savedOpen;clearSearchDeadline();srchRep=null;}
-  return {...completed,ms:performance.now()-start};
+  return {...completed,ms:performance.now()-start,tt:transpositionStats()};
 }

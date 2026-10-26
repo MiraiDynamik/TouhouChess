@@ -70,8 +70,9 @@
     <option value="w">{tr('botW')}</option><option value="wb">{tr('botWB')}</option>
   </select>
   <select id="botLv" aria-label={$game.lang==='zh'?'电脑难度':'CPU difficulty'} value={$game.botLevel} onchange={e=>game.setBotLevel(e.currentTarget.value)}>
-    <option value="cirno">琪露诺 Cirno</option><option value="rinnosuke">霖之助 Rinnosuke</option>
-    <option value="patchouli">帕秋莉 Patchouli</option><option value="eirin">永琳 Eirin</option>
+    {#each ['easy','normal','hard','lunatic'] as level}
+      <option value={level}>{tr(level)}</option>
+    {/each}
   </select>
   <AnalysisPanel position={$game.position} hist={$game.posHist} legal={$game.legal} lang={$game.lang} active={$game.phase==='play'}/>
 </div>

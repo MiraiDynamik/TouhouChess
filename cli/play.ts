@@ -10,7 +10,7 @@
      "white": {"a1":"r","b1":"n",...},
      "black": {...},
      "games": 100,
-     "level": "dev",            // dev | eirin | patchouli | rinnosuke | cirno
+     "level": "lunatic",        // easy | normal | hard | lunatic
                                 //   旧名 sage/youkai/human/baka 仍可用（见 LEVEL_ALIAS）
      "depthBonus": 0,           // 额外深度（叠加在 depthFor 的少子加深之上）
      "prune": 0,                // 树内部前向剪枝（futility + LMR）。
@@ -45,7 +45,7 @@ import {P, applyWeights} from '../engine/pieces.js';
 import {buildState, mirrorSq} from '../engine/deploy.js';
 import {legalMoves, applyMove, vanishPass, inCheck, outcome,
         posKey, setPosHist, pushPos} from '../engine/rules.js';
-import {negamax, pickMove, devMove, devMoveAt, LEVELS, depthFor, kid,
+import {negamax, pickMove, lunaticMove, lunaticMoveAt, LEVELS, depthFor, kid,
         PRUNE, resolveLevel} from '../engine/search.js';
 
 const arg = process.argv[2];
@@ -94,7 +94,7 @@ const matDiff = (s: any) => {
   return v;
 };
 
-const LV = resolveLevel(spec.level ?? 'dev');
+const LV = resolveLevel(spec.level ?? 'lunatic');
 const DB = spec.depthBonus ?? 0;
 const FD = spec.fixedDepth ?? 0;
 const BASE_PRUNE = spec.prune ? 1 : 0;
@@ -122,9 +122,9 @@ function move(s: any, testSide?: string) {
   const mine = testSide && s.turn === testSide;
   if (PA !== null) PRUNE.inner = mine ? PA : BASE_PRUNE;
   const fd = (FDA !== null && mine) ? FDA : FD;
-  if (LV === 'dev') {
-    if (fd) return devMoveAt(s, fd);
-    return devMove(s, DB);
+  if (LV === 'lunatic') {
+    if (fd) return lunaticMoveAt(s, fd);
+    return lunaticMove(s, DB);
   }
   const lv = LEVELS[LV];
   if (!lv) throw new Error('未知级别 ' + LV);

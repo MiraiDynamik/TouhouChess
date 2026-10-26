@@ -54,7 +54,7 @@ def dolls_of(dep: dict) -> float:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', default=str(ROOT / 'lab/out/dolls.jsonl'))
-    ap.add_argument('--level', default='dev')
+    ap.add_argument('--level', default='lunatic')
     ap.add_argument('--depth', type=int, default=5,
                     help='固定深度。研究标准 5：深度4 测不出三个兵（z=-1.69），深度5 能（z=-4.43）')
     ap.add_argument('--games', type=int, default=None, help='覆盖每格局数')

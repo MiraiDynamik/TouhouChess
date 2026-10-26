@@ -7,6 +7,8 @@ export const EN={k:'King',q:'Queen',r:'Rook',b:'Bishop',n:'Knight',p:'Pawn',
   lumia:'Rumia',koishi:'Koishi',iku:'Iku',ryuu:'Dragon King',
   alice:'Alice',yukari:'Yukari'};
 export const TXT={
+  easy:['琪露诺','Cirno'], normal:['河城荷取','Nitori'],
+  hard:['犬走椛','Momiji'], lunatic:['八意永琳','Eirin'],
   title:['东方国际象棋','Touhou Chess'],
   hintDeploy:['部署阶段 · 每方45点 · 先点棋子再点棋盘落子，点已放的子可移除',
     'Deployment · 45 points each · pick a piece, then a square; click a placed piece to remove it'],
@@ -38,11 +40,9 @@ export const TXT={
   tierYoukai:['妖怪级','Youkai'], tierMagician:['魔法使级','Magician'],
   tierSage:['贤者级','Sage'],
   langBtn:['English','中文'],
-  evSageL:['永琳引擎评估','Eirin engine eval'],
-  evDevL:['开发者引擎评估','Dev engine eval'],
+  evSageL:['引擎评估','Engine evaluation'],
   evHead:['分差为正 = 白优；独立线程持续加深，不设深度上限',
           'Positive = White ahead; a separate thread keeps deepening, no depth cap'],
-  evSage:['永琳','Eirin'], evDev:['开发者','Dev'],
   evDepth:['深度%1','d%1'], evProg:['第%1层 %2/%3','d%1 %2/%3'],
   evMainThread:['主线程','main thread'], evStop:['已停','stopped'], evBest:['优选 %1','best %1'],
   evThinking:['计算中…','thinking…'], evOver:['对局已结束','game over']};

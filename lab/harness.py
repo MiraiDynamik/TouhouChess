@@ -76,7 +76,7 @@ def _shard(spec: dict, out_path: pathlib.Path, lock) -> int:
 
 
 def run(white: dict, black: dict, games: int, out: str | pathlib.Path,
-        tag: str = "", level: str = "dev", workers: int | None = None,
+        tag: str = "", level: str = "lunatic", workers: int | None = None,
         shard: int = 4, **kw) -> list[dict]:
     """分片默认 4 局：结果只在一片跑完时落盘，被中途砍掉就丢一整片。
     深度5 一局约 120 秒，所以 10 局一片等于一次丢 20 分钟 —— 实际发生过。
@@ -138,6 +138,6 @@ if __name__ == "__main__":
     print("少3兵     =", points(mod(a2=None, h2=None, b2=None)), "（应为 40）")
     print("\n冒烟：香草对香草 4 局，human 档")
     rows = run(vanilla(), vanilla(), 4, "/tmp/claude-0/harness_smoke.jsonl",
-               tag="smoke", level="rinnosuke", maxPly=120, shard=2)
+               tag="smoke", level="normal", maxPly=120, shard=2)
     from stats import Rate
     print("  得分率:", Rate(sum(r['score'] for r in rows), len(rows)))

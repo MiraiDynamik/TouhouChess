@@ -99,7 +99,7 @@ def main():
                     help="叠加在少子加深之上。只在 --fixed-depth 0 时生效")
     ap.add_argument("--workers", type=int, default=None)
     ap.add_argument("--scale", type=float, default=1.0, help="局数倍率")
-    ap.add_argument("--level", default="dev", help="冒烟测试时可换成 human 提速")
+    ap.add_argument("--level", default="lunatic", help="冒烟测试时可换成 human 提速")
     ap.add_argument("--calibrate", action="store_true",
                     help="额外跑少1兵（每格 200 局），标度「一个兵值多少 pp」")
     ap.add_argument("--prune", type=int, default=1,

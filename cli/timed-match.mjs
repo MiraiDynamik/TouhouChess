@@ -91,7 +91,7 @@ if(input.mode==='catalog'){
    const enabled=data.state.turn===spec.onSide;
    E.PRUNE.inner=enabled?1:0;
    randomSeed((spec.seed+Math.imul(data.moves.length+1,2654435761))>>>0);
-   const found=E.timedMove(data.state,'eirin',{hist:data.hist,timeMs:spec.timeMs});
+   const found=E.timedMove(data.state,'lunatic',{hist:data.hist,timeMs:spec.timeMs});
    const move=found.move&&legal.find(m=>signature(m)===signature(found.move));
    if(!move)throw Error('Search returned no legal move in a nonterminal position');
    const next=E.vanishPass(E.applyMove(data.state,move));

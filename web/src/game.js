@@ -5,11 +5,12 @@ import * as E from './engine.js';
 export function createGame({loadBot=()=>import('./bot.js')}={}){
   let state={phase:'deploy',side:E.W,pick:null,deploy:{w:new Map(),b:new Map()},
     position:null,legal:[],selected:null,lastMove:null,history:[],log:[],posHist:[],
-    choices:null,flipped:false,lang:'zh',botSide:'',botLevel:'rinnosuke',thinking:false,botError:false};
+    choices:null,flipped:false,lang:'zh',botSide:'',botLevel:'normal',thinking:false,botError:false};
   // Published snapshots must never be mutated by the next action. Svelte may
   // still be reading the previous snapshot while derived values are updating.
   const store=writable({...state});
   let botTimer=null,disposed=false,cancelBot=null,botGeneration=0;
+  let botAPI=null;
   const publish=()=>store.set({...state});
   const sync=()=>E.setPosHist(state.posHist);
   const stopBot=()=>{botGeneration++;clearTimeout(botTimer);botTimer=null;cancelBot?.();cancelBot=null;state.thinking=false;state.botError=false;};
@@ -24,9 +25,10 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
     botTimer=setTimeout(async()=>{
       botTimer=null;
       try{
-        const {startBot}=await loadBot();
+        const module=await loadBot();
         if(generation!==botGeneration||disposed)return;
-        cancelBot=startBot(state.position,state.posHist,state.botLevel,result=>{
+        botAPI??=module.createBotRunner?module.createBotRunner():module;
+        cancelBot=botAPI.startBot(state.position,state.posHist,state.botLevel,result=>{
           if(generation!==botGeneration||disposed)return;
           const m=result.move;
           const move=m&&state.legal.find(x=>x.from===m.from&&x.to===m.to&&
@@ -84,7 +86,7 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
     choose(move){if(state.choices?.includes(move))commit(move);},
     start(){
       if(!E.readySide(state.deploy.w)||!E.readySide(state.deploy.b))return;
-      stopBot();state.position=E.buildState(state.deploy.w,state.deploy.b);
+      stopBot();botAPI?.dispose?.();state.position=E.buildState(state.deploy.w,state.deploy.b);
       state.history=[];state.log=[];state.lastMove=null;state.selected=null;state.choices=null;
       state.posHist=[E.posKey(state.position)];sync();state.legal=E.legalMoves(state.position);
       state.phase='play';scheduleBot();publish();
@@ -96,11 +98,11 @@ export function createGame({loadBot=()=>import('./bot.js')}={}){
       state.lastMove=previous.lastMove;state.log=previous.log;state.selected=null;state.choices=null;
       state.posHist=state.posHist.slice(0,-1);sync();state.legal=E.legalMoves(state.position);publish();
     },
-    redeploy(){stopBot();state.phase='deploy';state.choices=null;state.selected=null;publish();},
+    redeploy(){stopBot();botAPI?.dispose?.();state.phase='deploy';state.choices=null;state.selected=null;publish();},
     flip(){state.flipped=!state.flipped;publish();},
     toggleLanguage(){state.lang=state.lang==='zh'?'en':'zh';publish();},
     setBotSide(side){state.botSide=side;scheduleBot();publish();},
     setBotLevel(level){state.botLevel=level;scheduleBot();publish();},
-    dispose(){disposed=true;stopBot();},
+    dispose(){disposed=true;stopBot();botAPI?.dispose?.();},
   };
 }

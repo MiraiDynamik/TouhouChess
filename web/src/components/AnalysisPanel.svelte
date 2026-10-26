@@ -3,20 +3,15 @@
   import {MATE,W,outcome,applyMove,legalMoves,notate} from '../engine.js';
   import {translate} from '../i18n.js';
   let {position,hist,legal,lang,active}= $props();
-  let sageOn=$state(false),devOn=$state(false);
-  let sage=$state({}),dev=$state({});
+  let sageOn=$state(false);
+  let sage=$state({});
   const tr=(key,...args)=>translate(lang,key,...args);
   // These effects depend on the position/history and their own checkbox only.
   // Language, selection and the other panel never restart an in-progress search.
   $effect(()=>{
     const enabled=sageOn&&active,s=position,h=hist;
     sage={};
-    if(enabled&&!outcome(s,legal).over)return startAnalysis(s,h,false,result=>{sage={...sage,...result};});
-  });
-  $effect(()=>{
-    const enabled=devOn&&active,s=position,h=hist;
-    dev={};
-    if(enabled&&!outcome(s,legal).over)return startAnalysis(s,h,true,result=>{dev={...dev,...result};});
+    if(enabled&&!outcome(s,legal).over)return startAnalysis(s,h,true,result=>{sage={...sage,...result};});
   });
   function score(value){
     if(value===undefined)return '—';
@@ -35,14 +30,12 @@
 </script>
 <div id="evalWrap">
   <label><input id="evSage" type="checkbox" bind:checked={sageOn}> <span>{tr('evSageL')}</span></label>
-  <label><input id="evDev" type="checkbox" bind:checked={devOn}> <span>{tr('evDevL')}</span></label>
-  {#if active&&(sageOn||devOn)}
+  {#if active&&sageOn}
     <div id="evalPanel" aria-live="polite">
       <div class="eh">{tr('evHead')}</div>
-      {#each [{key:'sage',enabled:sageOn,data:sage},{key:'dev',enabled:devOn,data:dev}] as panel (panel.key)}
+      {#each [{key:'sage',enabled:sageOn,data:sage}] as panel (panel.key)}
         {#if panel.enabled}
           <div class="er flex gap-2.5 items-baseline whitespace-nowrap" data-analysis={panel.key}>
-            <span class="en">{tr(panel.key==='sage'?'evSage':'evDev')}</span>
             <span class="ed">{panel.data.depth?tr('evDepth',panel.data.depth):''}</span>
             <span class="ev">{score(panel.data.score)}</span>
             <span class="em">{outcome(position,legal).over?tr('evOver'):panel.data.depth?tr('evBest',moveText(panel.data.move)):tr('evThinking')}

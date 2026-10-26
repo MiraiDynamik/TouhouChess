@@ -56,6 +56,8 @@ var TouhouChess = (() => {
     attacksFrom: () => attacksFrom,
     buildState: () => buildState,
     canDeploy: () => canDeploy,
+    chooseFromMovePool: () => chooseFromMovePool,
+    chooseRankedMove: () => chooseRankedMove,
     clearOrderTables: () => clearOrderTables,
     clearSearchDeadline: () => clearSearchDeadline,
     clearTranspositionTable: () => clearTranspositionTable,
@@ -63,6 +65,7 @@ var TouhouChess = (() => {
     def: () => def,
     depthFor: () => depthFor,
     dollDropOK: () => dollDropOK,
+    drawMoveStrategy: () => drawMoveStrategy,
     evalPos: () => evalPos,
     file: () => file,
     fmt: () => fmt,
@@ -116,6 +119,7 @@ var TouhouChess = (() => {
     srchEnd: () => srchEnd,
     srchNodes: () => srchNodes,
     srchRep: () => srchRep,
+    timedDepthFor: () => timedDepthFor,
     timedMove: () => timedMove,
     transparent: () => transparent,
     transpositionStats: () => transpositionStats,
@@ -393,7 +397,7 @@ var TouhouChess = (() => {
   def("reimu", {
     n: "\u7075\u68A6",
     g: "\u26E9\uFE0E",
-    v: 7,
+    v: 7.5,
     slots: ["k", "q", "r", "n"],
     atk: (s, i) => leapAtk(s, i, REIMU_ATK),
     gen: (s, i) => {
@@ -563,8 +567,8 @@ var TouhouChess = (() => {
     iku: { name: "\u6C38\u6C5F\u8863\u7396", cost: 5.5, slots: ["r"] },
     sanae: { name: "\u65E9\u82D7", cost: 6, slots: ["k", "q", "r"] },
     ryuu: { name: "\u9F99\u738B", cost: 6, slots: [] },
-    reimu: { name: "\u7075\u68A6", cost: 7, slots: ["k", "q", "r", "n"] },
     yukari: { name: "\u516B\u4E91\u7D2B", cost: 7, slots: ["q", "r"], files: [3, 7] },
+    reimu: { name: "\u7075\u68A6", cost: 7.5, slots: ["k", "q", "r", "n"] },
     q: { name: "\u540E", cost: 9, slots: ["q"] }
   };
 
@@ -1188,23 +1192,67 @@ var TouhouChess = (() => {
     return best;
   }
   var LEVELS = {
-    easy: { d: 3, timeMs: 500, blunder: 0.35, subopt: 0.85 },
-    normal: { d: 4, timeMs: 1e3, blunder: 0.12, subopt: 0.5 },
-    hard: { d: 5, timeMs: 2e3, blunder: 0.08, subopt: 0.2, deepen: 1 },
-    /* Lunatic 使用通用评估；角色名称仅在界面中管理。
-       不求最强，但设计必须正确 —— 只保留全程生效、几何推导的项
-       （子力 + 机动性 + 王安全 + 残局将杀驱动），不含手写开局原则项。
-       那五项的符号随阵容翻转（香草 +21.7pp、灵梦3枚 -20.0pp），
-       拿带这种偏差的引擎去给阵容排名，量的是偏差不是阵容。 */
-    lunatic: { d: 4, timeMs: 3e3, timeOnly: 1, blunder: 0, subopt: 0, deepen: 1, plain: 1 }
+    easy: { d: 3, timeMs: 500, preferCheck: true, selection: { random: 0.1, lossBand: 0.6, suboptimal: 0.2, best: 0.1 } },
+    normal: { d: 4, timeMs: 1e3, selection: { random: 0.05, lossBand: 0.15, suboptimal: 0.4, best: 0.4 } },
+    hard: { d: 5, timeMs: 2e3, deepen: 1, timeOnlyAtPieces: 18, selection: { random: 0, lossBand: 0.01, suboptimal: 0.2, best: 0.79 } },
+    // Lunatic 使用通用评估，不含手写开局原则项。
+    lunatic: {
+      d: 4,
+      timeMs: 3e3,
+      timeOnly: 1,
+      deepen: 1,
+      plain: 1,
+      selection: { random: 0, lossBand: 0, suboptimal: 0, best: 1 }
+    }
   };
+  function drawMoveStrategy(selection = LEVELS.lunatic.selection) {
+    const modes = ["random", "lossBand", "suboptimal", "best"];
+    const weights = modes.map((k) => selection[k]);
+    if (weights.some((w) => !Number.isFinite(w) || w < 0) || Math.abs(weights.reduce((a, b) => a + b, 0) - 1) > 1e-9)
+      throw new Error("Move selection probabilities must sum to 1");
+    if (selection.best === 1) return "best";
+    const roll = Math.random();
+    let cumulative = 0;
+    for (let i = 0; i < modes.length; i++) {
+      cumulative += weights[i];
+      if (roll < cumulative) return modes[i];
+    }
+    return "best";
+  }
+  function chooseRankedMove(ranked, strategy, preferCheck = false) {
+    if (!ranked.length) return null;
+    if (strategy === "best" && !preferCheck || ranked.length === 1) return ranked[0];
+    let pool;
+    if (strategy === "best") {
+      pool = ranked.filter((x) => x.v === ranked[0].v);
+    } else if (strategy === "suboptimal") {
+      pool = ranked.slice(1).filter((x) => x.v >= ranked[1].v - 100);
+    } else if (strategy === "lossBand") {
+      const loss = (x) => ranked[0].v - x.v;
+      const distance = (x) => Math.max(100 - loss(x), loss(x) - 300, 0);
+      const nearest = Math.min(...ranked.map(distance));
+      pool = ranked.filter((x) => distance(x) === nearest);
+    } else throw new Error("Unknown ranked move strategy: " + strategy);
+    return chooseFromMovePool(pool, preferCheck);
+  }
+  function chooseFromMovePool(pool, preferCheck = false) {
+    if (!pool.length) return null;
+    if (preferCheck) {
+      const checks = pool.filter((x) => {
+        const ns = kid(x.m);
+        return inCheck(ns, ns.turn);
+      });
+      if (checks.length) pool = checks;
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
   var LEVEL_ALIAS = { cirno: "easy", baka: "easy", rinnosuke: "normal", human: "normal", patchouli: "hard", youkai: "hard", dev: "lunatic", eirin: "lunatic", sage: "lunatic" };
   var resolveLevel = (k) => LEVEL_ALIAS[k] || k;
   function lunaticMoveAt(s, depth) {
     const save = OPT.open;
     OPT.open = 0;
     try {
-      return pickMove(s, depth, 0, 0);
+      return pickMove(s, depth);
     } finally {
       OPT.open = save;
     }
@@ -1213,7 +1261,7 @@ var TouhouChess = (() => {
     const save = OPT.open;
     OPT.open = 0;
     try {
-      return pickMove(s, depthFor(LEVELS.lunatic, s) + (extraDepth || 0), 0, 0);
+      return pickMove(s, depthFor(LEVELS.lunatic, s) + (extraDepth || 0));
     } finally {
       OPT.open = save;
     }
@@ -1223,6 +1271,11 @@ var TouhouChess = (() => {
     let n = 0;
     for (let i = 0; i < 64; i++) if (s.b[i]) n++;
     return lv.d + (n <= 7 ? 2 : n <= 18 ? 1 : 0);
+  }
+  function timedDepthFor(lv, s) {
+    if (lv.timeOnly) return Infinity;
+    if (lv.timeOnlyAtPieces !== void 0 && s.b.filter(Boolean).length <= lv.timeOnlyAtPieces) return Infinity;
+    return depthFor(lv, s);
   }
   function rankMoves(s, d) {
     const ms = legalMoves(s);
@@ -1324,26 +1377,16 @@ var TouhouChess = (() => {
     }
     return { move: bm, score: bv, depth: reached, cand: sc.length };
   }
-  function pickMove(s, d, blunder, subopt) {
+  function pickMove(s, d, selection = LEVELS.lunatic.selection, preferCheck = false) {
     srchRep = new Set(posHist);
-    return withSearchCache(() => pickMoveImpl(s, d, blunder, subopt), { hist: posHist });
-  }
-  function pickMoveImpl(s, d, blunder, subopt) {
-    const ms = legalMoves(s);
-    if (!ms.length) return null;
-    if (blunder && Math.random() < blunder) return ms[Math.floor(Math.random() * ms.length)];
-    if (subopt) {
-      const r2 = rankMoves(s, d);
-      if (!r2.length) return null;
-      if (r2.length > 1 && Math.random() < subopt) {
-        const lo = r2[1].v - 100;
-        const pool = r2.filter((x, i) => i > 0 && x.v >= lo);
-        return pool[Math.floor(Math.random() * pool.length)].m;
-      }
-      return r2[0].m;
-    }
-    const r = idSearch(s, d, { prune: PRUNE.on });
-    return r.move || ms[0];
+    return withSearchCache(() => {
+      const ms = legalMoves(s);
+      if (!ms.length) return null;
+      const strategy = drawMoveStrategy(selection);
+      if (strategy === "random") return chooseFromMovePool(ms.map((m) => ({ m })), preferCheck).m;
+      if (strategy !== "best" || preferCheck) return chooseRankedMove(rankMoves(s, d), strategy, preferCheck)?.m || ms[0];
+      return idSearch(s, d, { prune: PRUNE.on }).move || ms[0];
+    }, { hist: posHist });
   }
   function* analysisSteps(s, { hist = [], plain = true } = {}) {
     srchRep = new Set(hist);
@@ -1417,22 +1460,18 @@ var TouhouChess = (() => {
     try {
       withSearchCache(() => {
         checkDeadline(true);
-        if (lv.blunder && Math.random() < lv.blunder) {
-          completed.move = ms[Math.floor(Math.random() * ms.length)];
-        } else if (lv.subopt) {
-          const chooseSuboptimal = Math.random() < lv.subopt;
-          for (let depth = 1; depth <= depthFor(lv, s); depth++) {
+        const strategy = drawMoveStrategy(lv.selection);
+        if (strategy === "random") {
+          completed.move = chooseFromMovePool(ms.map((m) => ({ m })), lv.preferCheck).m;
+        } else if (strategy !== "best" || lv.preferCheck) {
+          for (let depth = 1; depth <= timedDepthFor(lv, s); depth++) {
             checkDeadline(true);
             const ranked = rankMoves(s, depth);
-            let chosen = ranked[0];
-            if (chooseSuboptimal && ranked.length > 1) {
-              const pool = ranked.slice(1).filter((x) => x.v >= ranked[1].v - 100);
-              chosen = pool[Math.floor(Math.random() * pool.length)];
-            }
+            const chosen = chooseRankedMove(ranked, strategy, lv.preferCheck);
             remember({ move: chosen.m, score: chosen.v, depth });
           }
         } else {
-          idSearch(s, lv.timeOnly ? Infinity : depthFor(lv, s), { onDepth: remember, stopOnMate: true });
+          idSearch(s, timedDepthFor(lv, s), { onDepth: remember, stopOnMate: true });
         }
       }, { hist, enabled: tt });
     } catch (error) {

@@ -128,7 +128,7 @@ function move(s: any, testSide?: string) {
   }
   const lv = LEVELS[LV];
   if (!lv) throw new Error('未知级别 ' + LV);
-  return pickMove(s, (FD ? FD : depthFor(lv, s) + DB), lv.blunder, lv.subopt);
+  return pickMove(s, (FD ? FD : depthFor(lv, s) + DB), lv.selection, lv.preferCheck);
 }
 
 const sqName = (i: number) => 'abcdefgh'[i & 7] + (8 - (i >> 3));

@@ -1,4 +1,5 @@
 <script>
+  import {untrack} from 'svelte';
   import {startAnalysis} from '../analysis.js';
   import {MATE,W,outcome,applyMove,legalMoves,notate} from '../engine.js';
   import {translate} from '../i18n.js';
@@ -6,12 +7,17 @@
   let sageOn=$state(false);
   let sage=$state({});
   const tr=(key,...args)=>translate(lang,key,...args);
-  // These effects depend on the position/history and their own checkbox only.
-  // Language, selection and the other panel never restart an in-progress search.
+  // Parent props read the whole game store. Derived equality boundaries keep
+  // unrelated store updates from cancelling this position's analysis worker.
+  let analysisPosition=$derived(position);
+  let analysisHistory=$derived(hist);
+  let analysisEnabled=$derived(sageOn&&active);
   $effect(()=>{
-    const enabled=sageOn&&active,s=position,h=hist;
-    sage={};
-    if(enabled&&!outcome(s,legal).over)return startAnalysis(s,h,true,result=>{sage={...sage,...result};});
+    const enabled=analysisEnabled,s=analysisPosition,h=analysisHistory;
+    return untrack(()=>{
+      sage={};
+      if(enabled&&!outcome(s,legal).over)return startAnalysis(s,h,true,result=>{sage={...sage,...result};});
+    });
   });
   function score(value){
     if(value===undefined)return '—';

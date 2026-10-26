@@ -162,21 +162,57 @@ export function negamax(s,d,alpha,beta,ply){
   if(best===-Infinity)return alpha; // No completed score: don't cache it.
   if(key)storeTransposition(key,d,best,best<=originalAlpha?'upper':best>=beta?'lower':'exact',bestMove,ply);
   return best;}
-/* 四档棋力：
-   d       = 搜索深度
-   blunder = 每手直接随机走一步合法棋的概率（真失误，会白送子）
-   subopt  = 没有失误时，按这个概率改走次优手——从第2名、以及分数在第2名
-             1 分以内的那些手里随机抽一个，所以是「差一点」而不是又一次失误 */
-/* 难度键与角色显示名称无关；棋子键属于独立命名空间。 */
-export const LEVELS={easy:{d:3,timeMs:500,blunder:.35,subopt:.85},
-              normal:{d:4,timeMs:1000,blunder:.12,subopt:.50},
-              hard:{d:5,timeMs:2000,blunder:.08,subopt:.20,deepen:1},
-  /* Lunatic 使用通用评估；角色名称仅在界面中管理。
-     不求最强，但设计必须正确 —— 只保留全程生效、几何推导的项
-     （子力 + 机动性 + 王安全 + 残局将杀驱动），不含手写开局原则项。
-     那五项的符号随阵容翻转（香草 +21.7pp、灵梦3枚 -20.0pp），
-     拿带这种偏差的引擎去给阵容排名，量的是偏差不是阵容。 */
-              lunatic:{d:4,timeMs:3000,timeOnly:1,blunder:0,subopt:0,deepen:1,plain:1}};
+/* 四档互斥策略概率（每手只抽一次），评分 100 = 一个兵。
+   lossBand: 相对最优损失 100–300；suboptimal: 排除第一名、距第二名不超过 100。
+   难度键与界面角色名无关。 */
+export const LEVELS={
+  easy:{d:3,timeMs:500,preferCheck:true,selection:{random:.10,lossBand:.60,suboptimal:.20,best:.10}},
+  normal:{d:4,timeMs:1000,selection:{random:.05,lossBand:.15,suboptimal:.40,best:.40}},
+  hard:{d:5,timeMs:2000,deepen:1,timeOnlyAtPieces:18,selection:{random:0,lossBand:.01,suboptimal:.20,best:.79}},
+  // Lunatic 使用通用评估，不含手写开局原则项。
+  lunatic:{d:4,timeMs:3000,timeOnly:1,deepen:1,plain:1,
+    selection:{random:0,lossBand:0,suboptimal:0,best:1}}
+};
+
+/** 一次抽签，四个概率都是无条件概率。纯最优不消耗随机数。 */
+export function drawMoveStrategy(selection=LEVELS.lunatic.selection){
+  const modes=['random','lossBand','suboptimal','best'];
+  const weights=modes.map(k=>selection[k]);
+  if(weights.some(w=>!Number.isFinite(w)||w<0)||Math.abs(weights.reduce((a,b)=>a+b,0)-1)>1e-9)
+    throw new Error('Move selection probabilities must sum to 1');
+  if(selection.best===1)return 'best';
+  const roll=Math.random();let cumulative=0;
+  for(let i=0;i<modes.length;i++){cumulative+=weights[i];if(roll<cumulative)return modes[i];}
+  return 'best';
+}
+
+/** ranked 必须来自同一完整深度、全窗口评分，且按分数降序排列。 */
+export function chooseRankedMove(ranked,strategy,preferCheck=false){
+  if(!ranked.length)return null;
+  if((strategy==='best'&&!preferCheck)||ranked.length===1)return ranked[0];
+  let pool;
+  if(strategy==='best'){
+    pool=ranked.filter(x=>x.v===ranked[0].v);
+  }else if(strategy==='suboptimal'){
+    pool=ranked.slice(1).filter(x=>x.v>=ranked[1].v-100);
+  }else if(strategy==='lossBand'){
+    const loss=x=>ranked[0].v-x.v;
+    const distance=x=>Math.max(100-loss(x),loss(x)-300,0);
+    const nearest=Math.min(...ranked.map(distance));
+    // 有区间内走法时 distance=0；否则选最近的，允许回退到最优。
+    pool=ranked.filter(x=>distance(x)===nearest);
+  }else throw new Error('Unknown ranked move strategy: '+strategy);
+  return chooseFromMovePool(pool,preferCheck);
+}
+/** Filter only inside the selected pool; check the real post-move variant position. */
+export function chooseFromMovePool(pool,preferCheck=false){
+  if(!pool.length)return null;
+  if(preferCheck){
+    const checks=pool.filter(x=>{const ns=kid(x.m);return inCheck(ns,ns.turn);});
+    if(checks.length)pool=checks;
+  }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 /* 开发者级的唯一入口。研究脚本只调这个，不自己去动 OPT —— 忘记关是个静默错误 */
 /* 固定深度的开发者级。测量用：各阶段同一个深度，成本可预估。
    lunaticMove 走 depthFor，会按子数加深（4/5/6），深度6 约是深度4 的 25 倍。 */
@@ -188,17 +224,23 @@ export const resolveLevel=k=>LEVEL_ALIAS[k]||k;
 
 export function lunaticMoveAt(s,depth){
   const save=OPT.open;OPT.open=0;
-  try{return pickMove(s,depth,0,0);}
+  try{return pickMove(s,depth);}
   finally{OPT.open=save;}}
 export function lunaticMove(s,extraDepth){
   const save=OPT.open;OPT.open=0;
-  try{return pickMove(s,depthFor(LEVELS.lunatic,s)+(extraDepth||0),0,0);}
+  try{return pickMove(s,depthFor(LEVELS.lunatic,s)+(extraDepth||0));}
   finally{OPT.open=save;}}
 /* 固定深度入口按少子局面加深；交互永琳使用 timedMove 的时间预算，无固定深度上限。 */
 export function depthFor(lv,s){
   if(!lv.deepen)return lv.d;
   let n=0;for(let i=0;i<64;i++)if(s.b[i])n++;
   return lv.d+(n<=7?2:n<=18?1:0);}
+/** Only timed searches may have no depth cap; offline fixed-depth callers stay bounded. */
+export function timedDepthFor(lv,s){
+  if(lv.timeOnly)return Infinity;
+  if(lv.timeOnlyAtPieces!==undefined&&s.b.filter(Boolean).length<=lv.timeOnlyAtPieces)return Infinity;
+  return depthFor(lv,s);
+}
 /* 根节点逐手全窗口打分并降序排列。不能用 alpha-beta：
    被剪枝的走法拿到的是界限不是真值，排名不可信 */
 export function rankMoves(s,d){
@@ -290,24 +332,16 @@ export function idSearch(s,maxDepth,opt){
   }
   return{move:bm,score:bv,depth:reached,cand:sc.length};}
 
-export function pickMove(s,d,blunder,subopt){
+export function pickMove(s,d,selection=LEVELS.lunatic.selection,preferCheck=false){
   srchRep=new Set(posHist);
-  return withSearchCache(()=>pickMoveImpl(s,d,blunder,subopt),{hist:posHist});
+  return withSearchCache(()=>{
+    const ms=legalMoves(s);if(!ms.length)return null;
+    const strategy=drawMoveStrategy(selection);
+    if(strategy==='random')return chooseFromMovePool(ms.map(m=>({m})),preferCheck).m;
+    if(strategy!=='best'||preferCheck)return chooseRankedMove(rankMoves(s,d),strategy,preferCheck)?.m||ms[0];
+    return idSearch(s,d,{prune:PRUNE.on}).move||ms[0];
+  },{hist:posHist});
 }
-function pickMoveImpl(s,d,blunder,subopt){
-  const ms=legalMoves(s);if(!ms.length)return null;
-  if(blunder&&Math.random()<blunder)return ms[Math.floor(Math.random()*ms.length)];
-  if(subopt){
-    const r=rankMoves(s,d);
-    if(!r.length)return null;
-    if(r.length>1&&Math.random()<subopt){
-      const lo=r[1].v-100;                       /* 评估里 1 分 = 100 */
-      const pool=r.filter((x,i)=>i>0&&x.v>=lo);
-      return pool[Math.floor(Math.random()*pool.length)].m;}
-    return r[0].m;}
-  /* 零失误档：根节点迭代加深 + 候选收窄（剪枝由 PRUNE.on 控制） */
-  const r=idSearch(s,d,{prune:PRUNE.on});
-  return r.move||ms[0];}
 
 /** Analysis root search moved unchanged from the old HTML Worker.
  * Yields between root moves so the UI fallback can schedule short slices.
@@ -367,22 +401,18 @@ export function timedMove(s,levelKey,{hist=[],timeMs,onDepth=()=>{},tt=TT.enable
   try{
     withSearchCache(()=>{
     checkDeadline(true);
-    if(lv.blunder&&Math.random()<lv.blunder){
-      completed.move=ms[Math.floor(Math.random()*ms.length)];
-    }else if(lv.subopt){
-      const chooseSuboptimal=Math.random()<lv.subopt;
-      for(let depth=1;depth<=depthFor(lv,s);depth++){
+    const strategy=drawMoveStrategy(lv.selection);
+    if(strategy==='random'){
+      completed.move=chooseFromMovePool(ms.map(m=>({m})),lv.preferCheck).m;
+    }else if(strategy!=='best'||lv.preferCheck){
+      for(let depth=1;depth<=timedDepthFor(lv,s);depth++){
         checkDeadline(true);
         const ranked=rankMoves(s,depth);
-        let chosen=ranked[0];
-        if(chooseSuboptimal&&ranked.length>1){
-          const pool=ranked.slice(1).filter(x=>x.v>=ranked[1].v-100);
-          chosen=pool[Math.floor(Math.random()*pool.length)];
-        }
+        const chosen=chooseRankedMove(ranked,strategy,lv.preferCheck);
         remember({move:chosen.m,score:chosen.v,depth});
       }
     }else{
-      idSearch(s,lv.timeOnly?Infinity:depthFor(lv,s),{onDepth:remember,stopOnMate:true});
+      idSearch(s,timedDepthFor(lv,s),{onDepth:remember,stopOnMate:true});
     }
     },{hist,enabled:tt});
   }catch(error){if(error!==EVABORT)throw error;}

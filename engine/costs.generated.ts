@@ -32,8 +32,8 @@ export const RULES: Record<string, PieceRule> = {
   iku: {name:'永江衣玖', cost:5.5, slots:['r']},
   sanae: {name:'早苗', cost:6, slots:['k', 'q', 'r']},
   ryuu: {name:'龙王', cost:6, slots:[]},
-  reimu: {name:'灵梦', cost:7, slots:['k', 'q', 'r', 'n']},
   yukari: {name:'八云紫', cost:7, slots:['q', 'r'],files:[3,7]},
+  reimu: {name:'灵梦', cost:7.5, slots:['k', 'q', 'r', 'n']},
   q: {name:'后', cost:9, slots:['q']},
 };
 

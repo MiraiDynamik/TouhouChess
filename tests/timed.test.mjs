@@ -9,6 +9,64 @@ const position=get(game).position,hist=get(game).posHist;
 const signature=m=>JSON.stringify([m.from,m.to,m.promo||null,m.drop||null,m.castle??null]);
 const legal=new Set(get(game).legal.map(signature));
 assert.equal(E.PRUNE.inner,1,'futility/LMR are enabled by default');
+// Flat probabilities: enumerate 100 equally spaced draws, not a statistical test.
+const selectionRandom=Math.random;
+try {
+ const expected={easy:[10,60,20,10],normal:[5,15,40,40],hard:[0,1,20,79],lunatic:[0,0,0,100]};
+ for(const [level,counts] of Object.entries(expected)){
+  const actual={random:0,lossBand:0,suboptimal:0,best:0};
+  for(let i=0;i<100;i++){Math.random=()=>(i+.5)/100;actual[E.drawMoveStrategy(E.LEVELS[level].selection)]++;}
+  assert.deepEqual(Object.values(actual),counts);
+ }
+ const ranked=[{v:500,m:'best'},{v:450,m:'second'},{v:400,m:'loss1'},{v:200,m:'loss3'},{v:199,m:'outside'}];
+ Math.random=()=>0;
+ assert.equal(E.chooseRankedMove(ranked,'lossBand').m,'loss1');
+ Math.random=()=>.999;
+ assert.equal(E.chooseRankedMove(ranked,'lossBand').m,'loss3');
+ assert.equal(E.chooseRankedMove(ranked,'suboptimal').m,'loss1');
+ assert.equal(E.chooseRankedMove(ranked,'best').m,'best');
+ assert.equal(E.chooseRankedMove([{v:50,m:'a'},{v:0,m:'b'}],'lossBand').m,'b');
+ assert.equal(E.chooseRankedMove([{v:50,m:'a'},{v:-950,m:'b'}],'lossBand').m,'a');
+ assert.equal(E.chooseRankedMove([{v:50,m:'only'}],'lossBand').m,'only');
+ assert.equal(E.chooseRankedMove([],'lossBand'),null);
+ assert.throws(()=>E.drawMoveStrategy({random:1,lossBand:1,suboptimal:0,best:0}));
+} finally {Math.random=selectionRandom;}
+// Cirno prefers checks only inside the strategy's existing candidate pool.
+assert.equal(E.LEVELS.easy.preferCheck,true);
+for(const level of ['normal','hard','lunatic'])assert(!E.LEVELS[level].preferCheck);
+const checkPosition=E.buildState(new Map([[60,'k'],[56,'r'],[63,'r']]),new Map([[4,'k']]));
+const checkPositionBefore=JSON.stringify(checkPosition);
+const checkMoves=E.legalMoves(checkPosition);
+const givesCheck=m=>{const ns=E.kid(m);return E.inCheck(ns,ns.turn);};
+const checking=checkMoves.filter(givesCheck),quiet=checkMoves.filter(m=>!givesCheck(m));
+assert(checking.length>=2&&quiet.length>=2);
+try{
+ Math.random=()=>0;
+ const ranked=[{m:quiet[0],v:500},{m:quiet[1],v:350},{m:checking[0],v:300},{m:checking[1],v:100}];
+ assert.equal(E.chooseRankedMove(ranked,'lossBand',true).m,checking[0]);
+ assert.equal(E.chooseRankedMove(ranked,'suboptimal',true).m,checking[0]);
+ assert.equal(E.chooseRankedMove(ranked,'best',true).m,quiet[0],'must not leave the best-score pool');
+ assert.equal(E.chooseRankedMove(ranked,'lossBand',false).m,quiet[1],'other levels keep existing selection');
+ const noCheckBand=[ranked[0],ranked[1],ranked[3]];
+ assert.equal(E.chooseRankedMove(noCheckBand,'lossBand',true).m,quiet[1],'outside checks must not enter the pool');
+ const tied=[{m:quiet[0],v:500},{m:checking[0],v:500}];
+ assert.equal(E.chooseRankedMove(tied,'best',true).m,checking[0]);
+ assert.equal(E.chooseFromMovePool(quiet.map(m=>({m})),true).m,quiet[0]);
+ const pool=[{m:quiet[0]},{m:checking[0]},{m:checking[1]}];
+ assert.equal(E.chooseFromMovePool(pool,true).m,checking[0]);
+ Math.random=()=>.999;
+ assert.equal(E.chooseFromMovePool(pool,true).m,checking[1]);
+ // Real timed and offline entrances both apply the preference on the random branch.
+ Math.random=()=>.05;
+ assert(givesCheck(E.timedMove(checkPosition,'easy',{timeMs:500}).move));
+ assert(givesCheck(E.pickMove(checkPosition,1,E.LEVELS.easy.selection,E.LEVELS.easy.preferCheck)));
+ // Ranked best branch must also use the preference, and respect completed-layer timeout.
+ Math.random=()=>.95;
+ const rankedResult=E.timedMove(checkPosition,'easy',{timeMs:10000,onDepth:()=>E.setSearchState({end:performance.now()-1})});
+ assert.equal(rankedResult.depth,1);
+ assert(checkMoves.some(m=>signature(m)===signature(rankedResult.move)));
+ assert.equal(JSON.stringify(checkPosition),checkPositionBefore);
+}finally{Math.random=selectionRandom;E.clearSearchDeadline();}
 // Eirin, developer and legacy sage share config and deterministic search results.
 assert.deepEqual(Object.keys(E.LEVELS),['easy','normal','hard','lunatic']);
 for(const name of ['eirin','dev','sage'])assert.equal(E.resolveLevel(name),'lunatic');
@@ -24,6 +82,15 @@ try{
 }finally{Math.random=originalRandom;}
 for(const r of merged){assert.equal(r.depth,2);assert.equal(r.score,merged[0].score);assert.equal(signature(r.move),signature(merged[0].move));}
 assert.equal(E.LEVELS.easy.d,3);assert.equal(E.LEVELS.normal.d,4);assert.equal(E.LEVELS.hard.d,5);
+// Count includes kings: Hard becomes time-only at 18 pieces, all ranked strategies included.
+for(const count of [32,19,18,7,2]){
+ const s={b:Array.from({length:64},(_,i)=>i<count?{t:'king'}:null)};
+ assert.equal(E.timedDepthFor(E.LEVELS.hard,s),count<=18?Infinity:5);
+ assert.equal(E.timedDepthFor(E.LEVELS.easy,s),3);
+ assert.equal(E.timedDepthFor(E.LEVELS.normal,s),4);
+ assert.equal(E.timedDepthFor(E.LEVELS.lunatic,s),Infinity);
+ assert(Number.isFinite(E.depthFor(E.LEVELS.hard,s)),'offline search must remain bounded');
+}
 // A timeout during the next layer must retain exactly the last completed result.
 let completed;
 const result=E.timedMove(position,'lunatic',{hist,timeMs:10000,onDepth:r=>{

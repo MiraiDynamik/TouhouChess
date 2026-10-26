@@ -108,7 +108,7 @@ def('sunny',{n:'桑尼米尔克',g:'☼',v:1.5,slots:['n','p'],dev:1,lightbringe
 def('cirno',{n:'琪露诺',g:'⑨',v:3,slots:['p'],freezer:1,limit:'sqcolor',
   atk:(s,i)=>leapAtk(s,i,DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
 
-def('reimu',{n:'\u7075\u68A6',g:'⛩︎',v:7,slots:['k','q','r','n'],
+def('reimu',{n:'\u7075\u68A6',g:'⛩︎',v:7.5,slots:['k','q','r','n'],
   atk:(s,i)=>leapAtk(s,i,REIMU_ATK),
   gen:(s,i)=>{const me=s.b[i].c,opp=me===W?B:W,r=rank(i),f=file(i),o=[];
     for(const[dr,df]of ORTHO){let nr=r+dr,nf=f+df;      // 穿透式的车：只落空格，不吃子

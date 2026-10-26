@@ -1,0 +1,19 @@
+game-1500-001-w: start/resume ply=0
+game-1500-001-w: ply=20 depth=18
+game-1500-001-w: ply=40 depth=14
+game-1500-001-w: ply=60 depth=14
+game-1500-001-w: ply=80 depth=15
+game-1500-001-w: {'code': 'mates', 'winner': 'b', 'score': 0}
+game-1500-001-b: start/resume ply=0
+game-1500-001-b: ply=20 depth=8
+game-1500-001-b: ply=40 depth=7
+game-1500-001-b: ply=60 depth=6
+game-1500-001-b: ply=80 depth=10
+game-1500-001-b: ply=100 depth=11
+game-1500-001-b: ply=120 depth=9
+game-1500-001-b: ply=140 depth=9
+game-1500-001-b: ply=160 depth=8
+game-1500-001-b: ply=180 depth=10
+game-1500-001-b: ply=200 depth=11
+game-1500-001-b: ply=220 depth=15
+game-1500-001-b: {'code': 'rep3', 'winner': None, 'score': 0.5}

@@ -1,0 +1,2294 @@
+{
+  "note": "Same-engine stability, not independent correctness or piece-value validation.",
+  "rows": [
+    {
+      "name": "灵梦透明穿透",
+      "mode": "bot",
+      "budget": 3000,
+      "depth": 5,
+      "score": -278,
+      "ms": 3006,
+      "move": "[59,43,null,null,null]",
+      "notation": "⛩︎d1-d3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "reimu",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wreimu,wk,wb,wn,wr,|1111|-|5,2"
+      ]
+    },
+    {
+      "name": "灵梦透明穿透",
+      "mode": "bot",
+      "budget": 15000,
+      "depth": 7,
+      "score": -278,
+      "ms": 15005,
+      "move": "[62,45,null,null,null]",
+      "notation": "♞g1-f3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "reimu",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wreimu,wk,wb,wn,wr,|1111|-|5,2"
+      ]
+    },
+    {
+      "name": "灵梦透明穿透",
+      "mode": "analysis",
+      "budget": 15000,
+      "depth": 9,
+      "score": -278,
+      "ms": 15005,
+      "move": "[57,42,null,null,null]",
+      "notation": "♞b1-c3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "reimu",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wreimu,wk,wb,wn,wr,|1111|-|5,2"
+      ]
+    },
+    {
+      "name": "琪露诺贴敌阵",
+      "mode": "bot",
+      "budget": 3000,
+      "depth": 8,
+      "score": 98,
+      "ms": 3005,
+      "move": "[3,17,null,null,null]",
+      "notation": "♛d8xb6",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          {
+            "t": "cirno",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "b",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 1,
+        "full": 4,
+        "ammo": {
+          "w": 0,
+          "b": 2
+        },
+        "_cap": null
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wcirno,wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,..........................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,.....................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,..bp,bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,.wcirno,bp,bp,bp,...........................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2"
+      ]
+    },
+    {
+      "name": "琪露诺贴敌阵",
+      "mode": "bot",
+      "budget": 15000,
+      "depth": 10,
+      "score": 98,
+      "ms": 15001,
+      "move": "[3,17,null,null,null]",
+      "notation": "♛d8xb6",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          {
+            "t": "cirno",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "b",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 1,
+        "full": 4,
+        "ammo": {
+          "w": 0,
+          "b": 2
+        },
+        "_cap": null
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wcirno,wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,..........................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,.....................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,..bp,bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,.wcirno,bp,bp,bp,...........................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2"
+      ]
+    },
+    {
+      "name": "琪露诺贴敌阵",
+      "mode": "analysis",
+      "budget": 15000,
+      "depth": 9,
+      "score": 108,
+      "ms": 15002,
+      "move": "[3,17,null,null,null]",
+      "notation": "♛d8xb6",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          {
+            "t": "cirno",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "b",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 1,
+        "full": 4,
+        "ammo": {
+          "w": 0,
+          "b": 2
+        },
+        "_cap": null
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wcirno,wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,..........................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,.....................wcirno,.....wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,.bp,bp,bp,....bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,............wcirno,..............wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,..bp,bp,bp,...bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,..bp,bp,bp,...wcirno,.......................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2",
+        "b|br,bn,bb,bq,bk,bb,bn,br,bp,bp,...bp,bp,bp,.wcirno,bp,bp,bp,...........................wp,wp,wp,.wp,wp,wp,wp,wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|0,2"
+      ]
+    },
+    {
+      "name": "爱丽丝可打入",
+      "mode": "bot",
+      "budget": 3000,
+      "depth": 7,
+      "score": 96,
+      "ms": 3002,
+      "move": "[53,44,null,\"doll\",null]",
+      "notation": "☗*e3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "alice",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 2.5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,.................................wp,wp,wp,wp,walice,wp,.wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2.5,2"
+      ]
+    },
+    {
+      "name": "爱丽丝可打入",
+      "mode": "bot",
+      "budget": 15000,
+      "depth": 10,
+      "score": 88,
+      "ms": 15002,
+      "move": "[53,44,null,\"doll\",null]",
+      "notation": "☗*e3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "alice",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 2.5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,.................................wp,wp,wp,wp,walice,wp,.wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2.5,2"
+      ]
+    },
+    {
+      "name": "爱丽丝可打入",
+      "mode": "analysis",
+      "budget": 15000,
+      "depth": 6,
+      "score": 84,
+      "ms": 15005,
+      "move": "[53,45,null,\"doll\",null]",
+      "notation": "☗*f3",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "alice",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          null,
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 2.5,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,.................................wp,wp,wp,wp,walice,wp,.wr,wn,wb,wq,wk,wb,wn,wr,|1111|-|2.5,2"
+      ]
+    },
+    {
+      "name": "恋洪水填充",
+      "mode": "bot",
+      "budget": 3000,
+      "depth": 6,
+      "score": -206,
+      "ms": 3003,
+      "move": "[52,36,null,null,null]",
+      "notation": "♟e2-e4",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "koishi",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 4,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wp,wp,wp,wp,wp,wr,wkoishi,wb,wq,wk,wb,wn,wr,|1111|-|4,2"
+      ]
+    },
+    {
+      "name": "恋洪水填充",
+      "mode": "bot",
+      "budget": 15000,
+      "depth": 7,
+      "score": -196,
+      "ms": 15001,
+      "move": "[52,36,null,null,null]",
+      "notation": "♟e2-e4",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "koishi",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 4,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wp,wp,wp,wp,wp,wr,wkoishi,wb,wq,wk,wb,wn,wr,|1111|-|4,2"
+      ]
+    },
+    {
+      "name": "恋洪水填充",
+      "mode": "analysis",
+      "budget": 15000,
+      "depth": 9,
+      "score": -200,
+      "ms": 15002,
+      "move": "[51,35,null,null,null]",
+      "notation": "♟d2-d4",
+      "position": {
+        "b": [
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "q",
+            "c": "b"
+          },
+          {
+            "t": "k",
+            "c": "b"
+          },
+          {
+            "t": "b",
+            "c": "b"
+          },
+          {
+            "t": "n",
+            "c": "b"
+          },
+          {
+            "t": "r",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          {
+            "t": "p",
+            "c": "b"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "p",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          },
+          {
+            "t": "koishi",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "q",
+            "c": "w"
+          },
+          {
+            "t": "k",
+            "c": "w"
+          },
+          {
+            "t": "b",
+            "c": "w"
+          },
+          {
+            "t": "n",
+            "c": "w"
+          },
+          {
+            "t": "r",
+            "c": "w"
+          }
+        ],
+        "turn": "w",
+        "cas": {
+          "w0": true,
+          "w7": true,
+          "b0": true,
+          "b7": true
+        },
+        "ep": null,
+        "half": 0,
+        "full": 1,
+        "ammo": {
+          "w": 4,
+          "b": 2
+        }
+      },
+      "hist": [
+        "w|br,bn,bb,bq,bk,bb,bn,br,bp,bp,bp,bp,bp,bp,bp,bp,................................wp,wp,wp,wp,wp,wp,wp,wp,wr,wkoishi,wb,wq,wk,wb,wn,wr,|1111|-|4,2"
+      ]
+    }
+  ]
+}

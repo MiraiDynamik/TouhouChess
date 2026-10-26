@@ -1,0 +1,10 @@
+game-1900-003-w: start/resume ply=0
+game-1900-003-w: ply=20 depth=17
+game-1900-003-w: ply=40 depth=15
+game-1900-003-w: ply=60 depth=15
+game-1900-003-w: ply=80 depth=60
+game-1900-003-w: {'code': 'mates', 'winner': 'b', 'score': 0}
+game-1900-003-b: start/resume ply=0
+game-1900-003-b: ply=20 depth=6
+game-1900-003-b: ply=40 depth=8
+game-1900-003-b: {'code': 'mates', 'winner': 'w', 'score': 0}

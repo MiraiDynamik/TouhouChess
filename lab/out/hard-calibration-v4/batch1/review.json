@@ -1,0 +1,1812 @@
+{
+  "stockfish": "Stockfish 19",
+  "nodes": 50000,
+  "max_ply": 300,
+  "rows": [
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 2,
+      "move": "d7d5",
+      "before": {
+        "kind": "cp",
+        "value": -36,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": 67,
+        "depth": 14
+      },
+      "cp_loss": 31,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 4,
+      "move": "d5e4",
+      "before": {
+        "kind": "cp",
+        "value": 32,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": 9,
+        "depth": 16
+      },
+      "cp_loss": 41,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 6,
+      "move": "g8f6",
+      "before": {
+        "kind": "cp",
+        "value": 101,
+        "depth": 12
+      },
+      "after": {
+        "kind": "cp",
+        "value": -74,
+        "depth": 15
+      },
+      "cp_loss": 27,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 8,
+      "move": "b8c6",
+      "before": {
+        "kind": "cp",
+        "value": 120,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -118,
+        "depth": 15
+      },
+      "cp_loss": 2,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 10,
+      "move": "h7h6",
+      "before": {
+        "kind": "cp",
+        "value": 107,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -11,
+        "depth": 13
+      },
+      "cp_loss": 96,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 12,
+      "move": "d8d1",
+      "before": {
+        "kind": "cp",
+        "value": 29,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -24,
+        "depth": 14
+      },
+      "cp_loss": 5,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 14,
+      "move": "a7a6",
+      "before": {
+        "kind": "cp",
+        "value": 166,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -2,
+        "depth": 13
+      },
+      "cp_loss": 164,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 16,
+      "move": "f6e4",
+      "before": {
+        "kind": "cp",
+        "value": 179,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -151,
+        "depth": 15
+      },
+      "cp_loss": 28,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 18,
+      "move": "e4d6",
+      "before": {
+        "kind": "cp",
+        "value": 171,
+        "depth": 17
+      },
+      "after": {
+        "kind": "cp",
+        "value": -163,
+        "depth": 16
+      },
+      "cp_loss": 8,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 20,
+      "move": "c8e6",
+      "before": {
+        "kind": "cp",
+        "value": 180,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -127,
+        "depth": 16
+      },
+      "cp_loss": 53,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 22,
+      "move": "g7g5",
+      "before": {
+        "kind": "cp",
+        "value": 121,
+        "depth": 12
+      },
+      "after": {
+        "kind": "cp",
+        "value": -97,
+        "depth": 13
+      },
+      "cp_loss": 24,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 24,
+      "move": "b7c6",
+      "before": {
+        "kind": "cp",
+        "value": 138,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -137,
+        "depth": 16
+      },
+      "cp_loss": 1,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 26,
+      "move": "f8g7",
+      "before": {
+        "kind": "cp",
+        "value": 226,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -222,
+        "depth": 15
+      },
+      "cp_loss": 4,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 28,
+      "move": "e8d7",
+      "before": {
+        "kind": "cp",
+        "value": 235,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -259,
+        "depth": 13
+      },
+      "cp_loss": 0,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 30,
+      "move": "a8b8",
+      "before": {
+        "kind": "cp",
+        "value": 342,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -241,
+        "depth": 15
+      },
+      "cp_loss": 101,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 32,
+      "move": "g7f6",
+      "before": {
+        "kind": "cp",
+        "value": 298,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -200,
+        "depth": 16
+      },
+      "cp_loss": 98,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 34,
+      "move": "g5h4",
+      "before": {
+        "kind": "cp",
+        "value": 244,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -219,
+        "depth": 13
+      },
+      "cp_loss": 25,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 36,
+      "move": "h6h5",
+      "before": {
+        "kind": "cp",
+        "value": 449,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -462,
+        "depth": 16
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 38,
+      "move": "h5g4",
+      "before": {
+        "kind": "cp",
+        "value": 532,
+        "depth": 17
+      },
+      "after": {
+        "kind": "cp",
+        "value": -513,
+        "depth": 16
+      },
+      "cp_loss": 19,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 40,
+      "move": "e6g4",
+      "before": {
+        "kind": "cp",
+        "value": 517,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -532,
+        "depth": 16
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 42,
+      "move": "h8g8",
+      "before": {
+        "kind": "cp",
+        "value": 519,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -470,
+        "depth": 16
+      },
+      "cp_loss": 49,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 44,
+      "move": "e7e5",
+      "before": {
+        "kind": "cp",
+        "value": 434,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -419,
+        "depth": 15
+      },
+      "cp_loss": 15,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 46,
+      "move": "d7e7",
+      "before": {
+        "kind": "cp",
+        "value": 475,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -402,
+        "depth": 16
+      },
+      "cp_loss": 73,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 48,
+      "move": "d6f5",
+      "before": {
+        "kind": "cp",
+        "value": 451,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -360,
+        "depth": 15
+      },
+      "cp_loss": 91,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 50,
+      "move": "f5d4",
+      "before": {
+        "kind": "cp",
+        "value": 363,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -354,
+        "depth": 16
+      },
+      "cp_loss": 9,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 52,
+      "move": "g8g4",
+      "before": {
+        "kind": "cp",
+        "value": 806,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -780,
+        "depth": 15
+      },
+      "cp_loss": 26,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 54,
+      "move": "g4g1",
+      "before": {
+        "kind": "cp",
+        "value": 834,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -863,
+        "depth": 14
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 56,
+      "move": "d4f3",
+      "before": {
+        "kind": "cp",
+        "value": 988,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -849,
+        "depth": 15
+      },
+      "cp_loss": 139,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 58,
+      "move": "g1b1",
+      "before": {
+        "kind": "cp",
+        "value": 902,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -967,
+        "depth": 14
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 60,
+      "move": "e7e6",
+      "before": {
+        "kind": "cp",
+        "value": 1080,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -1160,
+        "depth": 14
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 62,
+      "move": "b8g8",
+      "before": {
+        "kind": "mate",
+        "value": 7,
+        "depth": 18
+      },
+      "after": {
+        "kind": "mate",
+        "value": -4,
+        "depth": 34
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 64,
+      "move": "e6f5",
+      "before": {
+        "kind": "mate",
+        "value": 1,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": -4,
+        "depth": 34
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 66,
+      "move": "f5f6",
+      "before": {
+        "kind": "mate",
+        "value": 1,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": -3,
+        "depth": 199
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-b",
+      "ply": 68,
+      "move": "b1h1",
+      "before": {
+        "kind": "mate",
+        "value": 1,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": 0,
+        "depth": 0
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 1,
+      "move": "d2d4",
+      "before": {
+        "kind": "cp",
+        "value": 27,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -21,
+        "depth": 14
+      },
+      "cp_loss": 6,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 3,
+      "move": "e2e4",
+      "before": {
+        "kind": "cp",
+        "value": 53,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -53,
+        "depth": 14
+      },
+      "cp_loss": 0,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 5,
+      "move": "g1f3",
+      "before": {
+        "kind": "cp",
+        "value": 66,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -71,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 7,
+      "move": "f1b5",
+      "before": {
+        "kind": "cp",
+        "value": 73,
+        "depth": 18
+      },
+      "after": {
+        "kind": "cp",
+        "value": -27,
+        "depth": 13
+      },
+      "cp_loss": 46,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 9,
+      "move": "f3d4",
+      "before": {
+        "kind": "cp",
+        "value": 29,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -31,
+        "depth": 16
+      },
+      "cp_loss": 0,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 11,
+      "move": "b1c3",
+      "before": {
+        "kind": "cp",
+        "value": 50,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -33,
+        "depth": 12
+      },
+      "cp_loss": 17,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 13,
+      "move": "c1f4",
+      "before": {
+        "kind": "cp",
+        "value": 61,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": -11,
+        "depth": 13
+      },
+      "cp_loss": 50,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 15,
+      "move": "b5a4",
+      "before": {
+        "kind": "cp",
+        "value": 30,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 23,
+        "depth": 13
+      },
+      "cp_loss": 53,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 17,
+      "move": "c3b5",
+      "before": {
+        "kind": "cp",
+        "value": 689,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 111,
+        "depth": 16
+      },
+      "cp_loss": 800,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 19,
+      "move": "d4c6",
+      "before": {
+        "kind": "cp",
+        "value": -95,
+        "depth": 17
+      },
+      "after": {
+        "kind": "cp",
+        "value": 101,
+        "depth": 13
+      },
+      "cp_loss": 6,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 21,
+      "move": "e1g1",
+      "before": {
+        "kind": "cp",
+        "value": -107,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": 127,
+        "depth": 16
+      },
+      "cp_loss": 20,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 23,
+      "move": "g2g3",
+      "before": {
+        "kind": "cp",
+        "value": -114,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": 292,
+        "depth": 14
+      },
+      "cp_loss": 178,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 25,
+      "move": "d1b1",
+      "before": {
+        "kind": "cp",
+        "value": -91,
+        "depth": 13
+      },
+      "after": {
+        "kind": "cp",
+        "value": 297,
+        "depth": 15
+      },
+      "cp_loss": 206,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 27,
+      "move": "f4d6",
+      "before": {
+        "kind": "cp",
+        "value": -219,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 755,
+        "depth": 16
+      },
+      "cp_loss": 536,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 29,
+      "move": "c6d8",
+      "before": {
+        "kind": "cp",
+        "value": -740,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 706,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 31,
+      "move": "c2c4",
+      "before": {
+        "kind": "cp",
+        "value": -699,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 760,
+        "depth": 16
+      },
+      "cp_loss": 61,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 33,
+      "move": "c4b5",
+      "before": {
+        "kind": "cp",
+        "value": -721,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 782,
+        "depth": 15
+      },
+      "cp_loss": 61,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 35,
+      "move": "b1d1",
+      "before": {
+        "kind": "cp",
+        "value": -656,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 636,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 37,
+      "move": "f2f4",
+      "before": {
+        "kind": "cp",
+        "value": -339,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 536,
+        "depth": 16
+      },
+      "cp_loss": 197,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 39,
+      "move": "a2a4",
+      "before": {
+        "kind": "cp",
+        "value": -462,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 501,
+        "depth": 15
+      },
+      "cp_loss": 39,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 41,
+      "move": "d1d5",
+      "before": {
+        "kind": "cp",
+        "value": -532,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 744,
+        "depth": 17
+      },
+      "cp_loss": 212,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 43,
+      "move": "d5c6",
+      "before": {
+        "kind": "cp",
+        "value": -759,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 852,
+        "depth": 15
+      },
+      "cp_loss": 93,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 45,
+      "move": "c6c2",
+      "before": {
+        "kind": "cp",
+        "value": -776,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 829,
+        "depth": 15
+      },
+      "cp_loss": 53,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 47,
+      "move": "f1e1",
+      "before": {
+        "kind": "cp",
+        "value": -514,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 768,
+        "depth": 15
+      },
+      "cp_loss": 254,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 49,
+      "move": "e1e2",
+      "before": {
+        "kind": "cp",
+        "value": -444,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 602,
+        "depth": 15
+      },
+      "cp_loss": 158,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 51,
+      "move": "c2c7",
+      "before": {
+        "kind": "cp",
+        "value": -512,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 616,
+        "depth": 15
+      },
+      "cp_loss": 104,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 53,
+      "move": "c7c6",
+      "before": {
+        "kind": "cp",
+        "value": -694,
+        "depth": 17
+      },
+      "after": {
+        "kind": "cp",
+        "value": 768,
+        "depth": 15
+      },
+      "cp_loss": 74,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 55,
+      "move": "a1c1",
+      "before": {
+        "kind": "cp",
+        "value": -616,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 689,
+        "depth": 17
+      },
+      "cp_loss": 73,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 57,
+      "move": "c6b6",
+      "before": {
+        "kind": "cp",
+        "value": -676,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 786,
+        "depth": 15
+      },
+      "cp_loss": 110,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 59,
+      "move": "b6b8",
+      "before": {
+        "kind": "cp",
+        "value": -693,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 698,
+        "depth": 15
+      },
+      "cp_loss": 5,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 61,
+      "move": "b8e5",
+      "before": {
+        "kind": "cp",
+        "value": -628,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 859,
+        "depth": 19
+      },
+      "cp_loss": 231,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 63,
+      "move": "b2b4",
+      "before": {
+        "kind": "cp",
+        "value": -723,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 786,
+        "depth": 15
+      },
+      "cp_loss": 63,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 65,
+      "move": "e5h8",
+      "before": {
+        "kind": "cp",
+        "value": -795,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 799,
+        "depth": 15
+      },
+      "cp_loss": 4,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 67,
+      "move": "g1f1",
+      "before": {
+        "kind": "cp",
+        "value": -759,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 798,
+        "depth": 14
+      },
+      "cp_loss": 39,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 69,
+      "move": "h8b8",
+      "before": {
+        "kind": "cp",
+        "value": -779,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 859,
+        "depth": 20
+      },
+      "cp_loss": 80,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 71,
+      "move": "a4a5",
+      "before": {
+        "kind": "cp",
+        "value": -585,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 747,
+        "depth": 14
+      },
+      "cp_loss": 162,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 73,
+      "move": "g3h4",
+      "before": {
+        "kind": "cp",
+        "value": -611,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 883,
+        "depth": 18
+      },
+      "cp_loss": 272,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 75,
+      "move": "b8c8",
+      "before": {
+        "kind": "cp",
+        "value": -742,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 772,
+        "depth": 15
+      },
+      "cp_loss": 30,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 77,
+      "move": "c8b8",
+      "before": {
+        "kind": "cp",
+        "value": -597,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 740,
+        "depth": 15
+      },
+      "cp_loss": 143,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 79,
+      "move": "e2c2",
+      "before": {
+        "kind": "cp",
+        "value": -622,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 792,
+        "depth": 15
+      },
+      "cp_loss": 170,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 81,
+      "move": "c2d2",
+      "before": {
+        "kind": "cp",
+        "value": -676,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 727,
+        "depth": 18
+      },
+      "cp_loss": 51,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 83,
+      "move": "c1d1",
+      "before": {
+        "kind": "cp",
+        "value": -653,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 1031,
+        "depth": 16
+      },
+      "cp_loss": 378,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 85,
+      "move": "b8c8",
+      "before": {
+        "kind": "cp",
+        "value": -777,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": 779,
+        "depth": 15
+      },
+      "cp_loss": 2,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 87,
+      "move": "f1e1",
+      "before": {
+        "kind": "cp",
+        "value": -780,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 918,
+        "depth": 18
+      },
+      "cp_loss": 138,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 89,
+      "move": "c8c4",
+      "before": {
+        "kind": "cp",
+        "value": -680,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": 623,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 91,
+      "move": "d2e2",
+      "before": {
+        "kind": "cp",
+        "value": -571,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": 586,
+        "depth": 15
+      },
+      "cp_loss": 15,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 93,
+      "move": "b5b6",
+      "before": {
+        "kind": "cp",
+        "value": -128,
+        "depth": 11
+      },
+      "after": {
+        "kind": "cp",
+        "value": 148,
+        "depth": 12
+      },
+      "cp_loss": 20,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 95,
+      "move": "a5b6",
+      "before": {
+        "kind": "cp",
+        "value": -86,
+        "depth": 12
+      },
+      "after": {
+        "kind": "cp",
+        "value": 125,
+        "depth": 13
+      },
+      "cp_loss": 39,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 97,
+      "move": "e2c2",
+      "before": {
+        "kind": "cp",
+        "value": 38,
+        "depth": 12
+      },
+      "after": {
+        "kind": "cp",
+        "value": 428,
+        "depth": 17
+      },
+      "cp_loss": 466,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 99,
+      "move": "c2f2",
+      "before": {
+        "kind": "cp",
+        "value": 22,
+        "depth": 10
+      },
+      "after": {
+        "kind": "cp",
+        "value": 757,
+        "depth": 15
+      },
+      "cp_loss": 779,
+      "competitive": true,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 101,
+      "move": "f2e2",
+      "before": {
+        "kind": "cp",
+        "value": 531,
+        "depth": 17
+      },
+      "after": {
+        "kind": "cp",
+        "value": -575,
+        "depth": 16
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 103,
+      "move": "b6c7",
+      "before": {
+        "kind": "cp",
+        "value": 833,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -847,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 105,
+      "move": "c7c8r",
+      "before": {
+        "kind": "cp",
+        "value": 815,
+        "depth": 15
+      },
+      "after": {
+        "kind": "cp",
+        "value": -854,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 107,
+      "move": "c8c7",
+      "before": {
+        "kind": "cp",
+        "value": 1107,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -1213,
+        "depth": 15
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 109,
+      "move": "d1d5",
+      "before": {
+        "kind": "cp",
+        "value": 1405,
+        "depth": 16
+      },
+      "after": {
+        "kind": "cp",
+        "value": -1530,
+        "depth": 14
+      },
+      "cp_loss": 0,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 111,
+      "move": "h4g5",
+      "before": {
+        "kind": "cp",
+        "value": 1559,
+        "depth": 14
+      },
+      "after": {
+        "kind": "cp",
+        "value": -1315,
+        "depth": 15
+      },
+      "cp_loss": 244,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 113,
+      "move": "c7e7",
+      "before": {
+        "kind": "mate",
+        "value": 8,
+        "depth": 17
+      },
+      "after": {
+        "kind": "mate",
+        "value": -7,
+        "depth": 22
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 115,
+      "move": "c4b3",
+      "before": {
+        "kind": "mate",
+        "value": 4,
+        "depth": 32
+      },
+      "after": {
+        "kind": "mate",
+        "value": -3,
+        "depth": 45
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 117,
+      "move": "e2d2",
+      "before": {
+        "kind": "mate",
+        "value": 2,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": -2,
+        "depth": 245
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 119,
+      "move": "b3h3",
+      "before": {
+        "kind": "mate",
+        "value": 2,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": -1,
+        "depth": 245
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    },
+    {
+      "level": "hard",
+      "game": "game-1320-001-w",
+      "ply": 121,
+      "move": "h3h6",
+      "before": {
+        "kind": "mate",
+        "value": 1,
+        "depth": 245
+      },
+      "after": {
+        "kind": "mate",
+        "value": 0,
+        "depth": 0
+      },
+      "cp_loss": null,
+      "competitive": false,
+      "newly_allows_mate": false
+    }
+  ]
+}

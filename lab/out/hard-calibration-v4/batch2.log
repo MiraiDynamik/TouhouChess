@@ -1,0 +1,15 @@
+game-1320-002-w: start/resume ply=0
+game-1320-002-w: ply=20 depth=18
+game-1320-002-w: ply=40 depth=18
+game-1320-002-w: ply=60 depth=16
+game-1320-002-w: ply=80 depth=14
+game-1320-002-w: ply=100 depth=14
+game-1320-002-w: ply=120 depth=15
+game-1320-002-w: ply=140 depth=26
+game-1320-002-w: ply=160 depth=43
+game-1320-002-w: {'code': 'mates', 'winner': 'b', 'score': 0}
+game-1320-002-b: start/resume ply=0
+game-1320-002-b: ply=20 depth=3
+game-1320-002-b: ply=40 depth=4
+game-1320-002-b: ply=60 depth=12
+game-1320-002-b: {'code': 'mates', 'winner': 'b', 'score': 1}

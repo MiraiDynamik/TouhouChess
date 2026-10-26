@@ -1,0 +1,15 @@
+{
+  "elos": [
+    1320
+  ],
+  "pairs": 1,
+  "time_ms": 3000,
+  "max_ply": 300,
+  "level": "hard",
+  "native_time": true,
+  "protocol": 2,
+  "source": "f976d44e4bd6a7912c6df95eaec91676ae996cc37ad77ed46c602e1d193b81f8",
+  "stockfish_name": "Stockfish 19",
+  "stockfish_sha256": "3e62568e8a4656415c7a2be5408012befd67d29ab7b1ba2541368780772be390",
+  "start_pair": 2
+}

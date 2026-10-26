@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-26T01:57:54.692Z",
+  "node": "v22.13.1",
+  "slots": 32768,
+  "inner": 0,
+  "rootPrune": 1,
+  "rows": [
+    {
+      "name": "香草开局",
+      "fixed": [
+        {
+          "mode": "off",
+          "score": 0,
+          "ms": 94,
+          "nodes": 10550,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "score": 0,
+          "ms": 93,
+          "nodes": 10181,
+          "hits": 280,
+          "cutoffs": 260
+        },
+        {
+          "mode": "warm",
+          "score": 0,
+          "ms": 0,
+          "nodes": 1,
+          "hits": 1,
+          "cutoffs": 1
+        }
+      ],
+      "timed": [
+        {
+          "mode": "off",
+          "depth": 5,
+          "ms": 3001,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "depth": 5,
+          "ms": 3002,
+          "hits": 19341,
+          "cutoffs": 14674
+        },
+        {
+          "mode": "warm",
+          "depth": 5,
+          "ms": 3000,
+          "hits": 25834,
+          "cutoffs": 17866
+        }
+      ]
+    },
+    {
+      "name": "灵梦透明穿透",
+      "fixed": [
+        {
+          "mode": "off",
+          "score": -290,
+          "ms": 118,
+          "nodes": 14557,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "score": -290,
+          "ms": 125,
+          "nodes": 13882,
+          "hits": 395,
+          "cutoffs": 369
+        },
+        {
+          "mode": "warm",
+          "score": -290,
+          "ms": 0,
+          "nodes": 1,
+          "hits": 1,
+          "cutoffs": 1
+        }
+      ],
+      "timed": [
+        {
+          "mode": "off",
+          "depth": 5,
+          "ms": 3001,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "depth": 5,
+          "ms": 3003,
+          "hits": 16524,
+          "cutoffs": 12620
+        },
+        {
+          "mode": "warm",
+          "depth": 5,
+          "ms": 3001,
+          "hits": 22977,
+          "cutoffs": 16532
+        }
+      ]
+    },
+    {
+      "name": "爱丽丝可打入",
+      "fixed": [
+        {
+          "mode": "off",
+          "score": 42,
+          "ms": 152,
+          "nodes": 12143,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "score": 42,
+          "ms": 138,
+          "nodes": 10598,
+          "hits": 354,
+          "cutoffs": 348
+        },
+        {
+          "mode": "warm",
+          "score": 42,
+          "ms": 0,
+          "nodes": 1,
+          "hits": 1,
+          "cutoffs": 1
+        }
+      ],
+      "timed": [
+        {
+          "mode": "off",
+          "depth": 5,
+          "ms": 3001,
+          "hits": 0,
+          "cutoffs": 0
+        },
+        {
+          "mode": "cold",
+          "depth": 6,
+          "ms": 3010,
+          "hits": 19064,
+          "cutoffs": 15692
+        },
+        {
+          "mode": "warm",
+          "depth": 6,
+          "ms": 3007,
+          "hits": 25471,
+          "cutoffs": 20217
+        }
+      ]
+    }
+  ]
+}

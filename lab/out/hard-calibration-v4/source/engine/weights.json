@@ -1,0 +1,14 @@
+{
+  "_comment": [
+    "引擎的全部可调数值。lab/tune.py 读写这个文件做参数搜索。",
+    "value 覆盖某个棋子的引擎估价（缺省 = rules/pieces.toml 的 cost）——",
+    "标定一个棋子值多少分，就是在这里搜索它的 value。",
+    "1 分 = 100 评估单位。符号在代码里，这里只放量值。"
+  ],
+  "value": {},
+  "mobility": 2,
+  "kingSafety": 6,
+  "endgame": { "edge": 10, "near": 8, "corner": 6 },
+  "open": { "center": 7, "homeBlock": 9, "develop": 6, "heavyEarly": 14, "castled": 26 },
+  "openMinMaterial": 55
+}

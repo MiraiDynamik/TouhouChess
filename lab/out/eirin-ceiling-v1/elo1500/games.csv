@@ -1,0 +1,3 @@
+﻿id,elo,dev_side,result,score,plies,mean_dev_depth
+game-1500-001-b,1500,b,rep3,0.5,226,8.81
+game-1500-001-w,1500,w,mates,0,96,7.29

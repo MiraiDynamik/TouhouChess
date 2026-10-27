@@ -34,6 +34,7 @@ export const TXT={
   mates:['%1将杀','%1 mates'], stalemate:['逼和','Stalemate'],
   rep3:['三次重复和棋','Draw by threefold repetition'],
   fifty:['50回合和棋','Draw by 50-move rule'],
+  material:['子力不足和棋','Draw by insufficient material'],
   toMove:['%1走棋','%1 to move'], chk:['（将军）',' (check)'],
   tierVanilla:['香草级','Vanilla'], tierKedama:['毛玉级','Kedama'],
   tierFairy:['妖精级','Fairy'], tierHuman:['人类级','Human'],

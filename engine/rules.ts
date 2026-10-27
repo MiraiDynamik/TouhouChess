@@ -152,9 +152,19 @@ export function setPosHist(a){posHist=a.slice();}
 export function pushPos(k){posHist.push(k);}
 export function repCount(k){let n=0;for(const x of posHist)if(x===k)n++;return n;}
 
+export function standardInsufficientMaterial(s){
+  // Do not infer dead positions involving fairy pieces or disappearance marks.
+  if(s.b.some(p=>p&&(!['p','n','b','r','q','k'].includes(p.t)||p.mark)))return false;
+  const pieces=s.b.map((p,i)=>({p,i})).filter(x=>x.p&&x.p.t!=='k');
+  if(!pieces.length)return true;
+  if(pieces.length===1&&['b','n'].includes(pieces[0].p.t))return true;
+  return pieces.every(x=>x.p.t==='b')&&pieces.every(x=>
+    (file(x.i)+rank(x.i))%2===(file(pieces[0].i)+rank(pieces[0].i))%2);
+}
+
 export function outcome(s,ms){
   /* 只返回结构化结果，文案由界面翻译。engine 不引用任何 i18n。
-     code: 'mates' | 'stalemate' | 'rep3' | 'fifty' | 'toMove'
+     code: 'mates' | 'stalemate' | 'rep3' | 'fifty' | 'material' | 'toMove'
      winner: 将杀时的赢方，其余为 null */
   const fz=frozenSet(s);
   if(!ms.length){
@@ -163,6 +173,7 @@ export function outcome(s,ms){
             :{over:1,code:'stalemate',winner:null,alert:1};}
   if(repCount(posKey(s))>=3)return{over:1,code:'rep3',winner:null,alert:1};
   if(s.half>=100)return{over:1,code:'fifty',winner:null,alert:1};
+  if(standardInsufficientMaterial(s))return{over:1,code:'material',winner:null,alert:1};
   const c=inCheck(s,s.turn,fz);
   return{over:0,code:'toMove',winner:null,toMove:s.turn,check:!!c,alert:c};}
 export function notate(s,m,ns,nms){

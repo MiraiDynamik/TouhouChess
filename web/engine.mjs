@@ -677,6 +677,13 @@ function repCount(k) {
   for (const x of posHist) if (x === k) n++;
   return n;
 }
+function standardInsufficientMaterial(s) {
+  if (s.b.some((p) => p && (!["p", "n", "b", "r", "q", "k"].includes(p.t) || p.mark))) return false;
+  const pieces = s.b.map((p, i) => ({ p, i })).filter((x) => x.p && x.p.t !== "k");
+  if (!pieces.length) return true;
+  if (pieces.length === 1 && ["b", "n"].includes(pieces[0].p.t)) return true;
+  return pieces.every((x) => x.p.t === "b") && pieces.every((x) => (file(x.i) + rank(x.i)) % 2 === (file(pieces[0].i) + rank(pieces[0].i)) % 2);
+}
 function outcome(s, ms) {
   const fz = frozenSet(s);
   if (!ms.length) {
@@ -685,6 +692,7 @@ function outcome(s, ms) {
   }
   if (repCount(posKey(s)) >= 3) return { over: 1, code: "rep3", winner: null, alert: 1 };
   if (s.half >= 100) return { over: 1, code: "fifty", winner: null, alert: 1 };
+  if (standardInsufficientMaterial(s)) return { over: 1, code: "material", winner: null, alert: 1 };
   const c = inCheck(s, s.turn, fz);
   return { over: 0, code: "toMove", winner: null, toMove: s.turn, check: !!c, alert: c };
 }
@@ -1700,6 +1708,7 @@ export {
   srchEnd,
   srchNodes,
   srchRep,
+  standardInsufficientMaterial,
   timedDepthFor,
   timedMove,
   toFEN,

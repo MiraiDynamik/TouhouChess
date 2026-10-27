@@ -10,6 +10,22 @@ import {build} from 'esbuild';
 const sq=s=>(8-Number(s[1]))*8+'abcdefgh'.indexOf(s[0]);
 let checks=0;
 const eq=(a,b)=>{assert.deepEqual(a,b);checks++;};
+// Standard dead material is recognized; fairy positions remain unclassified.
+for(const [pieces,dead] of [['K',true],['KN',true],['KB',true],['KNN',false],['KBN',false],['KR',false]]){
+  const s=E.fromFEN(`7k/8/8/8/8/8/8/${pieces}${8-pieces.length} w - - 0 1`);
+  E.setPosHist([]);
+  eq(E.standardInsufficientMaterial(s),dead);
+  eq(E.outcome(s,E.legalMoves(s)).over,dead?1:0);
+}
+for(const [fen,dead] of [
+  ['7k/8/8/8/8/8/4b3/KB6 w - - 0 1',true],
+  ['7k/8/8/8/8/8/3b4/KB6 w - - 0 1',false],
+])eq(E.standardInsufficientMaterial(E.fromFEN(fen)),dead);
+{
+  const s=E.fromFEN('7k/8/8/8/8/8/8/KB6 w - - 0 1');
+  s.b[57].t='koishi';eq(E.standardInsufficientMaterial(s),false);
+  s.b[57]={t:'b',c:'w',mark:1};eq(E.standardInsufficientMaterial(s),false);
+}
 const game=createGame();
 const state=()=>get(game);
 const move=(a,b)=>{game.click(sq(a));game.click(sq(b));};
@@ -64,13 +80,15 @@ for(const terminal of ['mates','stalemate']){
  unsubscribe();end.dispose();
 }
 // Fifty-move draw through 100 real reversible plies, without threefold repetition.
-const fifty=createGame();put(fifty,'w','k','e1');put(fifty,'b','k','e8');fifty.start();
+// Keep mating material: bare kings now correctly draw before fifty moves.
+const fifty=createGame();put(fifty,'w','k','e1');put(fifty,'b','k','e8');
+put(fifty,'w','r','a1');put(fifty,'b','r','a8');fifty.start();
 for(let ply=0;ply<100;ply++){
  const before=get(fifty);
  const visits=m=>before.posHist.filter(k=>k===E.posKey(E.vanishPass(m._n))).length;
  const candidate=[...before.legal].sort((a,b)=>visits(a)-visits(b)).find(m=>{
   const next=E.vanishPass(m._n),key=E.posKey(next);
-  return next.half===ply+1&&before.posHist.filter(k=>k===key).length<2;
+  return next.half===ply+1&&before.posHist.filter(k=>k===key).length<2&&E.hasLegal(next);
  });
  assert(candidate,`No reversible move at ply ${ply}`);
  fifty.click(candidate.from);fifty.click(candidate.to);

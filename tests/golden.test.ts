@@ -13,13 +13,13 @@ import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
 
-import {W, B} from '../engine/board.js';
-import {P, applyWeights} from '../engine/pieces.js';
-import {buildState, mirrorSq} from '../engine/deploy.js';
+import {W, B} from '../engine/index.js';
+import {P, applyWeights} from '../engine/index.js';
+import {buildState, mirrorSq} from '../engine/index.js';
 import {legalMoves, applyMove, vanishPass, inCheck, notate,
-        posKey, setPosHist} from '../engine/rules.js';
-import {evalPos} from '../engine/eval.js';
-import {negamax,PRUNE} from '../engine/search.js';
+        posKey, setPosHist} from '../engine/index.js';
+import {evalPos} from '../engine/index.js';
+import {negamax,PRUNE} from '../engine/index.js';
 // Historical golden scores describe the non-selective search, not difficulty defaults.
 PRUNE.inner=0;
 

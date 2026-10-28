@@ -40,13 +40,13 @@
    更确定，同一阵容的多局可能走出几乎相同的棋，那时置信区间是假的。
    result 是「被测方(side)」的视角：w=被测方赢。 */
 import {readFileSync} from 'node:fs';
-import {W, B} from '../engine/board.js';
-import {P, applyWeights} from '../engine/pieces.js';
-import {buildState, mirrorSq} from '../engine/deploy.js';
+import {W, B} from '../engine/index.js';
+import {P, applyWeights} from '../engine/index.js';
+import {buildState, mirrorSq} from '../engine/index.js';
 import {legalMoves, applyMove, vanishPass, inCheck, outcome,
-        posKey, setPosHist, pushPos} from '../engine/rules.js';
+        posKey, setPosHist, pushPos} from '../engine/index.js';
 import {negamax, pickMove, lunaticMove, lunaticMoveAt, LEVELS, depthFor, kid,
-        PRUNE, resolveLevel} from '../engine/search.js';
+        PRUNE, resolveLevel} from '../engine/index.js';
 
 const arg = process.argv[2];
 if (!arg) { console.error('用法: tsx cli/play.ts <spec.json | ->'); process.exit(2); }

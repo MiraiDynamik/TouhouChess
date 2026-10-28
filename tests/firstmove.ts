@@ -18,10 +18,10 @@
    跑法：npx tsx tests/firstmove.ts [净赚阈值，默认 2]
 */
 import {readFileSync} from 'node:fs';
-import {W, B} from '../engine/board.js';
-import {P, applyWeights} from '../engine/pieces.js';
-import {buildState, mirrorSq} from '../engine/deploy.js';
-import {legalMoves, applyMove, vanishPass, inCheck, isAttacked} from '../engine/rules.js';
+import {W, B} from '../engine/index.js';
+import {P, applyWeights} from '../engine/index.js';
+import {buildState, mirrorSq} from '../engine/index.js';
+import {legalMoves, applyMove, vanishPass, inCheck, isAttacked} from '../engine/index.js';
 
 applyWeights(JSON.parse(readFileSync(new URL('../engine/weights.json', import.meta.url), 'utf8')));
 

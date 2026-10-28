@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as E from '../web/src/engine.js';
 import {ttPositionKey,moveKey,scoreToTT,scoreFromTT,newTranspositionSearch,
-  probeTransposition,storeTransposition} from '../engine/transposition.ts';
+  probeTransposition,storeTransposition} from '../engine/index.js';
 import {build} from 'esbuild';
 const gold=JSON.parse(fs.readFileSync(new URL('./golden.json',import.meta.url)));
 const sq=s=>(8-Number(s[1]))*8+'abcdefgh'.indexOf(s[0]);
@@ -18,7 +18,10 @@ const search=(s,d,{hist=[],enabled=true,ply=0,alpha=-Infinity,beta=Infinity}={})
  E.setSearchState({rep:new Set(hist)});E.clearOrderTables();
  return E.withSearchCache(()=>E.negamax(s,d,alpha,beta,ply),{hist,enabled});
 };
-E.PRUNE.inner=0;
+assert.equal(E.TT.slots,1048576,'production TT capacity');
+assert.equal(E.PRUNE.ttDeep,1,'production deeper-result reuse');
+// Fixed-horizon equivalence is a reference policy, distinct from the default.
+E.PRUNE.ttDeep=0;E.PRUNE.inner=0;
 let tested=0;
 for(const c of gold.cases){
  if(c.error)continue;
@@ -48,8 +51,8 @@ for(const bound of ['exact','lower','upper']){
  assert.equal(probeTransposition(bound).bound,bound);
 }
 const sparse=E.buildState(map({e1:'k',a1:'r'}),map({e8:'k'}));
-// Deeper reuse remains independent of removed search experiments and defaults off.
-assert.equal(E.PRUNE.ttDeep,0);
+// The default reuse policy accepts deeper scores; disabling it restores the
+// exact-depth reference. Policy changes must invalidate cached scores.
 E.PRUNE.ttDeep=1;E.clearTranspositionTable();
 const deepValue=search(sparse,3),deepCutoffs=E.transpositionStats().cutoffs;
 assert.equal(search(sparse,2),deepValue);

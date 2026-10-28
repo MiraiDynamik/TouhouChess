@@ -6,13 +6,13 @@
    打入 = 花掉零价值的东西换来 0.5 分的子 = 净 +0.5 分。
    这个测试就是守住这条。 */
 import {readFileSync} from 'node:fs';
-import {W} from '../engine/board.js';
-import {P, applyWeights} from '../engine/pieces.js';
-import {buildState, mirrorSq} from '../engine/deploy.js';
+import {W} from '../engine/index.js';
+import {P, applyWeights} from '../engine/index.js';
+import {buildState, mirrorSq} from '../engine/index.js';
 import {legalMoves, applyMove, vanishPass, outcome, posKey,
-        setPosHist, pushPos} from '../engine/rules.js';
-import {evalPos} from '../engine/eval.js';
-import {lunaticMove} from '../engine/search.js';
+        setPosHist, pushPos} from '../engine/index.js';
+import {evalPos} from '../engine/index.js';
+import {lunaticMove} from '../engine/index.js';
 
 applyWeights(JSON.parse(readFileSync(new URL('../engine/weights.json', import.meta.url), 'utf8')));
 const sqi = (s: string) => (8 - (+s[1])) * 8 + 'abcdefgh'.indexOf(s[0]);

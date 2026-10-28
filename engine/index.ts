@@ -12,14 +12,8 @@
      web/engine.mjs  —— ES 模块，给 Svelte import
      web/engine.js   —— IIFE，挂在 window.TouhouChess 上，给普通 <script>
 */
-export * from './board.js';
-export * from './geometry.js';
-export * from './rules.js';
-export * from './deploy.js';
-export * from './eval.js';
-export * from './search.js';
 export * from './pgn.js';
-export {P, RULES, WEIGHTS, applyWeights} from './pieces.js';
+export * from './public.js';
 
 /* 权重是 JSON，不走 export *，否则 bundler 要把它当模块处理。
    浏览器那边自己 fetch 或者构建时内联 —— 见 loadWeights。 */

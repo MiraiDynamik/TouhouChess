@@ -14,6 +14,10 @@
 | [PGN 棋谱格式](PGN.md) | 标准 SAN/FEN 互通、仙灵扩展 v1、导入分析和实验导出 |
 | [Stockfish 对局](STOCKFISH_MATCH.md) | 开发者开启剪枝对阵 1320/1500 限强档位 |
 | [MadChess 低难度对照](MADCHESS_TESTING.md) | normal / hard 对照 650 / 1100 档，原生预算、换色试跑与续跑 |
+| [Eirin 速度工程报告](EIRIN_PERFORMANCE_ENGINEERING.md) | 同机与同语言基准、源码差距、原型反证和实施路线 |
+| [TT 交互实验](TT_INTERACTIONS.md) | 容量、深结果复用、静态搜索缓存与TT走法优先的组合效应；1M槽追加实验 |
+| [紧凑表示实验](COMPACT_REPRESENTATIONS.md) | 1M/深复用已启用；数字棋盘与压缩走法的六组合等价及性能测试 |
+| [数字内核上线与状态/键实验](STATE_KEY_EXPERIMENTS.md) | 数字棋盘与压缩走法已上线；复用状态帧和增量键的对照、负结果与验证 |
 | [研究记录](RESEARCH.md) | 实验结论、证据、已作废结论和待研究事项 |
 | [实验计划](EXPERIMENT_PLAN.md) | 交接时的实验路线、判据和历史运行记录 |
 

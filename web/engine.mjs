@@ -1,3 +1,58 @@
+// engine/representation.ts
+var compactNames = [void 0, "k", "q", "r", "b", "n", "p", "keda", "onmyo", "ghost", "rabbit", "tewi", "doll", "shanghai", "fairy", "daiyousei", "sunny", "cirno", "reimu", "sanae", "lumia", "iku", "ryuu", "koishi", "alice", "yukari"];
+var compactIds = Object.assign(/* @__PURE__ */ Object.create(null), Object.fromEntries(compactNames.slice(1).map((t, i) => [t, i + 1])));
+var compactKinds = [];
+var compactTypeId = (t) => compactIds[t];
+var compactType = (p) => compactNames[p & 31];
+var compactColor = (p) => p & 32 ? "b" : "w";
+var compactMark = (p) => p >>> 6 & 1;
+function compactPiece(t, c, mark = 0) {
+  const id = compactIds[t];
+  if (!id || !["w", "b"].includes(c) || ![0, 1, void 0].includes(mark)) throw Error("Invalid piece encoding");
+  return id | (c === "b" ? 32 : 0) | (mark ? 64 : 0);
+}
+var compactKind = (p) => compactKinds[p & 31];
+var compactMarked = (p) => p | 64;
+function compactMove(from, to, promo, drop, cost, castle, epc, dbl) {
+  const price = cost == null ? 0 : cost * 2 + 1;
+  if (!Number.isInteger(price) || price < 0 || price > 63 || from < 0 || from > 63 || to < 0 || to > 63) throw Error("Move encoding out of range");
+  return ((from | to << 6 | (compactIds[promo] || 0) << 12 | (compactIds[drop] || 0) << 17 | (castle == null ? 0 : castle === 0 ? 1 : 2) << 22 | (epc ? 1 << 24 : 0) | (dbl ? 1 << 25 : 0) | price << 26) >>> 0) + 1;
+}
+var compactFrom = (m) => m - 1 & 63;
+var compactTo = (m) => m - 1 >>> 6 & 63;
+var compactPromo = (m) => compactNames[m - 1 >>> 12 & 31];
+var compactDrop = (m) => compactNames[m - 1 >>> 17 & 31];
+var compactCost = (m) => {
+  const n = m - 1 >>> 26;
+  return n ? (n - 1) / 2 : void 0;
+};
+var compactCastle = (m) => {
+  const n = m - 1 >>> 22 & 3;
+  return n === 1 ? 0 : n === 2 ? 7 : void 0;
+};
+var compactEpc = (m) => m - 1 & 1 << 24 ? 1 : void 0;
+var compactDbl = (m) => m - 1 & 1 << 25 ? 1 : void 0;
+var compactChildren = /* @__PURE__ */ new WeakMap();
+var scores = new Float64Array(256);
+var moves = new Float64Array(256);
+var indices = [];
+function compactOrder(s, ms, ply, score) {
+  const n = ms.length;
+  if (n > scores.length) {
+    scores = new Float64Array(n * 2);
+    moves = new Float64Array(n * 2);
+  }
+  indices.length = n;
+  for (let i = 0; i < n; i++) {
+    moves[i] = ms[i];
+    scores[i] = score(s, ms[i], ply);
+    indices[i] = i;
+  }
+  indices.sort((a, b) => scores[b] - scores[a]);
+  for (let i = 0; i < n; i++) ms[i] = moves[indices[i]];
+  return ms;
+}
+
 // engine/board.ts
 var W = "w";
 var B = "b";
@@ -21,15 +76,19 @@ var rt = (c) => c === W ? 1 : -1;
 var P = {};
 var def = (t, o) => {
   P[t] = o;
+  compactKinds[compactTypeId(t)] = o;
 };
-var transparent = (p) => p.t === "reimu";
+var transparent = (p) => compactType(p) === "reimu";
 var pushm = (s, i, to, out) => {
   const q = s.b[to];
-  if (!q || q.c !== s.b[i].c) out.push({ from: i, to });
+  if (!q || compactColor(q) !== compactColor(s.b[i]))
+    out.push(compactMove(i, to, void 0, void 0, void 0, void 0, void 0, void 0));
 };
 function leapAtk(s, i, offs) {
   const r = rank(i), f = file(i), o = [];
-  for (const [dr, df] of offs) if (ok(r + dr, f + df)) o.push(at(r + dr, f + df));
+  for (const [dr, df] of offs)
+    if (ok(r + dr, f + df))
+      o.push(at(r + dr, f + df));
   return o;
 }
 function slideAtk(s, i, dirs) {
@@ -39,7 +98,8 @@ function slideAtk(s, i, dirs) {
     while (ok(nr, nf)) {
       const t = at(nr, nf);
       o.push(t);
-      if (s.b[t] && !transparent(s.b[t])) break;
+      if (s.b[t] && !transparent(s.b[t]))
+        break;
       nr += dr;
       nf += df;
     }
@@ -48,20 +108,25 @@ function slideAtk(s, i, dirs) {
 }
 function leapGen(s, i, offs, capturesOnly = false) {
   const r = rank(i), f = file(i), o = [];
-  for (const [dr, df] of offs) if (ok(r + dr, f + df) && (!capturesOnly || s.b[at(r + dr, f + df)])) pushm(s, i, at(r + dr, f + df), o);
+  for (const [dr, df] of offs)
+    if (ok(r + dr, f + df) && (!capturesOnly || s.b[at(r + dr, f + df)]))
+      pushm(s, i, at(r + dr, f + df), o);
   return o;
 }
 function slideGen(s, i, dirs, capturesOnly = false) {
-  const me = s.b[i].c, r = rank(i), f = file(i), o = [];
+  const me = compactColor(s.b[i]), r = rank(i), f = file(i), o = [];
   for (const [dr, df] of dirs) {
     let nr = r + dr, nf = f + df;
     while (ok(nr, nf)) {
       const t = at(nr, nf), q = s.b[t];
       if (!q) {
-        if (!capturesOnly) o.push({ from: i, to: t });
+        if (!capturesOnly)
+          o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
       } else {
-        if (q.c !== me) o.push({ from: i, to: t });
-        if (!transparent(q)) break;
+        if (compactColor(q) !== me)
+          o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
+        if (!transparent(q))
+          break;
       }
       nr += dr;
       nf += df;
@@ -72,17 +137,21 @@ function slideGen(s, i, dirs, capturesOnly = false) {
 var promoOpts = () => ["q", "r", "b", "n"];
 function leapHits(s, i, target, offs) {
   const dr = rank(target) - rank(i), df = file(target) - file(i);
-  for (const [r, f] of offs) if (r === dr && f === df) return true;
+  for (const [r, f] of offs)
+    if (r === dr && f === df)
+      return true;
   return false;
 }
 function slideHits(s, i, target, dirs) {
   const r = rank(i), f = file(i), tr = rank(target) - r, tf = file(target) - f;
   for (const [dr, df] of dirs) {
     const steps = dr ? tr / dr : tf / df;
-    if (steps <= 0 || !Number.isInteger(steps) || dr * steps !== tr || df * steps !== tf) continue;
+    if (steps <= 0 || !Number.isInteger(steps) || dr * steps !== tr || df * steps !== tf)
+      continue;
     for (let k = 1; k < steps; k++) {
       const p = s.b[at(r + dr * k, f + df * k)];
-      if (p && !transparent(p)) return false;
+      if (p && !transparent(p))
+        return false;
     }
     return true;
   }
@@ -100,29 +169,38 @@ def("r", { n: "\u8F66", g: "\u265C", v: 5, slots: ["r"], slider: 1, atk: (s, i) 
 def("b", { n: "\u8C61", g: "\u265D", v: 3, slots: ["n"], dev: 1, atk: (s, i) => slideAtk(s, i, DIAG), gen: (s, i) => slideGen(s, i, DIAG) });
 def("n", { n: "\u9A6C", g: "\u265E", v: 3, slots: ["n"], dev: 1, atk: leapTable(KNIGHT), gen: (s, i) => leapGen(s, i, KNIGHT) });
 function pawnAtk(s, i, dirs) {
-  const p = s.b[i], r = rank(i), f = file(i), d = fw(p.c), o = [];
-  for (const df of dirs) if (ok(r + d, f + df)) o.push(at(r + d, f + df));
+  const p = s.b[i], r = rank(i), f = file(i), d = fw(compactColor(p)), o = [];
+  for (const df of dirs)
+    if (ok(r + d, f + df))
+      o.push(at(r + d, f + df));
   return o;
 }
 function pawnGen(s, i, dirs, dbl, capturesOnly = false) {
-  const p = s.b[i], me = p.c, opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
+  const p = s.b[i], me = compactColor(p), opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
   const last = me === W ? 0 : 7, home = me === W ? 6 : 1;
   if (!capturesOnly && ok(r + d, f)) {
     const one = at(r + d, f);
     if (!s.b[one]) {
-      if (r + d === last) promoOpts().forEach((t) => o.push({ from: i, to: one, promo: t }));
-      else o.push({ from: i, to: one });
-      if (dbl && r === home && ok(r + 2 * d, f) && !s.b[at(r + 2 * d, f)]) o.push({ from: i, to: at(r + 2 * d, f), dbl: 1 });
+      if (r + d === last)
+        promoOpts().forEach((t) => o.push(compactMove(i, one, t, void 0, void 0, void 0, void 0, void 0)));
+      else
+        o.push(compactMove(i, one, void 0, void 0, void 0, void 0, void 0, void 0));
+      if (dbl && r === home && ok(r + 2 * d, f) && !s.b[at(r + 2 * d, f)])
+        o.push(compactMove(i, at(r + 2 * d, f), void 0, void 0, void 0, void 0, void 0, 1));
     }
   }
   for (const df of dirs) {
     const nr = r + d, nf = f + df;
-    if (!ok(nr, nf)) continue;
+    if (!ok(nr, nf))
+      continue;
     const t = at(nr, nf), q = s.b[t];
-    if (q && q.c === opp) {
-      if (nr === last) promoOpts().forEach((pt) => o.push({ from: i, to: t, promo: pt }));
-      else o.push({ from: i, to: t });
-    } else if (!q && t === s.ep) o.push({ from: i, to: t, epc: 1 });
+    if (q && compactColor(q) === opp) {
+      if (nr === last)
+        promoOpts().forEach((pt) => o.push(compactMove(i, t, pt, void 0, void 0, void 0, void 0, void 0)));
+      else
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
+    } else if (!q && t === s.ep)
+      o.push(compactMove(i, t, void 0, void 0, void 0, void 0, 1, void 0));
   }
   return o;
 }
@@ -142,8 +220,8 @@ def("keda", {
   slots: ["p"],
   vanish: 1,
   pawnish: 1,
-  atk: (s, i) => pawnAtk(s, i, [lf(s.b[i].c)]),
-  gen: (s, i) => pawnGen(s, i, [lf(s.b[i].c)], true)
+  atk: (s, i) => pawnAtk(s, i, [lf(compactColor(s.b[i]))]),
+  gen: (s, i) => pawnGen(s, i, [lf(compactColor(s.b[i]))], true)
 });
 def("onmyo", {
   n: "\u9634\u9633\u7389",
@@ -152,8 +230,8 @@ def("onmyo", {
   slots: ["p"],
   vanish: 1,
   pawnish: 1,
-  atk: (s, i) => pawnAtk(s, i, [rt(s.b[i].c)]),
-  gen: (s, i) => pawnGen(s, i, [rt(s.b[i].c)], true)
+  atk: (s, i) => pawnAtk(s, i, [rt(compactColor(s.b[i]))]),
+  gen: (s, i) => pawnGen(s, i, [rt(compactColor(s.b[i]))], true)
 });
 def("ghost", {
   n: "\u5E7D\u7075",
@@ -164,17 +242,19 @@ def("ghost", {
   pawnish: 1,
   atk: (s, i) => pawnAtk(s, i, [0]),
   gen: (s, i) => {
-    const p = s.b[i], me = p.c, opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
+    const p = s.b[i], me = compactColor(p), opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
     const home = me === W ? 6 : 1;
     for (const df of [-1, 1]) {
       if (ok(r + d, f + df) && !s.b[at(r + d, f + df)]) {
-        o.push({ from: i, to: at(r + d, f + df) });
-        if (r === home && ok(r + 2 * d, f + 2 * df) && !s.b[at(r + 2 * d, f + 2 * df)]) o.push({ from: i, to: at(r + 2 * d, f + 2 * df) });
+        o.push(compactMove(i, at(r + d, f + df), void 0, void 0, void 0, void 0, void 0, void 0));
+        if (r === home && ok(r + 2 * d, f + 2 * df) && !s.b[at(r + 2 * d, f + 2 * df)])
+          o.push(compactMove(i, at(r + 2 * d, f + 2 * df), void 0, void 0, void 0, void 0, void 0, void 0));
       }
     }
     if (ok(r + d, f)) {
       const t = at(r + d, f), q = s.b[t];
-      if (q && q.c === opp) o.push({ from: i, to: t });
+      if (q && compactColor(q) === opp)
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
     }
     return o;
   }
@@ -188,25 +268,29 @@ def("rabbit", {
   pawnish: 1,
   atk: (s, i) => pawnAtk(s, i, [-1, 1]),
   gen: (s, i) => {
-    const p = s.b[i], me = p.c, opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
+    const p = s.b[i], me = compactColor(p), opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
     const last = me === W ? 0 : 7, pen = me === W ? 1 : 6;
-    const push = (nr, t) => o.push(nr === last || nr === pen ? { from: i, to: t, promo: "tewi" } : { from: i, to: t });
+    const push = (nr, t) => o.push(nr === last || nr === pen ? compactMove(i, t, "tewi", void 0, void 0, void 0, void 0, void 0) : compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
     for (const df of [-2, 2]) {
       const nr = r + 2 * d, nf = f + df;
-      if (!ok(nr, nf)) continue;
+      if (!ok(nr, nf))
+        continue;
       const t = at(nr, nf);
-      if (s.b[t]) continue;
+      if (s.b[t])
+        continue;
       push(nr, t);
     }
     for (const df of [-1, 1]) {
       const nr = r + d, nf = f + df;
-      if (!ok(nr, nf)) continue;
+      if (!ok(nr, nf))
+        continue;
       const t = at(nr, nf), q = s.b[t];
-      if (q && q.c === opp) {
+      if (q && compactColor(q) === opp) {
         push(nr, t);
         continue;
       }
-      if (!q && t === s.ep) o.push({ from: i, to: t, epc: 1 });
+      if (!q && t === s.ep)
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, 1, void 0));
     }
     return o;
   }
@@ -228,13 +312,16 @@ def("doll", {
   pawnish: 1,
   atk: (s, i) => pawnAtk(s, i, [0]),
   gen: (s, i) => {
-    const me = s.b[i].c, opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
+    const me = compactColor(s.b[i]), opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
     const last = me === W ? 0 : 7;
-    if (!ok(r + d, f)) return o;
+    if (!ok(r + d, f))
+      return o;
     const t = at(r + d, f), q = s.b[t];
-    if (!q || q.c === opp) {
-      if (r + d === last) o.push({ from: i, to: t, promo: "shanghai" });
-      else o.push({ from: i, to: t });
+    if (!q || compactColor(q) === opp) {
+      if (r + d === last)
+        o.push(compactMove(i, t, "shanghai", void 0, void 0, void 0, void 0, void 0));
+      else
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
     }
     return o;
   }
@@ -244,15 +331,18 @@ def("shanghai", {
   g: "\u2616",
   v: 1.5,
   slots: [],
-  atk: (s, i) => slideAtk(s, i, [[-fw(s.b[i].c), 0]]),
-  gen: (s, i) => slideGen(s, i, [[-fw(s.b[i].c), 0]])
+  atk: (s, i) => slideAtk(s, i, [[-fw(compactColor(s.b[i])), 0]]),
+  gen: (s, i) => slideGen(s, i, [[-fw(compactColor(s.b[i])), 0]])
 });
 function dollDropOK(s, to, me) {
-  if (s.b[to]) return false;
-  if (rank(to) === (me === W ? 0 : 7)) return false;
+  if (s.b[to])
+    return false;
+  if (rank(to) === (me === W ? 0 : 7))
+    return false;
   for (let r = 0; r < 8; r++) {
     const q = s.b[at(r, file(to))];
-    if (q && q.c === me && q.t === "doll") return false;
+    if (q && compactColor(q) === me && compactType(q) === "doll")
+      return false;
   }
   return true;
 }
@@ -263,8 +353,8 @@ def("daiyousei", {
   v: 2,
   slots: ["n", "p"],
   dev: 1,
-  atk: (s, i) => leapAtk(s, i, SILVER(s.b[i].c)),
-  gen: (s, i) => leapGen(s, i, SILVER(s.b[i].c))
+  atk: (s, i) => leapAtk(s, i, SILVER(compactColor(s.b[i]))),
+  gen: (s, i) => leapGen(s, i, SILVER(compactColor(s.b[i])))
 });
 def("sunny", {
   n: "\u6851\u5C3C\u7C73\u5C14\u514B",
@@ -294,20 +384,23 @@ def("reimu", {
   slots: ["k", "q", "r", "n"],
   atk: leapTable(REIMU_ATK),
   gen: (s, i) => {
-    const me = s.b[i].c, opp = me === W ? B : W, r = rank(i), f = file(i), o = [];
+    const me = compactColor(s.b[i]), opp = me === W ? B : W, r = rank(i), f = file(i), o = [];
     for (const [dr, df] of ORTHO) {
       let nr = r + dr, nf = f + df;
       while (ok(nr, nf)) {
         const t = at(nr, nf);
-        if (!s.b[t]) o.push({ from: i, to: t });
+        if (!s.b[t])
+          o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
         nr += dr;
         nf += df;
       }
     }
     for (const [dr, df] of REIMU_ATK) {
-      if (!ok(r + dr, f + df)) continue;
+      if (!ok(r + dr, f + df))
+        continue;
       const t = at(r + dr, f + df), q = s.b[t];
-      if (q && q.c === opp) o.push({ from: i, to: t });
+      if (q && compactColor(q) === opp)
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
     }
     return o;
   }
@@ -319,8 +412,8 @@ def("sanae", {
   v: 6,
   slots: ["k", "q", "r"],
   slider: 1,
-  atk: (s, i) => slideAtk(s, i, SANAE(s.b[i].c)),
-  gen: (s, i) => slideGen(s, i, SANAE(s.b[i].c))
+  atk: (s, i) => slideAtk(s, i, SANAE(compactColor(s.b[i]))),
+  gen: (s, i) => slideGen(s, i, SANAE(compactColor(s.b[i])))
 });
 def("lumia", {
   n: "\u9732\u7C73\u5A05",
@@ -341,10 +434,11 @@ def("iku", {
   slider: 1,
   atk: (s, i) => slideAtk(s, i, ORTHO),
   gen: (s, i) => {
-    const last = s.b[i].c === W ? 0 : 7, o = [];
+    const last = compactColor(s.b[i]) === W ? 0 : 7, o = [];
     for (const m of slideGen(s, i, ORTHO)) {
       o.push(m);
-      if (rank(m.to) === last) o.push({ from: i, to: m.to, promo: "ryuu" });
+      if (rank(compactTo(m)) === last)
+        o.push(compactMove(i, compactTo(m), "ryuu", void 0, void 0, void 0, void 0, void 0));
     }
     return o;
   }
@@ -364,29 +458,35 @@ def("koishi", {
   v: 1,
   slots: ["n", "p"],
   atk: (s, i) => {
-    const c = s.b[i].c, r = rank(i), f = file(i), o = [], d = -fw(c);
-    for (const df of [-1, 0, 1]) if (ok(r + d, f + df)) o.push(at(r + d, f + df));
+    const c = compactColor(s.b[i]), r = rank(i), f = file(i), o = [], d = -fw(c);
+    for (const df of [-1, 0, 1])
+      if (ok(r + d, f + df))
+        o.push(at(r + d, f + df));
     return o;
   },
   gen: (s, i) => {
-    const me = s.b[i].c, opp = me === W ? B : W, o = [], d = -fw(me), r = rank(i), f = file(i);
+    const me = compactColor(s.b[i]), opp = me === W ? B : W, o = [], d = -fw(me), r = rank(i), f = file(i);
     const seen = /* @__PURE__ */ new Set([i]), qq = [i];
     for (let head = 0; head < qq.length; head++) {
       const cur = qq[head];
       for (const [dr, df] of ALL8) {
         const nr = rank(cur) + dr * 2, nf = file(cur) + df * 2;
-        if (!ok(nr, nf)) continue;
+        if (!ok(nr, nf))
+          continue;
         const t = at(nr, nf);
-        if (s.b[t] || seen.has(t)) continue;
+        if (s.b[t] || seen.has(t))
+          continue;
         seen.add(t);
         qq.push(t);
-        o.push({ from: i, to: t });
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
       }
     }
     for (const df of [-1, 0, 1]) {
-      if (!ok(r + d, f + df)) continue;
+      if (!ok(r + d, f + df))
+        continue;
       const t = at(r + d, f + df), q = s.b[t];
-      if (q && q.c === opp) o.push({ from: i, to: t });
+      if (q && compactColor(q) === opp)
+        o.push(compactMove(i, t, void 0, void 0, void 0, void 0, void 0, void 0));
     }
     return o;
   }
@@ -397,22 +497,26 @@ def("alice", {
   v: 2.5,
   slots: ["n", "p"],
   dropper: 1,
-  atk: (s, i) => leapAtk(s, i, GOLD(s.b[i].c)),
+  atk: (s, i) => leapAtk(s, i, GOLD(compactColor(s.b[i]))),
   gen: (s, i) => {
-    const me = s.b[i].c, r = rank(i), f = file(i), o = leapGen(s, i, GOLD(me));
+    const me = compactColor(s.b[i]), r = rank(i), f = file(i), o = leapGen(s, i, GOLD(me));
     if (s.ammo[me] >= 0.5)
       for (const [dr, df] of GOLD(me)) {
-        if (!ok(r + dr, f + df)) continue;
+        if (!ok(r + dr, f + df))
+          continue;
         const t = at(r + dr, f + df);
-        if (dollDropOK(s, t, me)) o.push({ from: i, to: t, drop: "doll", cost: 0.5 });
+        if (dollDropOK(s, t, me))
+          o.push(compactMove(i, t, void 0, "doll", 0.5, void 0, void 0, void 0));
       }
     return o;
   }
 });
 var rimDirs = (i) => {
   const r = rank(i), f = file(i), d = [];
-  if (r === 0 || r === 7) d.push([0, -1], [0, 1]);
-  if (f === 0 || f === 7) d.push([-1, 0], [1, 0]);
+  if (r === 0 || r === 7)
+    d.push([0, -1], [0, 1]);
+  if (f === 0 || f === 7)
+    d.push([-1, 0], [1, 0]);
   return d;
 };
 var LEAP7 = [[7, 0], [-7, 0], [0, 7], [0, -7]];
@@ -428,8 +532,9 @@ def("yukari", {
     const o = slideGen(s, i, rimDirs(i)).concat(leapGen(s, i, LEAP7));
     const seen = /* @__PURE__ */ new Set(), u = [];
     for (const m of o) {
-      if (seen.has(m.to)) continue;
-      seen.add(m.to);
+      if (seen.has(compactTo(m)))
+        continue;
+      seen.add(compactTo(m));
       u.push(m);
     }
     return u;
@@ -444,32 +549,32 @@ for (const [t, dirs] of Object.entries({ q: ALL8, r: ORTHO, b: DIAG })) {
   P[t].captures = (s, i) => slideGen(s, i, dirs, true);
 }
 for (const [t, dirs] of Object.entries({ alice: GOLD, daiyousei: SILVER })) {
-  P[t].hits = (s, i, target) => leapHits(s, i, target, dirs(s.b[i].c));
-  P[t].captures = (s, i) => leapGen(s, i, dirs(s.b[i].c), true);
+  P[t].hits = (s, i, target) => leapHits(s, i, target, dirs(compactColor(s.b[i])));
+  P[t].captures = (s, i) => leapGen(s, i, dirs(compactColor(s.b[i])), true);
 }
-P.sanae.hits = (s, i, target) => slideHits(s, i, target, SANAE(s.b[i].c));
-P.sanae.captures = (s, i) => slideGen(s, i, SANAE(s.b[i].c), true);
+P.sanae.hits = (s, i, target) => slideHits(s, i, target, SANAE(compactColor(s.b[i])));
+P.sanae.captures = (s, i) => slideGen(s, i, SANAE(compactColor(s.b[i])), true);
 P.iku.hits = P.r.hits;
 P.ryuu.hits = (s, i, target) => slideHits(s, i, target, ORTHO) || leapHits(s, i, target, DIAG);
-P.shanghai.hits = (s, i, target) => slideHits(s, i, target, [[-fw(s.b[i].c), 0]]);
+P.shanghai.hits = (s, i, target) => slideHits(s, i, target, [[-fw(compactColor(s.b[i])), 0]]);
 P.yukari.hits = (s, i, target) => slideHits(s, i, target, rimDirs(i)) || leapHits(s, i, target, LEAP7);
 for (const [t, dirs] of Object.entries({ p: () => [-1, 1], rabbit: () => [-1, 1], keda: (c) => [lf(c)], onmyo: (c) => [rt(c)], ghost: () => [0] })) {
-  P[t].hits = (s, i, target) => rank(target) - rank(i) === fw(s.b[i].c) && dirs(s.b[i].c).includes(file(target) - file(i));
+  P[t].hits = (s, i, target) => rank(target) - rank(i) === fw(compactColor(s.b[i])) && dirs(compactColor(s.b[i])).includes(file(target) - file(i));
 }
 P.p.captures = (s, i) => pawnGen(s, i, [-1, 1], true, true);
-P.keda.captures = (s, i) => pawnGen(s, i, [lf(s.b[i].c)], true, true);
-P.onmyo.captures = (s, i) => pawnGen(s, i, [rt(s.b[i].c)], true, true);
-P.koishi.hits = (s, i, target) => rank(target) - rank(i) === -fw(s.b[i].c) && Math.abs(file(target) - file(i)) <= 1;
-P.koishi.captures = (s, i) => leapGen(s, i, [-1, 0, 1].map((df) => [-fw(s.b[i].c), df]), true);
+P.keda.captures = (s, i) => pawnGen(s, i, [lf(compactColor(s.b[i]))], true, true);
+P.onmyo.captures = (s, i) => pawnGen(s, i, [rt(compactColor(s.b[i]))], true, true);
+P.koishi.hits = (s, i, target) => rank(target) - rank(i) === -fw(compactColor(s.b[i])) && Math.abs(file(target) - file(i)) <= 1;
+P.koishi.captures = (s, i) => leapGen(s, i, [-1, 0, 1].map((df) => [-fw(compactColor(s.b[i])), df]), true);
 var pawnWhite = leapTable([[-1, -1], [-1, 1]]);
 var pawnBlack = leapTable([[1, -1], [1, 1]]);
-P.p.atk = P.rabbit.atk = (s, i) => (s.b[i].c === W ? pawnWhite : pawnBlack)(s, i);
+P.p.atk = P.rabbit.atk = (s, i) => (compactColor(s.b[i]) === W ? pawnWhite : pawnBlack)(s, i);
 var goldWhite = leapTable(GOLD(W));
 var goldBlack = leapTable(GOLD(B));
-P.alice.atk = (s, i) => (s.b[i].c === W ? goldWhite : goldBlack)(s, i);
+P.alice.atk = (s, i) => (compactColor(s.b[i]) === W ? goldWhite : goldBlack)(s, i);
 var silverWhite = leapTable(SILVER(W));
 var silverBlack = leapTable(SILVER(B));
-P.daiyousei.atk = (s, i) => (s.b[i].c === W ? silverWhite : silverBlack)(s, i);
+P.daiyousei.atk = (s, i) => (compactColor(s.b[i]) === W ? silverWhite : silverBlack)(s, i);
 
 // engine/costs.generated.ts
 var RULES = {
@@ -553,18 +658,23 @@ function withRuleCache(run) {
 }
 function frozenSet(s) {
   const cached = frozenCache?.get(s.b);
-  if (cached) return cached.value;
+  if (cached)
+    return cached.value;
   let z = null, count = 0;
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || !P[p.t].freezer) continue;
+    if (!p || !compactKind(p).freezer)
+      continue;
     count++;
     const r = rank(i), f = file(i);
     for (const [dr, df] of DIAG) {
-      if (!ok(r + dr, f + df)) continue;
+      if (!ok(r + dr, f + df))
+        continue;
       const t = at(r + dr, f + df), q = s.b[t];
-      if (q && P[q.t].royal) continue;
-      if (z === null) z = /* @__PURE__ */ new Set();
+      if (q && compactKind(q).royal)
+        continue;
+      if (z === null)
+        z = /* @__PURE__ */ new Set();
       z.add(t);
     }
   }
@@ -576,30 +686,39 @@ function darkSet(s) {
   const d = /* @__PURE__ */ new Set();
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || !P[p.t].fogger) continue;
+    if (!p || !compactKind(p).fogger)
+      continue;
     const r = rank(i), f = file(i);
-    for (const [dr, df] of ALL8) if (ok(r + dr, f + df)) d.add(at(r + dr, f + df));
+    for (const [dr, df] of ALL8)
+      if (ok(r + dr, f + df))
+        d.add(at(r + dr, f + df));
   }
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || !P[p.t].lightbringer) continue;
+    if (!p || !compactKind(p).lightbringer)
+      continue;
     const r = rank(i), f = file(i);
-    for (const [dr, df] of DIAG) if (ok(r + dr, f + df)) d.delete(at(r + dr, f + df));
+    for (const [dr, df] of DIAG)
+      if (ok(r + dr, f + df))
+        d.delete(at(r + dr, f + df));
   }
   return d;
 }
 function attacksFrom(s, i, fz) {
   const p = s.b[i];
-  if (!p) return [];
-  if (fz && fz.has(i)) return [];
-  return P[p.t].atk(s, i);
+  if (!p)
+    return [];
+  if (fz && fz.has(i))
+    return [];
+  return compactKind(p).atk(s, i);
 }
 function isAttacked(s, sq, by, fz) {
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (p && p.c === by && (!fz || !fz.has(i))) {
-      const kind = P[p.t];
-      if (kind.hits ? kind.hits(s, i, sq) : kind.atk(s, i).includes(sq)) return true;
+    if (p && compactColor(p) === by && (!fz || !fz.has(i))) {
+      const kind = compactKind(p);
+      if (kind.hits ? kind.hits(s, i, sq) : kind.atk(s, i).includes(sq))
+        return true;
     }
   }
   return false;
@@ -608,7 +727,8 @@ function royals(s, c) {
   const o = [];
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (p && p.c === c && P[p.t].royal) o.push(i);
+    if (p && compactColor(p) === c && compactKind(p).royal)
+      o.push(i);
   }
   return o;
 }
@@ -619,70 +739,79 @@ function inCheck(s, c, fz) {
 }
 function pseudo(s, i, fz) {
   const p = s.b[i];
-  if (!p || p.c !== s.turn) return [];
-  if (fz.has(i)) return [];
-  const o = P[p.t].gen(s, i);
-  const back = p.c === W ? 7 : 0;
-  if (i === at(back, 4) && P[p.t].royal && (s.cas[p.c + 0] || s.cas[p.c + 7])) {
-    const opp = p.c === W ? B : W;
+  if (!p || compactColor(p) !== s.turn)
+    return [];
+  if (fz.has(i))
+    return [];
+  const o = compactKind(p).gen(s, i);
+  const back = compactColor(p) === W ? 7 : 0;
+  if (i === at(back, 4) && compactKind(p).royal && (s.cas[compactColor(p) + 0] || s.cas[compactColor(p) + 7])) {
+    const opp = compactColor(p) === W ? B : W;
     let checked = false;
     for (const rf of [7, 0]) {
-      if (!s.cas[p.c + rf]) continue;
+      if (!s.cas[compactColor(p) + rf])
+        continue;
       const dir = rf === 7 ? 1 : -1;
       let clear = true;
-      for (let f = 4 + dir; f !== rf; f += dir) if (s.b[at(back, f)]) {
-        clear = false;
-        break;
-      }
-      if (!clear) continue;
+      for (let f = 4 + dir; f !== rf; f += dir)
+        if (s.b[at(back, f)]) {
+          clear = false;
+          break;
+        }
+      if (!clear)
+        continue;
       if (!checked) {
-        if (inCheck(s, p.c, fz)) break;
+        if (inCheck(s, compactColor(p), fz))
+          break;
         checked = true;
       }
-      if (isAttacked(s, at(back, 4 + dir), opp, fz) || isAttacked(s, at(back, 4 + 2 * dir), opp, fz)) continue;
-      o.push({ from: i, to: at(back, 4 + 2 * dir), castle: rf });
+      if (isAttacked(s, at(back, 4 + dir), opp, fz) || isAttacked(s, at(back, 4 + 2 * dir), opp, fz))
+        continue;
+      o.push(compactMove(i, at(back, 4 + 2 * dir), void 0, void 0, void 0, rf, void 0, void 0));
     }
   }
   return o;
 }
 function inheritNoFreezers(s, b, placed) {
-  if (frozenCache?.get(s.b) === NO_FREEZERS && !P[placed].freezer) frozenCache.set(b, NO_FREEZERS);
+  if (frozenCache?.get(s.b) === NO_FREEZERS && !P[placed].freezer)
+    frozenCache.set(b, NO_FREEZERS);
 }
 function applyMove(s, m) {
-  const b = s.b.slice(), p = b[m.from], me = p.c, cas = { ...s.cas }, am = { ...s.ammo };
+  const b = s.b.slice(), p = b[compactFrom(m)], me = compactColor(p), cas = { ...s.cas }, am = { ...s.ammo };
   let cap = null;
-  if (m.drop) {
-    cap = b[m.to];
-    b[m.to] = { t: m.drop, c: me };
-    am[me] -= m.cost;
-    inheritNoFreezers(s, b, m.drop);
+  if (compactDrop(m)) {
+    cap = b[compactTo(m)];
+    b[compactTo(m)] = compactPiece(compactDrop(m), me, void 0);
+    am[me] -= compactCost(m);
+    inheritNoFreezers(s, b, compactDrop(m));
     return { b, turn: me === W ? B : W, cas, ep: null, half: 0, full: me === B ? s.full + 1 : s.full, ammo: am, _cap: cap };
   }
-  cap = b[m.to];
-  b[m.to] = m.promo ? { t: m.promo, c: me } : p;
-  b[m.from] = null;
-  if (m.epc) {
-    const cs = me === W ? m.to + 8 : m.to - 8;
+  cap = b[compactTo(m)];
+  b[compactTo(m)] = compactPromo(m) ? compactPiece(compactPromo(m), me, void 0) : p;
+  b[compactFrom(m)] = 0;
+  if (compactEpc(m)) {
+    const cs = me === W ? compactTo(m) + 8 : compactTo(m) - 8;
     cap = b[cs];
-    b[cs] = null;
+    b[cs] = 0;
   }
-  if (m.castle !== void 0) {
-    const back = me === W ? 7 : 0, rf = m.castle, dir = rf === 7 ? 1 : -1;
+  if (compactCastle(m) !== void 0) {
+    const back = me === W ? 7 : 0, rf = compactCastle(m), dir = rf === 7 ? 1 : -1;
     b[at(back, 4 + dir)] = b[at(back, rf)];
-    b[at(back, rf)] = null;
+    b[at(back, rf)] = 0;
   }
   for (const col of [W, B]) {
     const back = col === W ? 7 : 0;
     for (const f of [0, 7])
-      if (m.from === at(back, f) || m.to === at(back, f) || m.from === at(back, 4)) cas[col + f] = false;
+      if (compactFrom(m) === at(back, f) || compactTo(m) === at(back, f) || compactFrom(m) === at(back, 4))
+        cas[col + f] = false;
   }
-  inheritNoFreezers(s, b, b[m.to].t);
+  inheritNoFreezers(s, b, compactType(b[compactTo(m)]));
   return {
     b,
     turn: me === W ? B : W,
     cas,
-    ep: m.dbl ? (m.from + m.to) / 2 : null,
-    half: P[p.t].pawnish || cap ? 0 : s.half + 1,
+    ep: compactDbl(m) ? (compactFrom(m) + compactTo(m)) / 2 : null,
+    half: compactKind(p).pawnish || cap ? 0 : s.half + 1,
     full: me === B ? s.full + 1 : s.full,
     ammo: am,
     _cap: cap
@@ -692,10 +821,12 @@ function pseudoAll(s) {
   const fz = frozenSet(s), out = [];
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || p.c !== s.turn) continue;
+    if (!p || compactColor(p) !== s.turn)
+      continue;
     for (const m of pseudo(s, i, fz)) {
-      const tgt = s.b[m.to];
-      if (tgt && tgt.c !== p.c && P[tgt.t].royal) continue;
+      const tgt = s.b[compactTo(m)];
+      if (tgt && compactColor(tgt) !== compactColor(p) && compactKind(tgt).royal)
+        continue;
       out.push(m);
     }
   }
@@ -703,28 +834,35 @@ function pseudoAll(s) {
 }
 function tryMove(s, m) {
   const ns = applyMove(s, m);
-  if (inCheck(ns, s.turn)) return null;
-  m._n = ns;
+  if (inCheck(ns, s.turn))
+    return null;
   return ns;
 }
 function hasLegal(s) {
   const fz = frozenSet(s);
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || p.c !== s.turn) continue;
+    if (!p || compactColor(p) !== s.turn)
+      continue;
     for (const m of pseudo(s, i, fz)) {
-      const tgt = s.b[m.to];
-      if (tgt && tgt.c !== p.c && P[tgt.t].royal) continue;
-      if (!inCheck(applyMove(s, m), s.turn)) return true;
+      const tgt = s.b[compactTo(m)];
+      if (tgt && compactColor(tgt) !== compactColor(p) && compactKind(tgt).royal)
+        continue;
+      if (!inCheck(applyMove(s, m), s.turn))
+        return true;
     }
   }
   return false;
 }
 function legalMoves(s) {
-  const out = [];
+  const out = [], children = /* @__PURE__ */ new Map();
+  compactChildren.set(s, children);
   for (const m of pseudoAll(s)) {
     const ns = tryMove(s, m);
-    if (ns) out.push(m);
+    if (ns) {
+      out.push(m);
+      children.set(m, ns);
+    }
   }
   return out;
 }
@@ -732,24 +870,28 @@ function vanishPass(s) {
   let b = s.b, ch = false;
   for (let i = 0; i < 64; i++) {
     const p = b[i];
-    if (!p || !P[p.t].vanish) continue;
-    const last = p.c === W ? 0 : 7;
+    if (!p || !compactKind(p).vanish)
+      continue;
+    const last = compactColor(p) === W ? 0 : 7;
     if (rank(i) === last) {
-      if (!ch) b = s.b.slice();
-      if (p.mark) {
-        b[i] = null;
-      } else b[i] = { ...p, mark: 1 };
+      if (!ch)
+        b = s.b.slice();
+      if (compactMark(p)) {
+        b[i] = 0;
+      } else
+        b[i] = compactMarked(p);
       ch = true;
     }
   }
-  if (ch && frozenCache?.get(s.b) === NO_FREEZERS) frozenCache.set(b, NO_FREEZERS);
+  if (ch && frozenCache?.get(s.b) === NO_FREEZERS)
+    frozenCache.set(b, NO_FREEZERS);
   return ch ? { ...s, b } : s;
 }
 function posKey(s) {
   let k = s.turn + "|";
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    k += p ? p.c + p.t + (p.mark ? "!" : "") + "," : ".";
+    k += p ? compactColor(p) + compactType(p) + (compactMark(p) ? "!" : "") + "," : ".";
   }
   return k + "|" + [s.cas.w0, s.cas.w7, s.cas.b0, s.cas.b7].map((x) => x ? 1 : 0).join("") + "|" + (s.ep === null ? "-" : s.ep) + "|" + s.ammo.w + "," + s.ammo.b;
 }
@@ -762,15 +904,20 @@ function pushPos(k) {
 }
 function repCount(k) {
   let n = 0;
-  for (const x of posHist) if (x === k) n++;
+  for (const x of posHist)
+    if (x === k)
+      n++;
   return n;
 }
 function standardInsufficientMaterial(s) {
-  if (s.b.some((p) => p && (!["p", "n", "b", "r", "q", "k"].includes(p.t) || p.mark))) return false;
-  const pieces = s.b.map((p, i) => ({ p, i })).filter((x) => x.p && x.p.t !== "k");
-  if (!pieces.length) return true;
-  if (pieces.length === 1 && ["b", "n"].includes(pieces[0].p.t)) return true;
-  return pieces.every((x) => x.p.t === "b") && pieces.every((x) => (file(x.i) + rank(x.i)) % 2 === (file(pieces[0].i) + rank(pieces[0].i)) % 2);
+  if (s.b.some((p) => p && (!["p", "n", "b", "r", "q", "k"].includes(compactType(p)) || compactMark(p))))
+    return false;
+  const pieces = Array.from(s.b, (p, i) => ({ p, i })).filter((x) => x.p && compactType(x.p) !== "k");
+  if (!pieces.length)
+    return true;
+  if (pieces.length === 1 && ["b", "n"].includes(compactType(pieces[0].p)))
+    return true;
+  return pieces.every((x) => compactType(x.p) === "b") && pieces.every((x) => (file(x.i) + rank(x.i)) % 2 === (file(pieces[0].i) + rank(pieces[0].i)) % 2);
 }
 function outcome(s, ms) {
   const fz = frozenSet(s);
@@ -778,27 +925,34 @@ function outcome(s, ms) {
     const c2 = inCheck(s, s.turn, fz);
     return c2 ? { over: 1, code: "mates", winner: s.turn === W ? B : W, alert: 1 } : { over: 1, code: "stalemate", winner: null, alert: 1 };
   }
-  if (repCount(posKey(s)) >= 3) return { over: 1, code: "rep3", winner: null, alert: 1 };
-  if (s.half >= 100) return { over: 1, code: "fifty", winner: null, alert: 1 };
-  if (standardInsufficientMaterial(s)) return { over: 1, code: "material", winner: null, alert: 1 };
+  if (repCount(posKey(s)) >= 3)
+    return { over: 1, code: "rep3", winner: null, alert: 1 };
+  if (s.half >= 100)
+    return { over: 1, code: "fifty", winner: null, alert: 1 };
+  if (standardInsufficientMaterial(s))
+    return { over: 1, code: "material", winner: null, alert: 1 };
   const c = inCheck(s, s.turn, fz);
   return { over: 0, code: "toMove", winner: null, toMove: s.turn, check: !!c, alert: c };
 }
 function notate(s, m, ns, nms) {
-  if (m.castle !== void 0) return m.castle === 7 ? "O-O" : "O-O-O";
-  if (m.drop) return P[m.drop].g + "*" + nm(m.to);
-  const g = P[s.b[m.from].t].g, cap = s.b[m.to] || m.epc;
-  return g + nm(m.from) + (cap ? "x" : "-") + nm(m.to) + (m.promo ? "=" + P[m.promo].g : "") + (inCheck(ns, ns.turn) ? nms.length === 0 ? "#" : "+" : "");
+  if (compactCastle(m) !== void 0)
+    return compactCastle(m) === 7 ? "O-O" : "O-O-O";
+  if (compactDrop(m))
+    return P[compactDrop(m)].g + "*" + nm(compactTo(m));
+  const g = compactKind(s.b[compactFrom(m)]).g, cap = s.b[compactTo(m)] || compactEpc(m);
+  return g + nm(compactFrom(m)) + (cap ? "x" : "-") + nm(compactTo(m)) + (compactPromo(m) ? "=" + P[compactPromo(m)].g : "") + (inCheck(ns, ns.turn) ? nms.length === 0 ? "#" : "+" : "");
 }
 function pseudoCaptures(s) {
   const fz = frozenSet(s), out = [];
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p || p.c !== s.turn || fz.has(i)) continue;
-    const kind = P[p.t], moves = kind.captures ? kind.captures(s, i) : kind.gen(s, i);
-    for (const m of moves) {
-      const target = s.b[m.to];
-      if ((target || m.epc) && !(target && target.c !== p.c && P[target.t].royal)) out.push(m);
+    if (!p || compactColor(p) !== s.turn || fz.has(i))
+      continue;
+    const kind = compactKind(p), moves2 = kind.captures ? kind.captures(s, i) : kind.gen(s, i);
+    for (const m of moves2) {
+      const target = s.b[compactTo(m)];
+      if ((target || compactEpc(m)) && !(target && compactColor(target) !== compactColor(p) && compactKind(target).royal))
+        out.push(m);
     }
   }
   return out;
@@ -811,13 +965,16 @@ var mirrorSq = (i) => (7 - (i >> 3)) * 8 + (i & 7);
 function slotOf(i, c) {
   const r = rank(i), f = file(i);
   const back = c === W ? 7 : 0, pawn = c === W ? 6 : 1;
-  if (r === pawn) return "p";
-  if (r === back) return f === 4 ? "k" : f === 3 ? "q" : f === 0 || f === 7 ? "r" : "n";
+  if (r === pawn)
+    return "p";
+  if (r === back)
+    return f === 4 ? "k" : f === 3 ? "q" : f === 0 || f === 7 ? "r" : "n";
   return null;
 }
 function pointsOf(dep) {
   let v = 0;
-  for (const t of dep.values()) v += P[t].cost;
+  for (const t of dep.values())
+    v += P[t].cost;
   return v;
 }
 function readySide(dep) {
@@ -827,27 +984,34 @@ function readySide(dep) {
 var fmt = (x) => (Math.round(x * 10) / 10).toString();
 function canDeploy(deploy, c, t, i) {
   const d = P[t], slot = slotOf(i, c);
-  if (!d || !slot || !d.slots.includes(slot) || deploy.w.has(i) || deploy.b.has(i)) return false;
-  if (d.files && !d.files.includes(file(i))) return false;
+  if (!d || !slot || !d.slots.includes(slot) || deploy.w.has(i) || deploy.b.has(i))
+    return false;
+  if (d.files && !d.files.includes(file(i)))
+    return false;
   let same = 0, total = 0;
   const color = rank(i) + file(i) & 1;
-  for (const [j, type] of deploy[c]) if (type === t) {
-    total++;
-    if ((rank(j) + file(j) & 1) === color) same++;
-  }
-  if (d.max && total >= d.max) return false;
+  for (const [j, type] of deploy[c])
+    if (type === t) {
+      total++;
+      if ((rank(j) + file(j) & 1) === color)
+        same++;
+    }
+  if (d.max && total >= d.max)
+    return false;
   return d.limit !== "sqcolor" || same === 0 && total < 2;
 }
 function buildState(wDep, bDep) {
-  const b = new Array(64).fill(null);
-  for (const [i, t] of wDep) b[i] = { t, c: W };
-  for (const [i, t] of bDep) b[i] = { t, c: B };
+  const b = new Array(64).fill(0);
+  for (const [i, t] of wDep)
+    b[i] = compactPiece(t, W, void 0);
+  for (const [i, t] of bDep)
+    b[i] = compactPiece(t, B, void 0);
   const cas = {};
   for (const c of [W, B]) {
     const back = c === W ? 7 : 0;
     for (const f of [0, 7]) {
       const q = b[at(back, f)], k = b[at(back, 4)];
-      cas[c + f] = !!(q && q.c === c && k && k.c === c);
+      cas[c + f] = !!(q && compactColor(q) === c && k && compactColor(k) === c);
     }
   }
   return {
@@ -879,39 +1043,42 @@ function evalPos(s) {
   const roy = [], nonRoy = { w: 0, b: 0 };
   for (let i = 0; i < 64; i++) {
     const p = s.b[i];
-    if (!p) continue;
-    const sg = p.c === me ? 1 : -1;
-    v += sg * P[p.t].value * 100;
-    if (P[p.t].royal) roy.push(i);
-    else nonRoy[p.c] += P[p.t].value;
-    if (fz.has(i)) continue;
-    const a = P[p.t].atk(s, i);
-    if (!P[p.t].royal) v += sg * a.length * Wt.mobility;
-    const h = p.c === W ? HITW : HITB;
-    for (let k = 0; k < a.length; k++) h[a[k]] = 1;
+    if (!p)
+      continue;
+    const sg = compactColor(p) === me ? 1 : -1;
+    v += sg * compactKind(p).value * 100;
+    if (compactKind(p).royal)
+      roy.push(i);
+    else
+      nonRoy[compactColor(p)] += compactKind(p).value;
+    if (fz.has(i))
+      continue;
+    const a = compactKind(p).atk(s, i);
+    if (!compactKind(p).royal)
+      v += sg * a.length * Wt.mobility;
+    const h = compactColor(p) === W ? HITW : HITB;
+    for (let k = 0; k < a.length; k++)
+      h[a[k]] = 1;
   }
   for (const i of roy) {
-    const p = s.b[i], sg = p.c === me ? 1 : -1, h = p.c === W ? HITB : HITW;
+    const p = s.b[i], sg = compactColor(p) === me ? 1 : -1, h = compactColor(p) === W ? HITB : HITW;
     const r = rank(i), f = file(i);
     let n = 0;
-    for (const [dr, df] of ALL8) if (ok(r + dr, f + df) && h[at(r + dr, f + df)]) n++;
+    for (const [dr, df] of ALL8)
+      if (ok(r + dr, f + df) && h[at(r + dr, f + df)])
+        n++;
     v -= sg * n * Wt.kingSafety;
   }
   if (roy.length === 2) {
     const bare = nonRoy.w <= 0.5 ? W : nonRoy.b <= 0.5 ? B : null;
     if (bare && nonRoy[bare === W ? B : W] >= 4) {
       const ri = roy[0], rj = roy[1];
-      const bi = s.b[ri].c === bare ? ri : rj, si = bi === ri ? rj : ri;
+      const bi = compactColor(s.b[ri]) === bare ? ri : rj, si = bi === ri ? rj : ri;
       const br = rank(bi), bf = file(bi), sr = rank(si), sf = file(si);
       const edge = Math.max(Math.abs(3.5 - br), Math.abs(3.5 - bf));
       const near = Math.max(Math.abs(sr - br), Math.abs(sf - bf));
-      const corner = Math.min(
-        Math.max(br, bf),
-        Math.max(br, 7 - bf),
-        Math.max(7 - br, bf),
-        Math.max(7 - br, 7 - bf)
-      );
-      const sg = s.b[si].c === me ? 1 : -1;
+      const corner = Math.min(Math.max(br, bf), Math.max(br, 7 - bf), Math.max(7 - br, bf), Math.max(7 - br, 7 - bf));
+      const sg = compactColor(s.b[si]) === me ? 1 : -1;
       v += sg * (edge * Wt.endgame.edge - near * Wt.endgame.near - corner * Wt.endgame.corner);
     }
   }
@@ -919,41 +1086,45 @@ function evalPos(s) {
     for (const c of [W, B]) {
       const sg = c === me ? 1 : -1, back = c === W ? 7 : 0, h = c === W ? HITW : HITB;
       let ctr = 0;
-      for (const [r, f] of [[3, 3], [3, 4], [4, 3], [4, 4]]) if (h[at(r, f)]) ctr++;
-      if (OPT.ctr) v += sg * ctr * Wt.open.center;
+      for (const [r, f] of [[3, 3], [3, 4], [4, 3], [4, 4]])
+        if (h[at(r, f)])
+          ctr++;
+      if (OPT.ctr)
+        v += sg * ctr * Wt.open.center;
       let home = 0, dev = 0, early = 0, castled = 0;
       for (const f of [1, 2, 5, 6]) {
         const q = s.b[at(back, f)];
-        if (q && q.c === c && P[q.t].dev) home++;
+        if (q && compactColor(q) === c && compactKind(q).dev)
+          home++;
       }
-      if (OPT.home) v -= sg * home * Wt.open.homeBlock;
+      if (OPT.home)
+        v -= sg * home * Wt.open.homeBlock;
       for (let i = 0; i < 64; i++) {
         const q = s.b[i];
-        if (!q || q.c !== c || P[q.t].royal) continue;
-        if (P[q.t].dev && rank(i) !== back) dev++;
-        if (P[q.t].value >= HEAVY && P[q.t].slider && rank(i) !== back) early++;
+        if (!q || compactColor(q) !== c || compactKind(q).royal)
+          continue;
+        if (compactKind(q).dev && rank(i) !== back)
+          dev++;
+        if (compactKind(q).value >= HEAVY && compactKind(q).slider && rank(i) !== back)
+          early++;
       }
-      if (OPT.out) v += sg * dev * Wt.open.develop;
-      if (OPT.heavy) v -= sg * early * Wt.open.heavyEarly;
-      for (const i of roy) if (s.b[i].c === c && rank(i) === back && (file(i) === 6 || file(i) === 2)) castled = 1;
-      if (OPT.cast) v += sg * castled * Wt.open.castled;
+      if (OPT.out)
+        v += sg * dev * Wt.open.develop;
+      if (OPT.heavy)
+        v -= sg * early * Wt.open.heavyEarly;
+      for (const i of roy)
+        if (compactColor(s.b[i]) === c && rank(i) === back && (file(i) === 6 || file(i) === 2))
+          castled = 1;
+      if (OPT.cast)
+        v += sg * castled * Wt.open.castled;
     }
   }
   return v;
 }
 
 // engine/transposition.ts
-var TT = { enabled: true, slots: 32768 };
-var moveKey = (m) => m ? JSON.stringify([
-  m.from,
-  m.to,
-  m.promo ?? null,
-  m.drop ?? null,
-  m.cost ?? null,
-  m.castle ?? null,
-  m.epc ?? null,
-  m.dbl ?? null
-]) : null;
+var TT = { enabled: true, slots: 1048576 };
+var moveKey = (m) => m ?? null;
 var ttPositionKey = (s) => posKey(s) + "|half:" + s.half;
 var scoreToTT = (v, ply) => v > MATE / 2 ? v + ply : v < -MATE / 2 ? v - ply : v;
 var scoreFromTT = (v, ply) => v > MATE / 2 ? v - ply : v < -MATE / 2 ? v + ply : v;
@@ -971,7 +1142,8 @@ function clearTranspositionTable() {
 }
 var transpositionStats = () => ({ ...counters, entries: used, capacity: TT.slots, generation });
 function newTranspositionSearch(config) {
-  if (!Number.isInteger(TT.slots) || TT.slots < 1 || TT.slots > 1048576) throw Error("Invalid TT slot count");
+  if (!Number.isInteger(TT.slots) || TT.slots < 1 || TT.slots > 1048576)
+    throw Error("Invalid TT slot count");
   const identity = config + "|slots:" + TT.slots;
   if (identity !== configuration) {
     clearTranspositionTable();
@@ -981,13 +1153,15 @@ function newTranspositionSearch(config) {
 }
 function transpositionIndex(key) {
   let h = 2166136261;
-  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
+  for (let i = 0; i < key.length; i++)
+    h = Math.imul(h ^ key.charCodeAt(i), 16777619);
   return (h >>> 0) % TT.slots;
 }
 function probeTransposition(key, slot = transpositionIndex(key)) {
   counters.probes++;
   const e = table[slot];
-  if (e?.key !== key) return null;
+  if (e?.key !== key)
+    return null;
   counters.hits++;
   return e;
 }
@@ -995,15 +1169,18 @@ function countTTCutoff() {
   counters.cutoffs++;
 }
 function storeTransposition(key, depth, value, bound, move, ply, slot = transpositionIndex(key)) {
-  if (!Number.isFinite(value)) return;
+  if (!Number.isFinite(value))
+    return;
   const i = slot, old = table[i];
-  if (old && old.generation === generation && old.depth > depth && bound !== "exact") return;
-  if (!old) used++;
+  if (old && old.generation === generation && old.depth > depth && bound !== "exact")
+    return;
+  if (!old)
+    used++;
   table[i] = { key, depth, value: scoreToTT(value, ply), bound, move: moveKey(move), generation };
   counters.stores++;
 }
 function matchesMove(m, key) {
-  return m.from === key[0] && m.to === key[1] && (m.promo ?? null) === key[2] && (m.drop ?? null) === key[3] && (m.cost ?? null) === key[4] && (m.castle ?? null) === key[5] && (m.epc ?? null) === key[6] && (m.dbl ?? null) === key[7];
+  return m === key;
 }
 
 // engine/search.ts
@@ -1013,19 +1190,21 @@ var cacheHistoryVersion = 0;
 function withSearchCache(run, { hist = [], enabled = TT.enabled, newSearch = true } = {}) {
   const saved = cacheContext;
   if (enabled) {
-    if (newSearch) newTranspositionSearch(JSON.stringify([
-      OPT,
-      WEIGHTS,
-      PRUNE,
-      Object.entries(P).map(([t, p]) => [t, p.value, p.cost])
-    ]));
+    if (newSearch)
+      newTranspositionSearch(JSON.stringify([
+        OPT,
+        WEIGHTS,
+        PRUNE,
+        Object.entries(P).map(([t, p]) => [t, p.value, p.cost])
+      ]));
     const history = JSON.stringify([...new Set(hist)].sort());
     if (history !== lastCacheHistory) {
       lastCacheHistory = history;
       cacheHistoryVersion++;
     }
     cacheContext = { history: cacheHistoryVersion };
-  } else cacheContext = null;
+  } else
+    cacheContext = null;
   try {
     return withRuleCache(run);
   } finally {
@@ -1037,22 +1216,27 @@ var KMAX = 64;
 var K1 = new Int32Array(KMAX);
 var K2 = new Int32Array(KMAX);
 var HIST = new Int32Array(64 * 64);
-var sig = (m) => m.from << 6 | m.to;
+var sig = (m) => compactFrom(m) << 6 | compactTo(m);
 function clearOrderTables() {
   K1.fill(0);
   K2.fill(0);
   HIST.fill(0);
 }
 function mscore(s, m, ply = 0) {
-  const vic = s.b[m.to];
+  const vic = s.b[compactTo(m)];
   let v = 0;
-  if (vic) v += 1e3 + P[vic.t].value * 10 - P[s.b[m.from].t].value;
-  if (m.promo) v += 500;
-  if (m.drop) v += P[m.drop].value * 10;
-  if (!vic && !m.promo && !m.drop) {
+  if (vic)
+    v += 1e3 + compactKind(vic).value * 10 - compactKind(s.b[compactFrom(m)]).value;
+  if (compactPromo(m))
+    v += 500;
+  if (compactDrop(m))
+    v += P[compactDrop(m)].value * 10;
+  if (!vic && !compactPromo(m) && !compactDrop(m)) {
     const g = sig(m);
-    if (ply < KMAX && K1[ply] === g) v += 900;
-    else if (ply < KMAX && K2[ply] === g) v += 850;
+    if (ply < KMAX && K1[ply] === g)
+      v += 900;
+    else if (ply < KMAX && K2[ply] === g)
+      v += 850;
     else {
       const h = HIST[g];
       v += h > 799 ? 799 : h;
@@ -1061,11 +1245,11 @@ function mscore(s, m, ply = 0) {
   return v;
 }
 function order(s, ms, ply = 0) {
-  for (const m of ms) m._order = mscore(s, m, ply);
-  return ms.sort((a, b) => b._order - a._order);
+  return compactOrder(s, ms, ply, mscore);
 }
 function onCut(s, m, d, ply) {
-  if (s.b[m.to] || m.promo || m.drop) return;
+  if (s.b[compactTo(m)] || compactPromo(m) || compactDrop(m))
+    return;
   const g = sig(m);
   if (ply < KMAX && K1[ply] !== g) {
     K2[ply] = K1[ply];
@@ -1073,26 +1257,33 @@ function onCut(s, m, d, ply) {
   }
   HIST[g] += d * d;
 }
-var kid = (m) => vanishPass(m._n);
+var kid = (m, s) => vanishPass(compactChildren.get(s).get(m));
 function qsearch(s, alpha, beta, ply, rootPly = 0) {
   checkDeadline();
   const checked = inCheck(s, s.turn);
   let best = checked ? -Infinity : evalPos(s);
   if (!checked) {
-    if (ply > 6 || best >= beta) return best;
-    if (best > alpha) alpha = best;
+    if (ply > 6 || best >= beta)
+      return best;
+    if (best > alpha)
+      alpha = best;
   }
   const ms = order(s, checked ? pseudoAll(s) : pseudoCaptures(s));
   let any = false;
   for (const m of ms) {
     const ns = tryMove(s, m);
-    if (!ns) continue;
+    if (!ns)
+      continue;
     any = true;
-    if (ply >= 64) return 0;
+    if (ply >= 64)
+      return 0;
     const sc = -qsearch(vanishPass(ns), -beta, -alpha, ply + 1, rootPly);
-    if (sc > best) best = sc;
-    if (best > alpha) alpha = best;
-    if (alpha >= beta) break;
+    if (sc > best)
+      best = sc;
+    if (best > alpha)
+      alpha = best;
+    if (alpha >= beta)
+      break;
   }
   return checked && !any ? -(MATE - rootPly - ply) : best;
 }
@@ -1109,11 +1300,13 @@ function clearSearchDeadline() {
   srchEnd = 0;
 }
 function checkDeadline(force = false) {
-  if (srchEnd && (force || !(++srchNodes & 255)) && performance.now() >= srchEnd) throw EVABORT;
+  if (srchEnd && (force || !(++srchNodes & 255)) && performance.now() >= srchEnd)
+    throw EVABORT;
 }
 function negamax(s, d, alpha, beta, ply) {
   checkDeadline();
-  if (ply && ply <= 2 && srchRep && srchRep.has(posKey(s))) return 0;
+  if (ply && ply <= 2 && srchRep && srchRep.has(posKey(s)))
+    return 0;
   const originalAlpha = alpha, key = cacheContext ? cacheKey(s, ply) + (d > 0 ? "" : "|qroot") : null;
   const slot = key ? transpositionIndex(key) : 0;
   const cached = key ? probeTransposition(key, slot) : null;
@@ -1126,15 +1319,16 @@ function negamax(s, d, alpha, beta, ply) {
   }
   if (!(d > 0)) {
     const value = !hasLegal(s) ? inCheck(s, s.turn) ? -(MATE - ply) : 0 : qsearch(s, alpha, beta, 0, ply);
-    if (key) storeTransposition(key, d, value, value <= originalAlpha ? "upper" : value >= beta ? "lower" : "exact", null, ply, slot);
+    if (key)
+      storeTransposition(key, d, value, value <= originalAlpha ? "upper" : value >= beta ? "lower" : "exact", null, ply, slot);
     return value;
   }
   const ms = pseudoAll(s);
   order(s, ms, ply);
   if (cached?.move) {
-    const cachedMove = JSON.parse(cached.move);
-    const i = ms.findIndex((m) => matchesMove(m, cachedMove));
-    if (i > 0) ms.unshift(...ms.splice(i, 1));
+    const i = ms.findIndex((m) => matchesMove(m, cached.move));
+    if (i > 0)
+      ms.unshift(...ms.splice(i, 1));
   }
   let best = -Infinity, bestMove = null, any = false, tried = 0;
   const pr = PRUNE.inner;
@@ -1144,36 +1338,45 @@ function negamax(s, d, alpha, beta, ply) {
     let mat = 0;
     for (let i = 0; i < 64; i++) {
       const q = s.b[i];
-      if (q && !P[q.t].royal) mat += P[q.t].value;
+      if (q && !compactKind(q).royal)
+        mat += compactKind(q).value;
     }
-    if (mat >= PRUNE.openMaterial) lAfter = PRUNE.openLmrAfter;
+    if (mat >= PRUNE.openMaterial)
+      lAfter = PRUNE.openLmrAfter;
   }
   for (const m of ms) {
     const ns = tryMove(s, m);
-    if (!ns) continue;
+    if (!ns)
+      continue;
     any = true;
     tried++;
-    const quiet = !s.b[m.to] && !m.promo && !m.drop && !m.epc;
+    const quiet = !s.b[compactTo(m)] && !compactPromo(m) && !compactDrop(m) && !compactEpc(m);
     let red = 0;
     if (pr && quiet && !chk && d >= PRUNE.lmrMinDepth && tried > lAfter)
       red = tried > lAfter * 2 ? 2 : 1;
-    if (red >= d) red = d - 1;
+    if (red >= d)
+      red = d - 1;
     const child = vanishPass(ns);
     let sc = -negamax(child, d - 1 - red, -beta, -alpha, ply + 1);
-    if (red && sc > alpha) sc = -negamax(child, d - 1, -beta, -alpha, ply + 1);
+    if (red && sc > alpha)
+      sc = -negamax(child, d - 1, -beta, -alpha, ply + 1);
     if (sc > best) {
       best = sc;
       bestMove = m;
     }
-    if (best > alpha) alpha = best;
+    if (best > alpha)
+      alpha = best;
     if (alpha >= beta) {
       onCut(s, m, d, ply);
       break;
     }
   }
-  if (!any) best = inCheck(s, s.turn) ? -(MATE - ply) : 0;
-  if (best === -Infinity) return alpha;
-  if (key) storeTransposition(key, d, best, best <= originalAlpha ? "upper" : best >= beta ? "lower" : "exact", bestMove, ply, slot);
+  if (!any)
+    best = inCheck(s, s.turn) ? -(MATE - ply) : 0;
+  if (best === -Infinity)
+    return alpha;
+  if (key)
+    storeTransposition(key, d, best, best <= originalAlpha ? "upper" : best >= beta ? "lower" : "exact", bestMove, ply, slot);
   return best;
 }
 var LEVELS = {
@@ -1195,18 +1398,22 @@ function drawMoveStrategy(selection = LEVELS.lunatic.selection) {
   const weights = modes.map((k) => selection[k]);
   if (weights.some((w) => !Number.isFinite(w) || w < 0) || Math.abs(weights.reduce((a, b) => a + b, 0) - 1) > 1e-9)
     throw new Error("Move selection probabilities must sum to 1");
-  if (selection.best === 1) return "best";
+  if (selection.best === 1)
+    return "best";
   const roll = Math.random();
   let cumulative = 0;
   for (let i = 0; i < modes.length; i++) {
     cumulative += weights[i];
-    if (roll < cumulative) return modes[i];
+    if (roll < cumulative)
+      return modes[i];
   }
   return "best";
 }
 function chooseRankedMove(ranked, strategy, preferCheck = false) {
-  if (!ranked.length) return null;
-  if (strategy === "best" && !preferCheck || ranked.length === 1) return ranked[0];
+  if (!ranked.length)
+    return null;
+  if (strategy === "best" && !preferCheck || ranked.length === 1)
+    return ranked[0];
   let pool;
   if (strategy === "best") {
     pool = ranked.filter((x) => x.v === ranked[0].v);
@@ -1217,17 +1424,20 @@ function chooseRankedMove(ranked, strategy, preferCheck = false) {
     const distance = (x) => Math.max(100 - loss(x), loss(x) - 300, 0);
     const nearest = Math.min(...ranked.map(distance));
     pool = ranked.filter((x) => distance(x) === nearest);
-  } else throw new Error("Unknown ranked move strategy: " + strategy);
+  } else
+    throw new Error("Unknown ranked move strategy: " + strategy);
   return chooseFromMovePool(pool, preferCheck);
 }
 function chooseFromMovePool(pool, preferCheck = false) {
-  if (!pool.length) return null;
+  if (!pool.length)
+    return null;
   if (preferCheck) {
     const checks = pool.filter((x) => {
-      const ns = kid(x.m);
+      const ns = vanishPass(x.n);
       return inCheck(ns, ns.turn);
     });
-    if (checks.length) pool = checks;
+    if (checks.length)
+      pool = checks;
   }
   return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -1252,19 +1462,25 @@ function lunaticMove(s, extraDepth) {
   }
 }
 function depthFor(lv, s) {
-  if (!lv.deepen) return lv.d;
+  if (!lv.deepen)
+    return lv.d;
   let n = 0;
-  for (let i = 0; i < 64; i++) if (s.b[i]) n++;
+  for (let i = 0; i < 64; i++)
+    if (s.b[i])
+      n++;
   return lv.d + (n <= 7 ? 2 : n <= 18 ? 1 : 0);
 }
 function timedDepthFor(lv, s) {
-  if (lv.timeOnly) return Infinity;
-  if (lv.timeOnlyAtPieces !== void 0 && s.b.filter(Boolean).length <= lv.timeOnlyAtPieces) return Infinity;
+  if (lv.timeOnly)
+    return Infinity;
+  if (lv.timeOnlyAtPieces !== void 0 && s.b.filter(Boolean).length <= lv.timeOnlyAtPieces)
+    return Infinity;
   return depthFor(lv, s);
 }
 function rankMoves(s, d) {
   const ms = legalMoves(s);
-  if (!ms.length) return [];
+  if (!ms.length)
+    return [];
   for (let i = ms.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     const t = ms[i];
@@ -1273,7 +1489,7 @@ function rankMoves(s, d) {
   }
   const sc = ms.map((m) => {
     checkDeadline(true);
-    return { m, v: -negamax(kid(m), d - 1, -Infinity, Infinity, 1) };
+    return { m, n: compactChildren.get(s).get(m), v: -negamax(kid(m, s), d - 1, -Infinity, Infinity, 1) };
   });
   sc.sort((a, b) => b.v - a.v);
   return sc;
@@ -1281,8 +1497,8 @@ function rankMoves(s, d) {
 var PRUNE = {
   on: 1,
   /* 根节点候选收窄 */
-  ttDeep: 0,
-  /* 实验：允许更深的置换表结果满足较浅搜索 */
+  ttDeep: 1,
+  /* 默认允许更深的主搜索结果满足较浅搜索；0保留精确深度对照 */
   /* 树内部的前向剪枝。只跳过安静走法（非吃子非升变非打入），
      而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
      不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
@@ -1307,7 +1523,8 @@ var PRUNE = {
   /* 至少留这么多候选，否则没有替代选择 */
 };
 function marginAt(d, mg) {
-  if (mg[d] !== void 0) return mg[d];
+  if (mg[d] !== void 0)
+    return mg[d];
   const ks = Object.keys(mg).map(Number).sort((a, b) => a - b);
   return mg[ks[ks.length - 1]];
 }
@@ -1317,7 +1534,8 @@ function idSearch(s, maxDepth, opt) {
   const mg = opt.margins || PRUNE.margins;
   const minC = opt.minCand !== void 0 ? opt.minCand : PRUNE.minCand;
   let cand = legalMoves(s);
-  if (!cand.length) return { move: null, score: 0, depth: 0, cand: 0 };
+  if (!cand.length)
+    return { move: null, score: 0, depth: 0, cand: 0 };
   for (let i = cand.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     const t = cand[i];
@@ -1330,15 +1548,15 @@ function idSearch(s, maxDepth, opt) {
     checkDeadline(true);
     sc.sort((a, b) => b.v - a.v);
     const margin = marginAt(d, mg);
-    bv = -negamax(kid(sc[0].m), d - 1, -Infinity, Infinity, 1);
+    bv = -negamax(kid(sc[0].m, s), d - 1, -Infinity, Infinity, 1);
     sc[0].v = bv;
     bm = sc[0].m;
     for (let i = 1; i < sc.length; i++) {
       checkDeadline(true);
       const lo = bv - margin;
-      let v = -negamax(kid(sc[i].m), d - 1, -(bv + 1), -lo, 1);
+      let v = -negamax(kid(sc[i].m, s), d - 1, -(bv + 1), -lo, 1);
       if (v > bv) {
-        v = -negamax(kid(sc[i].m), d - 1, -Infinity, Infinity, 1);
+        v = -negamax(kid(sc[i].m, s), d - 1, -Infinity, Infinity, 1);
         if (v > bv) {
           bv = v;
           bm = sc[i].m;
@@ -1348,11 +1566,13 @@ function idSearch(s, maxDepth, opt) {
     }
     reached = d;
     opt.onDepth?.({ move: bm, score: bv, depth: d, cand: sc.length });
-    if (opt.stopOnMate && Math.abs(bv) > MATE / 2) break;
+    if (opt.stopOnMate && Math.abs(bv) > MATE / 2)
+      break;
     if (prune && d < maxDepth) {
       const keep = sc.filter((e) => e.v > bv - margin);
       sc = keep.length >= minC ? keep : sc.slice(0, Math.max(minC, 1));
-      if (sc.length <= 1) break;
+      if (sc.length <= 1)
+        break;
     }
   }
   return { move: bm, score: bv, depth: reached, cand: sc.length };
@@ -1361,10 +1581,13 @@ function pickMove(s, d, selection = LEVELS.lunatic.selection, preferCheck = fals
   srchRep = new Set(posHist);
   return withSearchCache(() => {
     const ms = legalMoves(s);
-    if (!ms.length) return null;
+    if (!ms.length)
+      return null;
     const strategy = drawMoveStrategy(selection);
-    if (strategy === "random") return chooseFromMovePool(ms.map((m) => ({ m })), preferCheck).m;
-    if (strategy !== "best" || preferCheck) return chooseRankedMove(rankMoves(s, d), strategy, preferCheck)?.m || ms[0];
+    if (strategy === "random")
+      return chooseFromMovePool(ms.map((m) => ({ m, n: compactChildren.get(s).get(m) })), preferCheck).m;
+    if (strategy !== "best" || preferCheck)
+      return chooseRankedMove(rankMoves(s, d), strategy, preferCheck)?.m || ms[0];
     return idSearch(s, d, { prune: PRUNE.on }).move || ms[0];
   }, { hist: posHist });
 }
@@ -1374,15 +1597,18 @@ function* analysisSteps(s, { hist = [], plain = true } = {}) {
   let prev = null;
   for (let depth = 1; ; depth++) {
     const start = performance.now(), ms = pseudoAll(s);
-    if (!ms.length) return;
+    if (!ms.length)
+      return;
     if (prev) {
-      const j = ms.findIndex((m) => m.from === prev.from && m.to === prev.to);
-      if (j > 0) [ms[0], ms[j]] = [ms[j], ms[0]];
+      const j = ms.findIndex((m) => compactFrom(m) === compactFrom(prev) && compactTo(m) === compactTo(prev));
+      if (j > 0)
+        [ms[0], ms[j]] = [ms[j], ms[0]];
     }
     let best = null, bv = -Infinity, legal = 0;
     for (const m of ms) {
       const ns = tryMove(s, m);
-      if (!ns) continue;
+      if (!ns)
+        continue;
       legal++;
       const saved = OPT.open;
       let v;
@@ -1398,19 +1624,14 @@ function* analysisSteps(s, { hist = [], plain = true } = {}) {
       }
       yield { progress: true };
     }
-    if (!legal) return;
+    if (!legal)
+      return;
     prev = best;
     yield {
       depth,
       score: bv,
       ms: performance.now() - start,
-      move: {
-        from: best.from,
-        to: best.to,
-        promo: best.promo || null,
-        drop: best.drop || null,
-        castle: best.castle
-      }
+      move: compactMove(compactFrom(best), compactTo(best), compactPromo(best) || null, compactDrop(best) || null, void 0, compactCastle(best), void 0, void 0)
     };
   }
 }
@@ -1420,9 +1641,11 @@ function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
   const start = performance.now(), savedOpen = OPT.open;
   const ms = legalMoves(s);
   let completed = { move: ms[0] || null, score: null, depth: 0 };
-  if (!ms.length) return { ...completed, ms: performance.now() - start };
+  if (!ms.length)
+    return { ...completed, ms: performance.now() - start };
   const budget = timeMs ?? lv.timeMs;
-  if (!Number.isFinite(budget) || budget < 0) throw new Error("Invalid search time budget");
+  if (!Number.isFinite(budget) || budget < 0)
+    throw new Error("Invalid search time budget");
   setSearchState({ end: start + budget, rep: new Set(hist) });
   clearOrderTables();
   OPT.open = lv.plain ? 0 : 1;
@@ -1435,7 +1658,7 @@ function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
       checkDeadline(true);
       const strategy = drawMoveStrategy(lv.selection);
       if (strategy === "random") {
-        completed.move = chooseFromMovePool(ms.map((m) => ({ m })), lv.preferCheck).m;
+        completed.move = chooseFromMovePool(ms.map((m) => ({ m, n: compactChildren.get(s).get(m) })), lv.preferCheck).m;
       } else if (strategy !== "best" || lv.preferCheck) {
         for (let depth = 1; depth <= timedDepthFor(lv, s); depth++) {
           checkDeadline(true);
@@ -1448,7 +1671,8 @@ function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
       }
     }, { hist, enabled: tt });
   } catch (error) {
-    if (error !== EVABORT) throw error;
+    if (error !== EVABORT)
+      throw error;
   } finally {
     OPT.open = savedOpen;
     clearSearchDeadline();
@@ -1456,6 +1680,179 @@ function timedMove(s, levelKey, { hist = [], timeMs, onDepth = () => {
   }
   return { ...completed, ms: performance.now() - start, tt: transpositionStats() };
 }
+
+// engine/public.ts
+var pieceIn = (p) => p ? compactPiece(p.t, p.c, p.mark) : 0;
+var pieceOut = (p) => p ? { t: compactType(p), c: compactColor(p), ...compactMark(p) ? { mark: 1 } : {} } : null;
+var encodings = null;
+function encodingScope(run) {
+  const saved = encodings;
+  encodings = /* @__PURE__ */ new WeakMap();
+  try {
+    return run();
+  } finally {
+    encodings = saved;
+  }
+}
+function stateIn(s) {
+  if (!s) return s;
+  const cached = encodings?.get(s);
+  if (cached) return cached;
+  const result = { ...s, b: s.b.map(pieceIn), ...Object.hasOwn(s, "_cap") ? { _cap: pieceIn(s._cap) } : {} };
+  encodings?.set(s, result);
+  return result;
+}
+function stateOut(s) {
+  return { ...s, b: s.b.map(pieceOut), ...Object.hasOwn(s, "_cap") ? { _cap: pieceOut(s._cap) } : {} };
+}
+function moveIn(m) {
+  if (m == null) return null;
+  for (const square2 of [m.from, m.to]) if (!Number.isInteger(square2) || square2 < 0 || square2 > 63) throw Error("Invalid move square");
+  for (const t of [m.promo, m.drop]) if (t != null && !compactTypeId(t)) throw Error("Unknown move piece");
+  if (m.castle != null && m.castle !== 0 && m.castle !== 7) throw Error("Invalid castling side");
+  for (const flag of [m.epc, m.dbl]) if (flag != null && flag !== 0 && flag !== 1 && flag !== false && flag !== true) throw Error("Invalid move flag");
+  return compactMove(m.from, m.to, m.promo, m.drop, m.cost, m.castle, m.epc, m.dbl);
+}
+function moveOut(m, s) {
+  if (m == null) return null;
+  const result = { from: compactFrom(m), to: compactTo(m) };
+  for (const [key, fn] of moveFields) {
+    const value = fn(m);
+    if (value !== void 0) result[key] = value;
+  }
+  const child = s && compactChildren.get(s)?.get(m);
+  if (child) result._n = stateOut(child);
+  return result;
+}
+var moveFields = [
+  ["promo", compactPromo],
+  ["drop", compactDrop],
+  ["cost", compactCost],
+  ["castle", compactCastle],
+  ["epc", compactEpc],
+  ["dbl", compactDbl]
+];
+var movesOut = (ms) => ms.map((m) => moveOut(m));
+var resultOut = (r, s) => ({ ...r, move: moveOut(r.move, s) });
+var P3 = Object.fromEntries(Object.entries(P).map(([t, kind]) => {
+  const methods = {};
+  return [t, new Proxy(kind, { get(target, key) {
+    if (!["gen", "captures", "atk", "hits"].includes(String(key))) return target[key];
+    if (!target[key]) return target[key];
+    return methods[key] ?? (methods[key] = (s, ...args) => {
+      const result = target[key](stateIn(s), ...args);
+      return key === "gen" || key === "captures" ? movesOut(result) : result;
+    });
+  } })];
+}));
+var transparent2 = (p) => transparent(pieceIn(p));
+function pushm2(s, i, to, out) {
+  const ms = [];
+  pushm(stateIn(s), i, to, ms);
+  out.push(...movesOut(ms));
+}
+var leapAtk2 = (s, ...a) => leapAtk(stateIn(s), ...a);
+var slideAtk2 = (s, ...a) => slideAtk(stateIn(s), ...a);
+var leapGen2 = (s, ...a) => movesOut(leapGen(stateIn(s), ...a));
+var slideGen2 = (s, ...a) => movesOut(slideGen(stateIn(s), ...a));
+var leapHits2 = (s, ...a) => leapHits(stateIn(s), ...a);
+var slideHits2 = (s, ...a) => slideHits(stateIn(s), ...a);
+var pawnAtk2 = (s, ...a) => pawnAtk(stateIn(s), ...a);
+var pawnGen2 = (s, ...a) => movesOut(pawnGen(stateIn(s), ...a));
+var dollDropOK2 = (s, ...a) => dollDropOK(stateIn(s), ...a);
+var buildState2 = (...a) => stateOut(buildState(...a));
+var withRuleCache2 = (run) => encodingScope(() => withRuleCache(run));
+var frozenSet2 = (s) => frozenSet(stateIn(s));
+var darkSet2 = (s) => darkSet(stateIn(s));
+var attacksFrom2 = (s, ...a) => attacksFrom(stateIn(s), ...a);
+var isAttacked2 = (s, ...a) => isAttacked(stateIn(s), ...a);
+var royals2 = (s, ...a) => royals(stateIn(s), ...a);
+var inCheck2 = (s, ...a) => inCheck(stateIn(s), ...a);
+var pseudo2 = (s, ...a) => movesOut(pseudo(stateIn(s), ...a));
+var pseudoAll2 = (s) => movesOut(pseudoAll(stateIn(s)));
+var pseudoCaptures2 = (s) => movesOut(pseudoCaptures(stateIn(s)));
+var applyMove3 = (s, m) => stateOut(applyMove(stateIn(s), moveIn(m)));
+function tryMove2(s, m) {
+  const ns = tryMove(stateIn(s), moveIn(m));
+  if (!ns) return null;
+  return m._n = stateOut(ns);
+}
+var hasLegal2 = (s) => hasLegal(stateIn(s));
+function legalMoves2(s) {
+  const x = stateIn(s);
+  return legalMoves(x).map((m) => moveOut(m, x));
+}
+function vanishPass2(s) {
+  const x = stateIn(s), next = vanishPass(x);
+  return next === x ? s : stateOut(next);
+}
+var posKey2 = (s) => posKey(stateIn(s));
+var standardInsufficientMaterial2 = (s) => standardInsufficientMaterial(stateIn(s));
+var outcome2 = (s, ms) => outcome(stateIn(s), ms);
+var notate2 = (s, m, ns, nms) => notate(stateIn(s), moveIn(m), stateIn(ns), nms);
+var evalPos2 = (s) => evalPos(stateIn(s));
+var withSearchCache2 = (run, opt) => encodingScope(() => withSearchCache(run, opt));
+var mscore2 = (s, m, ply) => mscore(stateIn(s), moveIn(m), ply);
+function order2(s, ms, ply = 0) {
+  const x = stateIn(s), original = /* @__PURE__ */ new Map(), packed = ms.map(moveIn);
+  for (let i = 0; i < ms.length; i++) {
+    const group = original.get(packed[i]);
+    if (group) group.push(ms[i]);
+    else original.set(packed[i], [ms[i]]);
+  }
+  order(x, packed, ply);
+  for (let i = 0; i < ms.length; i++) ms[i] = original.get(packed[i]).shift();
+  return ms;
+}
+var kid2 = (m) => vanishPass2(m._n);
+var qsearch2 = (s, ...a) => qsearch(stateIn(s), ...a);
+var negamax2 = (s, ...a) => negamax(stateIn(s), ...a);
+var depthFor2 = depthFor;
+var timedDepthFor2 = timedDepthFor;
+function rankMoves2(s, d) {
+  const x = stateIn(s);
+  return rankMoves(x, d).map(({ m, v }) => ({ m: moveOut(m, x), v }));
+}
+function choose(pool, run) {
+  const records = pool.map((x) => ({ ...x, n: x.m?._n ? stateIn(x.m._n) : void 0 }));
+  const chosen = run(records);
+  return chosen ? pool[records.indexOf(chosen)] : null;
+}
+var chooseRankedMove2 = (pool, strategy, preferCheck = false) => choose(pool, (x) => chooseRankedMove(x, strategy, preferCheck));
+var chooseFromMovePool2 = (pool, preferCheck = false) => choose(pool, (x) => chooseFromMovePool(x, preferCheck));
+function idSearch2(s, d, opt = {}) {
+  const x = stateIn(s);
+  return resultOut(idSearch(x, d, { ...opt, onDepth: opt.onDepth ? (r) => opt.onDepth(resultOut(r, x)) : void 0 }), x);
+}
+function pickMove2(s, ...a) {
+  const x = stateIn(s);
+  return moveOut(pickMove(x, ...a), x);
+}
+function lunaticMoveAt2(s, d) {
+  const x = stateIn(s);
+  return moveOut(lunaticMoveAt(x, d), x);
+}
+function lunaticMove2(s, d) {
+  const x = stateIn(s);
+  return moveOut(lunaticMove(x, d), x);
+}
+function timedMove2(s, lv, opt = {}) {
+  const x = stateIn(s);
+  return resultOut(timedMove(x, lv, { ...opt, onDepth: opt.onDepth ? (r) => opt.onDepth(resultOut(r, x)) : void 0 }), x);
+}
+function* analysisSteps2(s, opt) {
+  for (const result of analysisSteps(stateIn(s), opt)) {
+    if (!result.move) {
+      yield result;
+      continue;
+    }
+    const m = moveOut(result.move);
+    yield { ...result, move: { from: m.from, to: m.to, promo: m.promo || null, drop: m.drop || null, castle: m.castle } };
+  }
+}
+var ttPositionKey2 = (s) => ttPositionKey(stateIn(s));
+var moveKey2 = (m) => moveKey(moveIn(m));
+var storeTransposition2 = (key, d, v, bound, m, ply, slot) => storeTransposition(key, d, v, bound, moveIn(m), ply, slot);
 
 // engine/pgn.ts
 var START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -1467,11 +1864,11 @@ var square = (x) => {
 var recordedMove = (m) => Object.fromEntries(["from", "to", "promo", "drop", "castle", "epc", "dbl", "cost"].filter((k) => m[k] !== void 0).map((k) => [k, m[k]]));
 var sameMove = (a, b) => ["from", "to", "promo", "drop", "castle"].every((k) => (a[k] ?? null) === (b[k] ?? null));
 function resolveRecordedMove(s, m) {
-  const found = legalMoves(s).find((x) => sameMove(x, m));
+  const found = legalMoves2(s).find((x) => sameMove(x, m));
   if (!found) throw Error("Illegal move: " + JSON.stringify(m));
   return found;
 }
-var nextPosition = (s, m) => vanishPass(applyMove(s, m));
+var nextPosition = (s, m) => vanishPass2(applyMove3(s, m));
 function checkedState(s) {
   if (!s || !Array.isArray(s.b) || s.b.length !== 64 || !["w", "b"].includes(s.turn)) throw Error("Invalid initial position");
   const b = s.b.map((p) => {
@@ -1489,7 +1886,7 @@ function checkedState(s) {
   }
   for (const c of ["w", "b"]) if (!Number.isFinite(s.ammo?.[c]) || s.ammo[c] < 0) throw Error("Invalid ammunition");
   const result = { b, turn: s.turn, cas, ep: s.ep, half: s.half, full: s.full, ammo: { w: s.ammo.w, b: s.ammo.b } };
-  if (inCheck(result, s.turn === "w" ? "b" : "w")) throw Error("The side that just moved is in check");
+  if (inCheck2(result, s.turn === "w" ? "b" : "w")) throw Error("The side that just moved is in check");
   return result;
 }
 function fromFEN(fen) {
@@ -1544,7 +1941,7 @@ function toFEN(s) {
   const rights = [["w7", "K"], ["w0", "Q"], ["b7", "k"], ["b0", "q"]].filter(([k]) => s.cas[k]).map(([, v]) => v).join("") || "-";
   return `${rows.join("/")} ${s.turn} ${rights} ${s.ep === null ? "-" : nm(s.ep)} ${s.half} ${s.full}`;
 }
-function san(s, m, moves = legalMoves(s)) {
+function san(s, m, moves2 = legalMoves2(s)) {
   const p = s.b[m.from];
   let text;
   if (m.castle !== void 0) text = m.castle === 7 ? "O-O" : "O-O-O";
@@ -1554,13 +1951,13 @@ function san(s, m, moves = legalMoves(s)) {
     const capture = !!(s.b[m.to] || m.epc);
     let dis = "";
     if (p.t !== "p") {
-      const others = moves.filter((x) => !x.drop && x.from !== m.from && x.to === m.to && s.b[x.from]?.t === p.t);
+      const others = moves2.filter((x) => !x.drop && x.from !== m.from && x.to === m.to && s.b[x.from]?.t === p.t);
       if (others.length) dis = others.every((x) => file(x.from) !== file(m.from)) ? nm(m.from)[0] : others.every((x) => rank(x.from) !== rank(m.from)) ? nm(m.from)[1] : nm(m.from);
     }
     text = (p.t === "p" ? capture ? nm(m.from)[0] : "" : p.t.toUpperCase() + dis) + (capture ? "x" : "") + nm(m.to) + (m.promo ? "=" + m.promo.toUpperCase() : "");
   }
   const next = nextPosition(s, m);
-  return text + (inCheck(next, next.turn) ? hasLegal(next) ? "+" : "#" : "");
+  return text + (inCheck2(next, next.turn) ? hasLegal2(next) ? "+" : "#" : "");
 }
 var normalized = (s) => s.replace(/0/g, "O").replace(/[!?]+$/, "").replace(/[+#]+$/, "");
 var results = ["1-0", "0-1", "1/2-1/2", "*"];
@@ -1621,7 +2018,7 @@ function parsePGN(text) {
   if (/[\[\]{}]/.test(clean)) throw Error("Only one PGN game can be imported at a time");
   if (/\$\d+|[!?]/.test(clean)) annotated = true;
   clean = clean.replace(/\$\d+/g, " ").replace(/\d+\.(?:\.\.)?/g, " ");
-  const moves = [], states = [initial], notations = [];
+  const moves2 = [], states = [initial], notations = [];
   let result = null;
   for (const token of clean.trim().split(/\s+/).filter(Boolean)) {
     if (results.includes(token)) {
@@ -1631,11 +2028,11 @@ function parsePGN(text) {
     }
     if (result !== null) throw Error("Moves after result");
     if (token === "e.p.") continue;
-    if (moves.length >= 5e3) throw Error("Too many moves");
-    const s = states.at(-1), legal = legalMoves(s), candidates = legal.filter((m2) => normalized(san(s, m2, legal)) === normalized(token));
-    if (candidates.length !== 1) throw Error(`Ply ${moves.length + 1}: illegal or ambiguous SAN "${token}"`);
+    if (moves2.length >= 5e3) throw Error("Too many moves");
+    const s = states.at(-1), legal = legalMoves2(s), candidates = legal.filter((m2) => normalized(san(s, m2, legal)) === normalized(token));
+    if (candidates.length !== 1) throw Error(`Ply ${moves2.length + 1}: illegal or ambiguous SAN "${token}"`);
     const m = candidates[0];
-    moves.push(recordedMove(m));
+    moves2.push(recordedMove(m));
     notations.push(san(s, m, legal));
     states.push(nextPosition(s, m));
   }
@@ -1643,7 +2040,7 @@ function parsePGN(text) {
   if (result && headers.Result && result !== headers.Result) throw Error("Result tag and movetext disagree");
   return {
     initial,
-    moves,
+    moves: moves2,
     states,
     notations,
     headers: { ...headers },
@@ -1651,7 +2048,7 @@ function parsePGN(text) {
     warnings: annotated ? ["Only the mainline is imported; comments, annotations and variations are omitted."] : []
   };
 }
-function exportPGN({ initial, moves, headers = {}, result = "*" }) {
+function exportPGN({ initial, moves: moves2, headers = {}, result = "*" }) {
   if (!results.includes(result)) throw Error("Invalid result");
   let s = checkedState(initial);
   const extension = s.b.some((p) => p && (!ordinary(p.t) || p.mark));
@@ -1669,7 +2066,7 @@ function exportPGN({ initial, moves, headers = {}, result = "*" }) {
     }
   }
   const tokens = [];
-  moves.forEach((record, i) => {
+  moves2.forEach((record, i) => {
     const m = resolveRecordedMove(s, record);
     if (s.turn === "w") tokens.push(s.full + ".");
     else if (i === 0) tokens.push(s.full + "...");
@@ -1715,7 +2112,7 @@ export {
   MATE,
   OPT,
   ORTHO,
-  P,
+  P3 as P,
   PRUNE,
   REIMU_ATK,
   RULES,
@@ -1726,95 +2123,102 @@ export {
   TT,
   W,
   WEIGHTS,
-  analysisSteps,
-  applyMove,
+  analysisSteps2 as analysisSteps,
+  applyMove3 as applyMove,
   applyWeights,
   at,
-  attacksFrom,
-  buildState,
+  attacksFrom2 as attacksFrom,
+  buildState2 as buildState,
   canDeploy,
-  chooseFromMovePool,
-  chooseRankedMove,
+  chooseFromMovePool2 as chooseFromMovePool,
+  chooseRankedMove2 as chooseRankedMove,
   clearOrderTables,
   clearSearchDeadline,
   clearTranspositionTable,
-  darkSet,
+  darkSet2 as darkSet,
   def,
-  depthFor,
-  dollDropOK,
+  depthFor2 as depthFor,
+  dollDropOK2 as dollDropOK,
   drawMoveStrategy,
-  evalPos,
+  evalPos2 as evalPos,
   exportPGN,
   file,
   fmt,
   fromFEN,
-  frozenSet,
+  frozenSet2 as frozenSet,
   fw,
-  hasLegal,
-  idSearch,
-  inCheck,
-  isAttacked,
-  kid,
-  leapAtk,
-  leapGen,
-  leapHits,
+  hasLegal2 as hasLegal,
+  idSearch2 as idSearch,
+  inCheck2 as inCheck,
+  isAttacked2 as isAttacked,
+  kid2 as kid,
+  leapAtk2 as leapAtk,
+  leapGen2 as leapGen,
+  leapHits2 as leapHits,
   leapTable,
-  legalMoves,
+  legalMoves2 as legalMoves,
   lf,
   loadWeights,
-  lunaticMove,
-  lunaticMoveAt,
+  lunaticMove2 as lunaticMove,
+  lunaticMoveAt2 as lunaticMoveAt,
   mirrorSq,
-  mscore,
-  negamax,
+  moveKey2 as moveKey,
+  mscore2 as mscore,
+  negamax2 as negamax,
+  newTranspositionSearch,
   nextPosition,
   nm,
-  notate,
+  notate2 as notate,
   ok,
-  order,
-  outcome,
+  order2 as order,
+  outcome2 as outcome,
   parsePGN,
-  pawnAtk,
-  pawnGen,
-  pickMove,
+  pawnAtk2 as pawnAtk,
+  pawnGen2 as pawnGen,
+  pickMove2 as pickMove,
   pointsOf,
   posHist,
-  posKey,
+  posKey2 as posKey,
+  probeTransposition,
   promoOpts,
-  pseudo,
-  pseudoAll,
-  pseudoCaptures,
+  pseudo2 as pseudo,
+  pseudoAll2 as pseudoAll,
+  pseudoCaptures2 as pseudoCaptures,
   pushPos,
-  pushm,
-  qsearch,
+  pushm2 as pushm,
+  qsearch2 as qsearch,
   rank,
-  rankMoves,
+  rankMoves2 as rankMoves,
   readySide,
   recordedMove,
   repCount,
   resolveLevel,
   resolveRecordedMove,
   rimDirs,
-  royals,
+  royals2 as royals,
   rt,
   san,
+  scoreFromTT,
+  scoreToTT,
   setPosHist,
   setSearchState,
-  slideAtk,
-  slideGen,
-  slideHits,
+  slideAtk2 as slideAtk,
+  slideGen2 as slideGen,
+  slideHits2 as slideHits,
   slotOf,
   srchEnd,
   srchNodes,
   srchRep,
-  standardInsufficientMaterial,
-  timedDepthFor,
-  timedMove,
+  standardInsufficientMaterial2 as standardInsufficientMaterial,
+  storeTransposition2 as storeTransposition,
+  timedDepthFor2 as timedDepthFor,
+  timedMove2 as timedMove,
   toFEN,
-  transparent,
+  transparent2 as transparent,
   transpositionStats,
-  tryMove,
-  vanishPass,
-  withRuleCache,
-  withSearchCache
+  tryMove2 as tryMove,
+  ttPositionKey2 as ttPositionKey,
+  vanishPass2 as vanishPass,
+  withRuleCache2 as withRuleCache,
+  withSearchCache2 as withSearchCache
 };

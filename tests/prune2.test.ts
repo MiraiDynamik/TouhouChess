@@ -4,10 +4,10 @@
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, join} from 'node:path';
-import {applyWeights} from '../engine/pieces.js';
-import {buildState, mirrorSq} from '../engine/deploy.js';
-import {legalMoves, applyMove, vanishPass, posKey, setPosHist} from '../engine/rules.js';
-import {negamax, clearOrderTables, PRUNE} from '../engine/search.js';
+import {applyWeights} from '../engine/index.js';
+import {buildState, mirrorSq} from '../engine/index.js';
+import {legalMoves, applyMove, vanishPass, posKey, setPosHist} from '../engine/index.js';
+import {negamax, clearOrderTables, PRUNE} from '../engine/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const gold = JSON.parse(readFileSync(join(here, 'golden.json'), 'utf8'));

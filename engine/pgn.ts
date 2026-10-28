@@ -1,7 +1,7 @@
 /* PGN/SAN boundary. Legality and transitions always come from the shared rules. */
 import {P} from './pieces.js';
 import {nm,file,rank} from './board.js';
-import {legalMoves,applyMove,vanishPass,inCheck,hasLegal} from './rules.js';
+import {legalMoves,applyMove,vanishPass,inCheck,hasLegal} from './public.js';
 
 export const START_FEN='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const ordinary=t=>['p','n','b','r','q','k'].includes(t);

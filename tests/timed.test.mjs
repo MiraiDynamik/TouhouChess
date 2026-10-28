@@ -122,6 +122,7 @@ const answer=await new Promise((resolve,reject)=>{
  worker.postMessage({state:position,hist,level:'lunatic'});
 });
 assert(!answer.error,answer.error);assert(legal.has(signature(answer.move)));
+assert.equal(answer.tt.capacity,1048576,'real browser Worker uses the 1M default');
 assert.equal(answer.depth,depths.at(-1));assert(answer.depth>0);assert(answer.ms<5000);
 // A second request on the same real Worker must retain the table.
 worker.removeAllListeners('message');
@@ -132,6 +133,7 @@ const again=await new Promise((resolve,reject)=>{
  worker.postMessage({state:position,hist,level:'lunatic'});
 }).finally(()=>worker.terminate());
 assert(!again.error,again.error);assert(legal.has(signature(again.move)));
+assert.equal(again.tt.capacity,1048576,'retained Worker preserves the 1M table');
 assert(again.tt.generation>answer.tt.generation);assert(again.tt.hits>answer.tt.hits);
 // Session must discard results even if a cancelled transport delivers them late.
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));

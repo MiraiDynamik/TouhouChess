@@ -21,16 +21,25 @@ import {ALL8,B,DIAG,W,at,file,nm,ok,rank} from './board.js';
    new Set() 再扫 64 格。改成：先找冻结源，没有就返回共享的空集合，
    省掉每个结点好几次 Set 分配。行为不变（空集合是冻结的，不会被写）。 */
 const NO_FROZEN=new Set();
+let frozenCache=null;
+const NO_FREEZERS={value:NO_FROZEN,count:0};
+// Cache only within a synchronous search; public/UI states may be edited in place.
+export function withRuleCache(run){
+  const saved=frozenCache;frozenCache=new WeakMap();
+  try{return run();}finally{frozenCache=saved;}
+}
 export function frozenSet(s){
-  let z=null;
+  const cached=frozenCache?.get(s.b);if(cached)return cached.value;
+  let z=null,count=0;
   for(let i=0;i<64;i++){const p=s.b[i];if(!p||!P[p.t].freezer)continue;
+    count++;
     const r=rank(i),f=file(i);
     for(const[dr,df]of DIAG){if(!ok(r+dr,f+df))continue;
       const t=at(r+dr,f+df),q=s.b[t];
       if(q&&P[q.t].royal)continue;      // 将军对象不受冻结
       if(z===null)z=new Set();
       z.add(t);}}
-  return z===null?NO_FROZEN:z;}
+  const result=z===null?NO_FROZEN:z;frozenCache?.set(s.b,count?{value:result,count}:NO_FREEZERS);return result;}
 export function darkSet(s){const d=new Set();
   for(let i=0;i<64;i++){const p=s.b[i];if(!p||!P[p.t].fogger)continue;
     const r=rank(i),f=file(i);
@@ -46,7 +55,8 @@ export function attacksFrom(s,i,fz){const p=s.b[i];if(!p)return[];
   return P[p.t].atk(s,i);}
 export function isAttacked(s,sq,by,fz){
   for(let i=0;i<64;i++){const p=s.b[i];
-    if(p&&p.c===by&&attacksFrom(s,i,fz).indexOf(sq)>=0)return true;}
+    if(p&&p.c===by&&(!fz||!fz.has(i))){
+      const kind=P[p.t];if(kind.hits?kind.hits(s,i,sq):kind.atk(s,i).includes(sq))return true;}}
   return false;}
 export function royals(s,c){const o=[];
   for(let i=0;i<64;i++){const p=s.b[i];if(p&&p.c===c&&P[p.t].royal)o.push(i);}
@@ -60,22 +70,27 @@ export function pseudo(s,i,fz){const p=s.b[i];
   const o=P[p.t].gen(s,i);
   const back=p.c===W?7:0;
   // 易位：只有将军对象（王或贤者）在王位时才能发起；车位那一侧可以是任何棋子
-  if(i===at(back,4)&&P[p.t].royal&&!inCheck(s,p.c,fz)){
-    const opp=p.c===W?B:W;
+  if(i===at(back,4)&&P[p.t].royal&&(s.cas[p.c+0]||s.cas[p.c+7])){
+    const opp=p.c===W?B:W;let checked=false;
     for(const rf of[7,0]){
       if(!s.cas[p.c+rf])continue;
       const dir=rf===7?1:-1;
       let clear=true;
       for(let f=4+dir;f!==rf;f+=dir)if(s.b[at(back,f)]){clear=false;break;}
       if(!clear)continue;
+      if(!checked){if(inCheck(s,p.c,fz))break;checked=true;}
       if(isAttacked(s,at(back,4+dir),opp,fz)||isAttacked(s,at(back,4+2*dir),opp,fz))continue;
       o.push({from:i,to:at(back,4+2*dir),castle:rf});}}
   return o;}
 
+function inheritNoFreezers(s,b,placed){
+  if(frozenCache?.get(s.b)===NO_FREEZERS&&!P[placed].freezer)frozenCache.set(b,NO_FREEZERS);
+}
 export function applyMove(s,m){
   const b=s.b.slice(),p=b[m.from],me=p.c,cas={...s.cas},am={...s.ammo};
   let cap=null;
   if(m.drop){cap=b[m.to];b[m.to]={t:m.drop,c:me};am[me]-=m.cost;
+    inheritNoFreezers(s,b,m.drop);
     return {b,turn:me===W?B:W,cas,ep:null,half:0,full:me===B?s.full+1:s.full,ammo:am,_cap:cap};}
   cap=b[m.to];
   b[m.to]=m.promo?{t:m.promo,c:me}:p;
@@ -86,6 +101,7 @@ export function applyMove(s,m){
   for(const col of[W,B]){const back=col===W?7:0;
     for(const f of[0,7])
       if(m.from===at(back,f)||m.to===at(back,f)||m.from===at(back,4))cas[col+f]=false;}
+  inheritNoFreezers(s,b,b[m.to].t);
   return {b,turn:me===W?B:W,cas,ep:m.dbl?(m.from+m.to)/2:null,
     half:(P[p.t].pawnish||cap)?0:s.half+1,
     full:me===B?s.full+1:s.full,ammo:am,_cap:cap};}
@@ -133,10 +149,11 @@ export function legalMoves(s){
   return out;}
 
 export function vanishPass(s){
-  const b=s.b.slice();let ch=false;
+  let b=s.b,ch=false;
   for(let i=0;i<64;i++){const p=b[i];if(!p||!P[p.t].vanish)continue;
     const last=p.c===W?0:7;
-    if(rank(i)===last){if(p.mark){b[i]=null;}else b[i]={...p,mark:1};ch=true;}}
+    if(rank(i)===last){if(!ch)b=s.b.slice();if(p.mark){b[i]=null;}else b[i]={...p,mark:1};ch=true;}}
+  if(ch&&frozenCache?.get(s.b)===NO_FREEZERS)frozenCache.set(b,NO_FREEZERS);
   return ch?{...s,b}:s;}
 
 /* 局面指纹：盘面（含即将消失的标记）、行棋方、易位权、吃过路兵、双方剩余弹药 */
@@ -182,3 +199,15 @@ export function notate(s,m,ns,nms){
   const g=P[s.b[m.from].t].g,cap=s.b[m.to]||m.epc;
   return g+nm(m.from)+(cap?'x':'-')+nm(m.to)+(m.promo?'='+P[m.promo].g:'')
     +(inCheck(ns,ns.turn)?(nms.length===0?'#':'+'):'');}
+
+export function pseudoCaptures(s){
+  const fz=frozenSet(s),out=[];
+  for(let i=0;i<64;i++){
+    const p=s.b[i];if(!p||p.c!==s.turn||fz.has(i))continue;
+    const kind=P[p.t],moves=kind.captures?kind.captures(s,i):kind.gen(s,i);
+    for(const m of moves){const target=s.b[m.to];
+      if((target||m.epc)&&!(target&&target.c!==p.c&&P[target.t].royal))out.push(m);
+    }
+  }
+  return out;
+}

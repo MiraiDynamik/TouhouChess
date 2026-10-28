@@ -30,12 +30,35 @@ export function slideAtk(s,i,dirs){const r=rank(i),f=file(i),o=[];
   for(const[dr,df]of dirs){let nr=r+dr,nf=f+df;
     while(ok(nr,nf)){const t=at(nr,nf);o.push(t);
       if(s.b[t]&&!transparent(s.b[t]))break;nr+=dr;nf+=df;}}return o;}
-export function leapGen(s,i,offs){const r=rank(i),f=file(i),o=[];
-  for(const[dr,df]of offs)if(ok(r+dr,f+df))pushm(s,i,at(r+dr,f+df),o);return o;}
-export function slideGen(s,i,dirs){const me=s.b[i].c,r=rank(i),f=file(i),o=[];
+export function leapGen(s,i,offs,capturesOnly=false){const r=rank(i),f=file(i),o=[];
+  for(const[dr,df]of offs)if(ok(r+dr,f+df)&&(!capturesOnly||s.b[at(r+dr,f+df)]))pushm(s,i,at(r+dr,f+df),o);return o;}
+export function slideGen(s,i,dirs,capturesOnly=false){const me=s.b[i].c,r=rank(i),f=file(i),o=[];
   for(const[dr,df]of dirs){let nr=r+dr,nf=f+df;
     while(ok(nr,nf)){const t=at(nr,nf),q=s.b[t];
-      if(!q)o.push({from:i,to:t});
+      if(!q){if(!capturesOnly)o.push({from:i,to:t});}
       else{if(q.c!==me)o.push({from:i,to:t});if(!transparent(q))break;}
       nr+=dr;nf+=df;}}return o;}
 export const promoOpts=()=>['q','r','b','n'];
+
+// Boolean attack queries avoid allocating the full attack list.
+export function leapHits(s,i,target,offs){
+  const dr=rank(target)-rank(i),df=file(target)-file(i);
+  for(const [r,f] of offs)if(r===dr&&f===df)return true;
+  return false;
+}
+export function slideHits(s,i,target,dirs){
+  const r=rank(i),f=file(i),tr=rank(target)-r,tf=file(target)-f;
+  for(const [dr,df] of dirs){
+    const steps=dr?tr/dr:tf/df;
+    if(steps<=0||!Number.isInteger(steps)||dr*steps!==tr||df*steps!==tf)continue;
+    for(let k=1;k<steps;k++){const p=s.b[at(r+dr*k,f+df*k)];if(p&&!transparent(p))return false;}
+    return true;
+  }
+  return false;
+}
+
+// Fixed leaper attacks depend only on the square, not on board occupancy.
+export function leapTable(offs){
+  const table=Array.from({length:64},(_,i)=>Object.freeze(leapAtk(null,i,offs)));
+  return (s,i)=>table[i];
+}

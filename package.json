@@ -17,14 +17,15 @@
     "build": "npm run build:engine && node scripts/build-html.mjs",
     "test:integration": "node --import tsx tests/integration.mjs",
     "check:generated": "node scripts/build-html.mjs --check",
-    "test:all": "npm test && npm run test:bundle && npm run test:integration && npm run test:analysis && npm run test:koishi && npm run test:timed && npm run test:tt && npm run test:pgn",
+    "test:all": "npm test && npm run test:bundle && npm run test:integration && npm run test:analysis && npm run test:koishi && npm run test:timed && npm run test:tt && npm run test:pgn && npm run test:phase1",
     "test:pgn": "node --import tsx tests/pgn.test.mjs",
     "test:koishi": "node --import tsx tests/koishi.test.mjs",
     "test:analysis": "node --import tsx tests/analysis-panel.test.mjs",
     "test:tt": "node --import tsx tests/transposition.test.mjs",
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1",
-    "test:timed": "node --import tsx tests/timed.test.mjs"
+    "test:timed": "node --import tsx tests/timed.test.mjs",
+    "test:phase1": "node --import tsx tests/phase1.test.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.4",

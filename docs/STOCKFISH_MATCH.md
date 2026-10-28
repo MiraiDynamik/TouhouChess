@@ -2,7 +2,7 @@
 
 目标玩家是碰巧会国际象棋的东方爱好者，先围绕 1500 限强档位摸底，不以 GM 强度为目标。这轮测试的是开发者引擎，不是永琳；不能直接把结果归给永琳。
 
-`lab/stockfish_match.py` 使用 Python 标准库调度，通过 `cli/stockfish-bridge.mjs` 调用 `engine/` 中唯一的规则和搜索实现。开发者启用 futility + LMR，不改变游戏默认设置。
+`lab/stockfish_match.py` 使用 Python 标准库调度，通过 `cli/stockfish-bridge.mjs` 调用 `engine/` 中唯一的规则和搜索实现。开发者启用 LMR，不改变游戏默认设置。
 
 本机通过 Homebrew 安装 Stockfish 19，路径 `/opt/homebrew/bin/stockfish`；查询 UCI 得到支持的 `UCI_Elo` 范围为 1320–3190。Stockfish 限强档位不是平台等级分，固定每手 3 秒的实验也不能直接换算真人 Elo。
 

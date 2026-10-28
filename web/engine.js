@@ -81,6 +81,8 @@ var TouhouChess = (() => {
     kid: () => kid,
     leapAtk: () => leapAtk,
     leapGen: () => leapGen,
+    leapHits: () => leapHits,
+    leapTable: () => leapTable,
     legalMoves: () => legalMoves,
     lf: () => lf,
     loadWeights: () => loadWeights,
@@ -105,6 +107,7 @@ var TouhouChess = (() => {
     promoOpts: () => promoOpts,
     pseudo: () => pseudo,
     pseudoAll: () => pseudoAll,
+    pseudoCaptures: () => pseudoCaptures,
     pushPos: () => pushPos,
     pushm: () => pushm,
     qsearch: () => qsearch,
@@ -123,6 +126,7 @@ var TouhouChess = (() => {
     setSearchState: () => setSearchState,
     slideAtk: () => slideAtk,
     slideGen: () => slideGen,
+    slideHits: () => slideHits,
     slotOf: () => slotOf,
     srchEnd: () => srchEnd,
     srchNodes: () => srchNodes,
@@ -135,6 +139,7 @@ var TouhouChess = (() => {
     transpositionStats: () => transpositionStats,
     tryMove: () => tryMove,
     vanishPass: () => vanishPass,
+    withRuleCache: () => withRuleCache,
     withSearchCache: () => withSearchCache
   });
 
@@ -186,19 +191,20 @@ var TouhouChess = (() => {
     }
     return o;
   }
-  function leapGen(s, i, offs) {
+  function leapGen(s, i, offs, capturesOnly = false) {
     const r = rank(i), f = file(i), o = [];
-    for (const [dr, df] of offs) if (ok(r + dr, f + df)) pushm(s, i, at(r + dr, f + df), o);
+    for (const [dr, df] of offs) if (ok(r + dr, f + df) && (!capturesOnly || s.b[at(r + dr, f + df)])) pushm(s, i, at(r + dr, f + df), o);
     return o;
   }
-  function slideGen(s, i, dirs) {
+  function slideGen(s, i, dirs, capturesOnly = false) {
     const me = s.b[i].c, r = rank(i), f = file(i), o = [];
     for (const [dr, df] of dirs) {
       let nr = r + dr, nf = f + df;
       while (ok(nr, nf)) {
         const t = at(nr, nf), q = s.b[t];
-        if (!q) o.push({ from: i, to: t });
-        else {
+        if (!q) {
+          if (!capturesOnly) o.push({ from: i, to: t });
+        } else {
           if (q.c !== me) o.push({ from: i, to: t });
           if (!transparent(q)) break;
         }
@@ -209,22 +215,44 @@ var TouhouChess = (() => {
     return o;
   }
   var promoOpts = () => ["q", "r", "b", "n"];
+  function leapHits(s, i, target, offs) {
+    const dr = rank(target) - rank(i), df = file(target) - file(i);
+    for (const [r, f] of offs) if (r === dr && f === df) return true;
+    return false;
+  }
+  function slideHits(s, i, target, dirs) {
+    const r = rank(i), f = file(i), tr = rank(target) - r, tf = file(target) - f;
+    for (const [dr, df] of dirs) {
+      const steps = dr ? tr / dr : tf / df;
+      if (steps <= 0 || !Number.isInteger(steps) || dr * steps !== tr || df * steps !== tf) continue;
+      for (let k = 1; k < steps; k++) {
+        const p = s.b[at(r + dr * k, f + df * k)];
+        if (p && !transparent(p)) return false;
+      }
+      return true;
+    }
+    return false;
+  }
+  function leapTable(offs) {
+    const table2 = Array.from({ length: 64 }, (_, i) => Object.freeze(leapAtk(null, i, offs)));
+    return (s, i) => table2[i];
+  }
 
   // engine/geometry.ts
-  def("k", { n: "\u738B", g: "\u265A", v: 4, slots: ["k"], royal: 1, atk: (s, i) => leapAtk(s, i, ALL8), gen: (s, i) => leapGen(s, i, ALL8) });
+  def("k", { n: "\u738B", g: "\u265A", v: 4, slots: ["k"], royal: 1, atk: leapTable(ALL8), gen: (s, i) => leapGen(s, i, ALL8) });
   def("q", { n: "\u540E", g: "\u265B", v: 9, slots: ["q"], slider: 1, atk: (s, i) => slideAtk(s, i, ALL8), gen: (s, i) => slideGen(s, i, ALL8) });
   def("r", { n: "\u8F66", g: "\u265C", v: 5, slots: ["r"], slider: 1, atk: (s, i) => slideAtk(s, i, ORTHO), gen: (s, i) => slideGen(s, i, ORTHO) });
   def("b", { n: "\u8C61", g: "\u265D", v: 3, slots: ["n"], dev: 1, atk: (s, i) => slideAtk(s, i, DIAG), gen: (s, i) => slideGen(s, i, DIAG) });
-  def("n", { n: "\u9A6C", g: "\u265E", v: 3, slots: ["n"], dev: 1, atk: (s, i) => leapAtk(s, i, KNIGHT), gen: (s, i) => leapGen(s, i, KNIGHT) });
+  def("n", { n: "\u9A6C", g: "\u265E", v: 3, slots: ["n"], dev: 1, atk: leapTable(KNIGHT), gen: (s, i) => leapGen(s, i, KNIGHT) });
   function pawnAtk(s, i, dirs) {
     const p = s.b[i], r = rank(i), f = file(i), d = fw(p.c), o = [];
     for (const df of dirs) if (ok(r + d, f + df)) o.push(at(r + d, f + df));
     return o;
   }
-  function pawnGen(s, i, dirs, dbl) {
+  function pawnGen(s, i, dirs, dbl, capturesOnly = false) {
     const p = s.b[i], me = p.c, opp = me === W ? B : W, r = rank(i), f = file(i), d = fw(me), o = [];
     const last = me === W ? 0 : 7, home = me === W ? 6 : 1;
-    if (ok(r + d, f)) {
+    if (!capturesOnly && ok(r + d, f)) {
       const one = at(r + d, f);
       if (!s.b[one]) {
         if (r + d === last) promoOpts().forEach((t) => o.push({ from: i, to: one, promo: t }));
@@ -373,7 +401,7 @@ var TouhouChess = (() => {
     }
     return true;
   }
-  def("fairy", { n: "\u5996\u7CBE", g: "\u22C8", v: 1.5, slots: ["n", "p"], dev: 1, atk: (s, i) => leapAtk(s, i, DIAG), gen: (s, i) => leapGen(s, i, DIAG) });
+  def("fairy", { n: "\u5996\u7CBE", g: "\u22C8", v: 1.5, slots: ["n", "p"], dev: 1, atk: leapTable(DIAG), gen: (s, i) => leapGen(s, i, DIAG) });
   def("daiyousei", {
     n: "\u5927\u5996\u7CBE",
     g: "\u29D3",
@@ -391,7 +419,7 @@ var TouhouChess = (() => {
     dev: 1,
     lightbringer: 1,
     max: 1,
-    atk: (s, i) => leapAtk(s, i, DIAG),
+    atk: leapTable(DIAG),
     gen: (s, i) => leapGen(s, i, DIAG)
   });
   def("cirno", {
@@ -401,7 +429,7 @@ var TouhouChess = (() => {
     slots: ["p"],
     freezer: 1,
     limit: "sqcolor",
-    atk: (s, i) => leapAtk(s, i, DIAG),
+    atk: leapTable(DIAG),
     gen: (s, i) => leapGen(s, i, DIAG)
   });
   def("reimu", {
@@ -409,7 +437,7 @@ var TouhouChess = (() => {
     g: "\u26E9\uFE0E",
     v: 7.5,
     slots: ["k", "q", "r", "n"],
-    atk: (s, i) => leapAtk(s, i, REIMU_ATK),
+    atk: leapTable(REIMU_ATK),
     gen: (s, i) => {
       const me = s.b[i].c, opp = me === W ? B : W, r = rank(i), f = file(i), o = [];
       for (const [dr, df] of ORTHO) {
@@ -447,7 +475,7 @@ var TouhouChess = (() => {
     dev: 1,
     fogger: 1,
     max: 1,
-    atk: (s, i) => leapAtk(s, i, ALL8),
+    atk: leapTable(ALL8),
     gen: (s, i) => leapGen(s, i, ALL8)
   });
   def("iku", {
@@ -488,8 +516,8 @@ var TouhouChess = (() => {
     gen: (s, i) => {
       const me = s.b[i].c, opp = me === W ? B : W, o = [], d = -fw(me), r = rank(i), f = file(i);
       const seen = /* @__PURE__ */ new Set([i]), qq = [i];
-      while (qq.length) {
-        const cur = qq.shift();
+      for (let head = 0; head < qq.length; head++) {
+        const cur = qq[head];
         for (const [dr, df] of ALL8) {
           const nr = rank(cur) + dr * 2, nf = file(cur) + df * 2;
           if (!ok(nr, nf)) continue;
@@ -552,6 +580,41 @@ var TouhouChess = (() => {
       return u;
     }
   });
+  for (const [t, offs] of Object.entries({ k: ALL8, n: KNIGHT, fairy: DIAG, sunny: DIAG, cirno: DIAG, lumia: ALL8, reimu: REIMU_ATK })) {
+    P[t].hits = (s, i, target) => leapHits(s, i, target, offs);
+    P[t].captures = (s, i) => leapGen(s, i, offs, true);
+  }
+  for (const [t, dirs] of Object.entries({ q: ALL8, r: ORTHO, b: DIAG })) {
+    P[t].hits = (s, i, target) => slideHits(s, i, target, dirs);
+    P[t].captures = (s, i) => slideGen(s, i, dirs, true);
+  }
+  for (const [t, dirs] of Object.entries({ alice: GOLD, daiyousei: SILVER })) {
+    P[t].hits = (s, i, target) => leapHits(s, i, target, dirs(s.b[i].c));
+    P[t].captures = (s, i) => leapGen(s, i, dirs(s.b[i].c), true);
+  }
+  P.sanae.hits = (s, i, target) => slideHits(s, i, target, SANAE(s.b[i].c));
+  P.sanae.captures = (s, i) => slideGen(s, i, SANAE(s.b[i].c), true);
+  P.iku.hits = P.r.hits;
+  P.ryuu.hits = (s, i, target) => slideHits(s, i, target, ORTHO) || leapHits(s, i, target, DIAG);
+  P.shanghai.hits = (s, i, target) => slideHits(s, i, target, [[-fw(s.b[i].c), 0]]);
+  P.yukari.hits = (s, i, target) => slideHits(s, i, target, rimDirs(i)) || leapHits(s, i, target, LEAP7);
+  for (const [t, dirs] of Object.entries({ p: () => [-1, 1], rabbit: () => [-1, 1], keda: (c) => [lf(c)], onmyo: (c) => [rt(c)], ghost: () => [0] })) {
+    P[t].hits = (s, i, target) => rank(target) - rank(i) === fw(s.b[i].c) && dirs(s.b[i].c).includes(file(target) - file(i));
+  }
+  P.p.captures = (s, i) => pawnGen(s, i, [-1, 1], true, true);
+  P.keda.captures = (s, i) => pawnGen(s, i, [lf(s.b[i].c)], true, true);
+  P.onmyo.captures = (s, i) => pawnGen(s, i, [rt(s.b[i].c)], true, true);
+  P.koishi.hits = (s, i, target) => rank(target) - rank(i) === -fw(s.b[i].c) && Math.abs(file(target) - file(i)) <= 1;
+  P.koishi.captures = (s, i) => leapGen(s, i, [-1, 0, 1].map((df) => [-fw(s.b[i].c), df]), true);
+  var pawnWhite = leapTable([[-1, -1], [-1, 1]]);
+  var pawnBlack = leapTable([[1, -1], [1, 1]]);
+  P.p.atk = P.rabbit.atk = (s, i) => (s.b[i].c === W ? pawnWhite : pawnBlack)(s, i);
+  var goldWhite = leapTable(GOLD(W));
+  var goldBlack = leapTable(GOLD(B));
+  P.alice.atk = (s, i) => (s.b[i].c === W ? goldWhite : goldBlack)(s, i);
+  var silverWhite = leapTable(SILVER(W));
+  var silverBlack = leapTable(SILVER(B));
+  P.daiyousei.atk = (s, i) => (s.b[i].c === W ? silverWhite : silverBlack)(s, i);
 
   // engine/costs.generated.ts
   var RULES = {
@@ -622,11 +685,25 @@ var TouhouChess = (() => {
 
   // engine/rules.ts
   var NO_FROZEN = /* @__PURE__ */ new Set();
+  var frozenCache = null;
+  var NO_FREEZERS = { value: NO_FROZEN, count: 0 };
+  function withRuleCache(run) {
+    const saved = frozenCache;
+    frozenCache = /* @__PURE__ */ new WeakMap();
+    try {
+      return run();
+    } finally {
+      frozenCache = saved;
+    }
+  }
   function frozenSet(s) {
-    let z = null;
+    const cached = frozenCache?.get(s.b);
+    if (cached) return cached.value;
+    let z = null, count = 0;
     for (let i = 0; i < 64; i++) {
       const p = s.b[i];
       if (!p || !P[p.t].freezer) continue;
+      count++;
       const r = rank(i), f = file(i);
       for (const [dr, df] of DIAG) {
         if (!ok(r + dr, f + df)) continue;
@@ -636,7 +713,9 @@ var TouhouChess = (() => {
         z.add(t);
       }
     }
-    return z === null ? NO_FROZEN : z;
+    const result = z === null ? NO_FROZEN : z;
+    frozenCache?.set(s.b, count ? { value: result, count } : NO_FREEZERS);
+    return result;
   }
   function darkSet(s) {
     const d = /* @__PURE__ */ new Set();
@@ -663,7 +742,10 @@ var TouhouChess = (() => {
   function isAttacked(s, sq, by, fz) {
     for (let i = 0; i < 64; i++) {
       const p = s.b[i];
-      if (p && p.c === by && attacksFrom(s, i, fz).indexOf(sq) >= 0) return true;
+      if (p && p.c === by && (!fz || !fz.has(i))) {
+        const kind = P[p.t];
+        if (kind.hits ? kind.hits(s, i, sq) : kind.atk(s, i).includes(sq)) return true;
+      }
     }
     return false;
   }
@@ -686,8 +768,9 @@ var TouhouChess = (() => {
     if (fz.has(i)) return [];
     const o = P[p.t].gen(s, i);
     const back = p.c === W ? 7 : 0;
-    if (i === at(back, 4) && P[p.t].royal && !inCheck(s, p.c, fz)) {
+    if (i === at(back, 4) && P[p.t].royal && (s.cas[p.c + 0] || s.cas[p.c + 7])) {
       const opp = p.c === W ? B : W;
+      let checked = false;
       for (const rf of [7, 0]) {
         if (!s.cas[p.c + rf]) continue;
         const dir = rf === 7 ? 1 : -1;
@@ -697,11 +780,18 @@ var TouhouChess = (() => {
           break;
         }
         if (!clear) continue;
+        if (!checked) {
+          if (inCheck(s, p.c, fz)) break;
+          checked = true;
+        }
         if (isAttacked(s, at(back, 4 + dir), opp, fz) || isAttacked(s, at(back, 4 + 2 * dir), opp, fz)) continue;
         o.push({ from: i, to: at(back, 4 + 2 * dir), castle: rf });
       }
     }
     return o;
+  }
+  function inheritNoFreezers(s, b, placed) {
+    if (frozenCache?.get(s.b) === NO_FREEZERS && !P[placed].freezer) frozenCache.set(b, NO_FREEZERS);
   }
   function applyMove(s, m) {
     const b = s.b.slice(), p = b[m.from], me = p.c, cas = { ...s.cas }, am = { ...s.ammo };
@@ -710,6 +800,7 @@ var TouhouChess = (() => {
       cap = b[m.to];
       b[m.to] = { t: m.drop, c: me };
       am[me] -= m.cost;
+      inheritNoFreezers(s, b, m.drop);
       return { b, turn: me === W ? B : W, cas, ep: null, half: 0, full: me === B ? s.full + 1 : s.full, ammo: am, _cap: cap };
     }
     cap = b[m.to];
@@ -730,6 +821,7 @@ var TouhouChess = (() => {
       for (const f of [0, 7])
         if (m.from === at(back, f) || m.to === at(back, f) || m.from === at(back, 4)) cas[col + f] = false;
     }
+    inheritNoFreezers(s, b, b[m.to].t);
     return {
       b,
       turn: me === W ? B : W,
@@ -782,19 +874,20 @@ var TouhouChess = (() => {
     return out;
   }
   function vanishPass(s) {
-    const b = s.b.slice();
-    let ch = false;
+    let b = s.b, ch = false;
     for (let i = 0; i < 64; i++) {
       const p = b[i];
       if (!p || !P[p.t].vanish) continue;
       const last = p.c === W ? 0 : 7;
       if (rank(i) === last) {
+        if (!ch) b = s.b.slice();
         if (p.mark) {
           b[i] = null;
         } else b[i] = { ...p, mark: 1 };
         ch = true;
       }
     }
+    if (ch && frozenCache?.get(s.b) === NO_FREEZERS) frozenCache.set(b, NO_FREEZERS);
     return ch ? { ...s, b } : s;
   }
   function posKey(s) {
@@ -841,6 +934,19 @@ var TouhouChess = (() => {
     if (m.drop) return P[m.drop].g + "*" + nm(m.to);
     const g = P[s.b[m.from].t].g, cap = s.b[m.to] || m.epc;
     return g + nm(m.from) + (cap ? "x" : "-") + nm(m.to) + (m.promo ? "=" + P[m.promo].g : "") + (inCheck(ns, ns.turn) ? nms.length === 0 ? "#" : "+" : "");
+  }
+  function pseudoCaptures(s) {
+    const fz = frozenSet(s), out = [];
+    for (let i = 0; i < 64; i++) {
+      const p = s.b[i];
+      if (!p || p.c !== s.turn || fz.has(i)) continue;
+      const kind = P[p.t], moves = kind.captures ? kind.captures(s, i) : kind.gen(s, i);
+      for (const m of moves) {
+        const target = s.b[m.to];
+        if ((target || m.epc) && !(target && target.c !== p.c && P[target.t].royal)) out.push(m);
+      }
+    }
+    return out;
   }
 
   // engine/deploy.ts
@@ -1018,14 +1124,14 @@ var TouhouChess = (() => {
     }
     generation++;
   }
-  function index(key) {
+  function transpositionIndex(key) {
     let h = 2166136261;
     for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
     return (h >>> 0) % TT.slots;
   }
-  function probeTransposition(key) {
+  function probeTransposition(key, slot = transpositionIndex(key)) {
     counters.probes++;
-    const e = table[index(key)];
+    const e = table[slot];
     if (e?.key !== key) return null;
     counters.hits++;
     return e;
@@ -1033,13 +1139,16 @@ var TouhouChess = (() => {
   function countTTCutoff() {
     counters.cutoffs++;
   }
-  function storeTransposition(key, depth, value, bound, move, ply) {
+  function storeTransposition(key, depth, value, bound, move, ply, slot = transpositionIndex(key)) {
     if (!Number.isFinite(value)) return;
-    const i = index(key), old = table[i];
+    const i = slot, old = table[i];
     if (old && old.generation === generation && old.depth > depth && bound !== "exact") return;
     if (!old) used++;
     table[i] = { key, depth, value: scoreToTT(value, ply), bound, move: moveKey(move), generation };
     counters.stores++;
+  }
+  function matchesMove(m, key) {
+    return m.from === key[0] && m.to === key[1] && (m.promo ?? null) === key[2] && (m.drop ?? null) === key[3] && (m.cost ?? null) === key[4] && (m.castle ?? null) === key[5] && (m.epc ?? null) === key[6] && (m.dbl ?? null) === key[7];
   }
 
   // engine/search.ts
@@ -1063,7 +1172,7 @@ var TouhouChess = (() => {
       cacheContext = { history: cacheHistoryVersion };
     } else cacheContext = null;
     try {
-      return run();
+      return withRuleCache(run);
     } finally {
       cacheContext = saved;
     }
@@ -1096,7 +1205,10 @@ var TouhouChess = (() => {
     }
     return v;
   }
-  var order = (s, ms, ply = 0) => ms.sort((a, b) => mscore(s, b, ply) - mscore(s, a, ply));
+  function order(s, ms, ply = 0) {
+    for (const m of ms) m._order = mscore(s, m, ply);
+    return ms.sort((a, b) => b._order - a._order);
+  }
   function onCut(s, m, d, ply) {
     if (s.b[m.to] || m.promo || m.drop) return;
     const g = sig(m);
@@ -1107,21 +1219,27 @@ var TouhouChess = (() => {
     HIST[g] += d * d;
   }
   var kid = (m) => vanishPass(m._n);
-  function qsearch(s, alpha, beta, ply) {
+  function qsearch(s, alpha, beta, ply, rootPly = 0) {
     checkDeadline();
-    let best = evalPos(s);
-    if (ply > 6 || best >= beta) return best;
-    if (best > alpha) alpha = best;
-    const ms = order(s, pseudoAll(s).filter((m) => s.b[m.to] || m.epc));
+    const checked = inCheck(s, s.turn);
+    let best = checked ? -Infinity : evalPos(s);
+    if (!checked) {
+      if (ply > 6 || best >= beta) return best;
+      if (best > alpha) alpha = best;
+    }
+    const ms = order(s, checked ? pseudoAll(s) : pseudoCaptures(s));
+    let any = false;
     for (const m of ms) {
       const ns = tryMove(s, m);
       if (!ns) continue;
-      const sc = -qsearch(vanishPass(ns), -beta, -alpha, ply + 1);
+      any = true;
+      if (ply >= 64) return 0;
+      const sc = -qsearch(vanishPass(ns), -beta, -alpha, ply + 1, rootPly);
       if (sc > best) best = sc;
       if (best > alpha) alpha = best;
       if (alpha >= beta) break;
     }
-    return best;
+    return checked && !any ? -(MATE - rootPly - ply) : best;
   }
   var srchRep = null;
   var srchEnd = 0;
@@ -1142,8 +1260,9 @@ var TouhouChess = (() => {
     checkDeadline();
     if (ply && ply <= 2 && srchRep && srchRep.has(posKey(s))) return 0;
     const originalAlpha = alpha, key = cacheContext ? cacheKey(s, ply) + (d > 0 ? "" : "|qroot") : null;
-    const cached = key ? probeTransposition(key) : null;
-    if (cached && cached.depth === d) {
+    const slot = key ? transpositionIndex(key) : 0;
+    const cached = key ? probeTransposition(key, slot) : null;
+    if (cached && (cached.depth === d || PRUNE.ttDeep && d > 0 && cached.depth > d)) {
       const value = scoreFromTT(cached.value, ply);
       if (cached.bound === "exact" || cached.bound === "lower" && value >= beta || cached.bound === "upper" && value <= alpha) {
         countTTCutoff();
@@ -1151,49 +1270,42 @@ var TouhouChess = (() => {
       }
     }
     if (!(d > 0)) {
-      const value = !hasLegal(s) ? inCheck(s, s.turn) ? -(MATE - ply) : 0 : qsearch(s, alpha, beta, 0);
-      if (key) storeTransposition(key, d, value, value <= originalAlpha ? "upper" : value >= beta ? "lower" : "exact", null, ply);
+      const value = !hasLegal(s) ? inCheck(s, s.turn) ? -(MATE - ply) : 0 : qsearch(s, alpha, beta, 0, ply);
+      if (key) storeTransposition(key, d, value, value <= originalAlpha ? "upper" : value >= beta ? "lower" : "exact", null, ply, slot);
       return value;
     }
     const ms = pseudoAll(s);
     order(s, ms, ply);
     if (cached?.move) {
-      const i = ms.findIndex((m) => moveKey(m) === cached.move);
+      const cachedMove = JSON.parse(cached.move);
+      const i = ms.findIndex((m) => matchesMove(m, cachedMove));
       if (i > 0) ms.unshift(...ms.splice(i, 1));
     }
     let best = -Infinity, bestMove = null, any = false, tried = 0;
     const pr = PRUNE.inner;
     const chk = pr ? !!inCheck(s, s.turn) : false;
-    let fDepth = PRUNE.futilityDepth, fMargin = PRUNE.futilityMargin, lAfter = PRUNE.lmrAfter;
+    let lAfter = PRUNE.lmrAfter;
     if (pr) {
       let mat = 0;
       for (let i = 0; i < 64; i++) {
         const q = s.b[i];
         if (q && !P[q.t].royal) mat += P[q.t].value;
       }
-      if (mat >= PRUNE.openMaterial) {
-        fDepth = PRUNE.openFutilityDepth;
-        fMargin = PRUNE.openFutilityMargin;
-        lAfter = PRUNE.openLmrAfter;
-      }
+      if (mat >= PRUNE.openMaterial) lAfter = PRUNE.openLmrAfter;
     }
-    let stat = null;
     for (const m of ms) {
       const ns = tryMove(s, m);
       if (!ns) continue;
       any = true;
       tried++;
       const quiet = !s.b[m.to] && !m.promo && !m.drop && !m.epc;
-      if (pr && quiet && !chk && d <= fDepth && tried > 1) {
-        if (stat === null) stat = evalPos(s);
-        if (stat + fMargin * d <= alpha) continue;
-      }
       let red = 0;
       if (pr && quiet && !chk && d >= PRUNE.lmrMinDepth && tried > lAfter)
         red = tried > lAfter * 2 ? 2 : 1;
       if (red >= d) red = d - 1;
-      let sc = -negamax(vanishPass(ns), d - 1 - red, -beta, -alpha, ply + 1);
-      if (red && sc > alpha) sc = -negamax(vanishPass(ns), d - 1, -beta, -alpha, ply + 1);
+      const child = vanishPass(ns);
+      let sc = -negamax(child, d - 1 - red, -beta, -alpha, ply + 1);
+      if (red && sc > alpha) sc = -negamax(child, d - 1, -beta, -alpha, ply + 1);
       if (sc > best) {
         best = sc;
         bestMove = m;
@@ -1206,17 +1318,17 @@ var TouhouChess = (() => {
     }
     if (!any) best = inCheck(s, s.turn) ? -(MATE - ply) : 0;
     if (best === -Infinity) return alpha;
-    if (key) storeTransposition(key, d, best, best <= originalAlpha ? "upper" : best >= beta ? "lower" : "exact", bestMove, ply);
+    if (key) storeTransposition(key, d, best, best <= originalAlpha ? "upper" : best >= beta ? "lower" : "exact", bestMove, ply, slot);
     return best;
   }
   var LEVELS = {
-    easy: { d: 3, timeMs: 500, preferCheck: true, selection: { random: 0.1, lossBand: 0.6, suboptimal: 0.2, best: 0.1 } },
-    normal: { d: 4, timeMs: 1e3, selection: { random: 0.05, lossBand: 0.15, suboptimal: 0.4, best: 0.4 } },
-    hard: { d: 5, timeMs: 2e3, deepen: 1, timeOnlyAtPieces: 18, selection: { random: 0, lossBand: 0.01, suboptimal: 0.2, best: 0.79 } },
+    easy: { d: 3, timeMs: 475, preferCheck: true, selection: { random: 0.1, lossBand: 0.6, suboptimal: 0.2, best: 0.1 } },
+    normal: { d: 4, timeMs: 950, selection: { random: 0.02, lossBand: 0.08, suboptimal: 0.4, best: 0.5 } },
+    hard: { d: 5, timeMs: 1900, deepen: 1, timeOnlyAtPieces: 18, selection: { random: 0, lossBand: 0.01, suboptimal: 0.2, best: 0.79 } },
     // Lunatic 使用通用评估，不含手写开局原则项。
     lunatic: {
       d: 4,
-      timeMs: 3e3,
+      timeMs: 2850,
       timeOnly: 1,
       deepen: 1,
       plain: 1,
@@ -1314,16 +1426,14 @@ var TouhouChess = (() => {
   var PRUNE = {
     on: 1,
     /* 根节点候选收窄 */
+    ttDeep: 0,
+    /* 实验：允许更深的置换表结果满足较浅搜索 */
     /* 树内部的前向剪枝。只跳过安静走法（非吃子非升变非打入），
        而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
        不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
        inner=0 时 negamax 走精确路径，tests/golden.test.ts 测的就是那条。 */
     inner: 1,
-    /* 用户授权默认开启 futility + LMR；实验可显式关闭 */
-    futilityDepth: 2,
-    /* 剩余深度 ≤ 这个值才做 futility */
-    futilityMargin: 120,
-    /* 每层余量（评估单位）。静态评估 + 余量仍低于 alpha 就跳过 */
+    /* 内部剪枝仅保留 LMR；实验可显式关闭 */
     lmrAfter: 3,
     /* 前这么多手不削减 */
     lmrMinDepth: 3,
@@ -1335,9 +1445,6 @@ var TouhouChess = (() => {
     /* 双方非王子力合计 ≥ 这个值算开局 */
     openLmrAfter: 1,
     /* 开局阶段：第 2 手起就削减 */
-    openFutilityDepth: 3,
-    /* 开局阶段：剩余深度 ≤3 都做 futility */
-    openFutilityMargin: 220,
     /* 层数 → 阈值（评估单位，100 = 1 分）。没列到的层沿用最后一个。
        越深阈值越紧：深层评估更可信，可以剪得更狠。 */
     margins: { 1: 1e9, 2: 1e9, 3: 200, 4: 70, 5: 30 },
@@ -1426,14 +1533,7 @@ var TouhouChess = (() => {
         let v;
         try {
           OPT.open = plain ? 0 : 1;
-          v = withSearchCache(() => {
-            if (legal === 1) return -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
-            else {
-              v = -negamax(vanishPass(ns), depth - 1, -(bv + 1), -bv, 1);
-              if (v > bv) v = -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1);
-              return v;
-            }
-          }, { hist });
+          v = withSearchCache(() => -negamax(vanishPass(ns), depth - 1, -Infinity, Infinity, 1), { hist });
         } finally {
           OPT.open = saved;
         }

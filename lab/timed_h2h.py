@@ -160,7 +160,7 @@ def report(out, manifest):
                                     'on_depth','off_depth','on_ms','off_ms','opening8','army'])
     csv_write('moves.csv', move_rows, ['game','group','ply','side','enabled','notation','depth','ms','score','from','to','promo','drop','castle'])
     c = manifest['config']
-    text = ['# 永琳：futility + LMR 等时对局报告', '',
+    text = ['# 永琳：LMR 等时对局报告', '',
             f"每手预算：{c['time_ms']} ms；每组 {c['pairs']} 对换色；并发 {c['workers']} 局；上限 {c['max_ply']} 半回合。",
             '以下胜负和分数均从**开启内部剪枝的一方**看。双方均为永琳，根节点收窄保持开启。', '',
             '| 阵容 | 已结束 | 胜 | 和 | 负 | 纯胜率 | 得分率（和计半分） | 未决 | 进行中 | 未开始 |',
@@ -197,7 +197,7 @@ def report(out, manifest):
              '- 达到手数上限仍未终局的对局记为未决，不按子力裁决、不冒充和棋；胜率分母只含自然结束对局，未决较多时可能有选择偏差。',
              '- 每对使用同一镜像阵容和种子，交换开启剪枝方的颜色。没有预走开局，每个实际走子都调用限时永琳。',
              '- 随机阵容固定 e1 王，其他身位按种子随机排列候选，经同一 TS 引擎验证，保留 30～45 点阵容，不是所有合法阵容的均匀抽样；暂不包含作为将军对象的八云紫。',
-             '- 开关同时控制 futility 和 LMR；不能从此实验分离两者各自的收益。',
+             '- 开关仅控制 LMR；历史实验曾同时控制两种剪枝，不能与本版结果直接混合。',
              '- 深度和耗时详见 games.csv / moves.csv；真实墙钟限时受硬件、后台负载、并发和 JIT 影响，种子不能保证逐步完全复现。',
              '- 配对区间只使用两盘均自然结束的配对。小样本结果用于观察趋势，不自动决定修改默认设置。', '',
              '## 运行信息', '', '```json', json.dumps({'config':c,'host':manifest['host']}, ensure_ascii=False, indent=2), '```', '']

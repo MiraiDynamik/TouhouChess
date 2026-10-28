@@ -1,4 +1,4 @@
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,rm} from 'node:fs/promises';
 import {build as esbuild} from 'esbuild';
 import {build as viteBuild} from 'vite';
 import {fileURLToPath} from 'node:url';
@@ -34,6 +34,8 @@ if(check){
   if(html!==await read('touhou-chess.html'))throw Error('HTML is stale or hand-edited; run npm run build');
   console.log('Single-source check passed: TS engine → Svelte app + inline Worker + standalone HTML.');
 }else{
+  // write:false bypasses Vite's cleanup; remove stale hashed assets after a successful build.
+  await rm(new URL('web/dist/',root),{recursive:true,force:true});
   await mkdir(new URL('web/dist/',root),{recursive:true});
   for(const file of output){
     const url=new URL('web/dist/'+file.fileName,root);

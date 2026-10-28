@@ -6,5 +6,3 @@ web/dist/
 
 # Local resumable match experiments (reports can be shared separately)
 lab/out/
-lab/out/timed-h2h*/
-lab/out/stockfish-*/

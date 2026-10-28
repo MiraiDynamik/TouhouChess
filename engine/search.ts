@@ -3,10 +3,10 @@
    srchEnd 是搜索时限：界面线程里跑的分析搜索必须能被打断，
    否则深一层就会把页面冻住。srchEnd=0 表示不限时（批量测试走这条）。 */
 import {P,WEIGHTS} from './pieces.js';
-import {applyMove,hasLegal,inCheck,legalMoves,posHist,posKey,pseudoAll,tryMove,vanishPass} from './rules.js';
+import {applyMove,hasLegal,inCheck,legalMoves,posHist,posKey,pseudoAll,pseudoCaptures,withRuleCache,tryMove,vanishPass} from './rules.js';
 import {MATE,OPT,evalPos} from './eval.js';
 import {TT,newTranspositionSearch,ttPositionKey,probeTransposition,storeTransposition,
-  scoreFromTT,moveKey,countTTCutoff,transpositionStats} from './transposition.js';
+  scoreFromTT,matchesMove,transpositionIndex,countTTCutoff,transpositionStats} from './transposition.js';
 export {TT,clearTranspositionTable,transpositionStats} from './transposition.js';
 
 let cacheContext=null;
@@ -27,7 +27,7 @@ export function withSearchCache(run,{hist=[],enabled=TT.enabled,newSearch=true}=
     if(history!==lastCacheHistory){lastCacheHistory=history;cacheHistoryVersion++;}
     cacheContext={history:cacheHistoryVersion};
   }else cacheContext=null;
-  try{return run();}finally{cacheContext=saved;}
+  try{return withRuleCache(run);}finally{cacheContext=saved;}
 }
 const cacheKey=(s,ply)=>ttPositionKey(s)+(ply<=2?'|root:'+ply+'|hist:'+cacheContext.history:'|deep');
 
@@ -63,7 +63,10 @@ export function mscore(s,m,ply=0){const vic=s.b[m.to];let v=0;
     else{const h=HIST[g];v+=h>799?799:h;}   // 历史不许越过杀手
   }
   return v;}
-export const order=(s,ms,ply=0)=>ms.sort((a,b)=>mscore(s,b,ply)-mscore(s,a,ply));
+export function order(s,ms,ply=0){
+  for(const m of ms)m._order=mscore(s,m,ply);
+  return ms.sort((a,b)=>b._order-a._order);
+}
 /* beta 截断时记下这个安静走法：同一层下次先试它 */
 function onCut(s,m,d,ply){
   if(s.b[m.to]||m.promo||m.drop)return;        // 吃子已经排在最前，不用记
@@ -72,22 +75,29 @@ function onCut(s,m,d,ply){
   HIST[g]+=d*d;                                 // 深层的截断更有信息量
 }
 export const kid=m=>vanishPass(m._n);
-export function qsearch(s,alpha,beta,ply){
+export function qsearch(s,alpha,beta,ply,rootPly=0){
   checkDeadline();
-  let best=evalPos(s);
-  if(ply>6||best>=beta)return best;
-  if(best>alpha)alpha=best;
-  /* 先按伪合法筛出吃子再验证 —— 原来是算完整合法表再扔掉非吃子，
-     等于给所有非吃子白付了合法性验证 */
-  const ms=order(s,pseudoAll(s).filter(m=>s.b[m.to]||m.epc));
+  const checked=inCheck(s,s.turn);
+  // Standing pat is only legal outside check. Evasions may be quiet moves.
+  let best=checked?-Infinity:evalPos(s);
+  if(!checked){
+    if(ply>6||best>=beta)return best;
+    if(best>alpha)alpha=best;
+  }
+  const ms=order(s,checked?pseudoAll(s):pseudoCaptures(s));
+  let any=false;
   for(const m of ms){
-    const ns=tryMove(s,m);
-    if(!ns)continue;
-    const sc=-qsearch(vanishPass(ns),-beta,-alpha,ply+1);
+    const ns=tryMove(s,m);if(!ns)continue;
+    any=true;
+    // Bound checking sequences without treating checkmate as a static score.
+    if(ply>=64)return 0;
+    const sc=-qsearch(vanishPass(ns),-beta,-alpha,ply+1,rootPly);
     if(sc>best)best=sc;
     if(best>alpha)alpha=best;
-    if(alpha>=beta)break;}
-  return best;}
+    if(alpha>=beta)break;
+  }
+  return checked&&!any?-(MATE-rootPly-ply):best;
+}
 export let srchRep=null;
 /* 搜索时限。evalPanel 这种在界面线程里跑的搜索必须能被打断：
    每 256 个搜索/静态搜索结点查一次钟，超时就抛 EVABORT，调用方丢弃这次的部分结果。
@@ -106,10 +116,11 @@ export function negamax(s,d,alpha,beta,ply){
   checkDeadline();
   if(ply&&ply<=2&&srchRep&&srchRep.has(posKey(s)))return 0;   /* 踩回已出现过的局面当和棋算 */
   const originalAlpha=alpha,key=cacheContext?cacheKey(s,ply)+(d>0?'':'|qroot'):null;
-  const cached=key?probeTransposition(key):null;
-  // Equal remaining depth preserves the fixed-horizon reference semantics.
-  // Different-depth entries still provide a move-ordering hint below.
-  if(cached&&cached.depth===d){
+  const slot=key?transpositionIndex(key):0;
+  const cached=key?probeTransposition(key,slot):null;
+  // Exact-depth is the game default. Deeper reuse changes fixed-horizon semantics
+  // and stays a separate experiment; qsearch entries retain their own namespace.
+  if(cached&&(cached.depth===d||PRUNE.ttDeep&&d>0&&cached.depth>d)){
     const value=scoreFromTT(cached.value,ply);
     if(cached.bound==='exact'||cached.bound==='lower'&&value>=beta||cached.bound==='upper'&&value<=alpha){
       countTTCutoff();return value;
@@ -117,60 +128,53 @@ export function negamax(s,d,alpha,beta,ply){
   }
   if(!(d>0)){
     // Cache only a fresh qsearch root, never a partially consumed qsearch horizon.
-    const value=!hasLegal(s)?(inCheck(s,s.turn)?-(MATE-ply):0):qsearch(s,alpha,beta,0);
-    if(key)storeTransposition(key,d,value,value<=originalAlpha?'upper':value>=beta?'lower':'exact',null,ply);
+    const value=!hasLegal(s)?(inCheck(s,s.turn)?-(MATE-ply):0):qsearch(s,alpha,beta,0,ply);
+    if(key)storeTransposition(key,d,value,value<=originalAlpha?'upper':value>=beta?'lower':'exact',null,ply,slot);
     return value;
   }
   const ms=pseudoAll(s);
   order(s,ms,ply);
-  if(cached?.move){const i=ms.findIndex(m=>moveKey(m)===cached.move);
+  if(cached?.move){const cachedMove=JSON.parse(cached.move);const i=ms.findIndex(m=>matchesMove(m,cachedMove));
     if(i>0)ms.unshift(...ms.splice(i,1));}
   let best=-Infinity,bestMove=null,any=false,tried=0;
   const pr=PRUNE.inner;
   /* 被将军时一律不剪：那时候每一手都可能是唯一解 */
   const chk=pr?!!inCheck(s,s.turn):false;
   /* 阶段：开局剪得狠，中局残局手松。用场上非王子力判断 */
-  let fDepth=PRUNE.futilityDepth,fMargin=PRUNE.futilityMargin,lAfter=PRUNE.lmrAfter;
+  let lAfter=PRUNE.lmrAfter;
   if(pr){
     let mat=0;
     for(let i=0;i<64;i++){const q=s.b[i];if(q&&!P[q.t].royal)mat+=P[q.t].value;}
-    if(mat>=PRUNE.openMaterial){
-      fDepth=PRUNE.openFutilityDepth;
-      fMargin=PRUNE.openFutilityMargin;
-      lAfter=PRUNE.openLmrAfter;}}
-  let stat=null;                        // 静态评估，按需算一次
+    if(mat>=PRUNE.openMaterial)lAfter=PRUNE.openLmrAfter;}
   for(const m of ms){
     const ns=tryMove(s,m);
     if(!ns)continue;                    // 非法，跳过
     any=true;tried++;
     const quiet=!s.b[m.to]&&!m.promo&&!m.drop&&!m.epc;
-    /* futility：浅层处，静态评估加余量都追不上 alpha，这手安静走法就不看了 */
-    if(pr&&quiet&&!chk&&d<=fDepth&&tried>1){
-      if(stat===null)stat=evalPos(s);
-      if(stat+fMargin*d<=alpha)continue;}
     /* LMR：排序靠后的安静走法先用削减深度看一眼，高于 alpha 才全深度重搜 */
     let red=0;
     if(pr&&quiet&&!chk&&d>=PRUNE.lmrMinDepth&&tried>lAfter)
       red=tried>lAfter*2?2:1;
     if(red>=d)red=d-1;
-    let sc=-negamax(vanishPass(ns),d-1-red,-beta,-alpha,ply+1);
-    if(red&&sc>alpha)sc=-negamax(vanishPass(ns),d-1,-beta,-alpha,ply+1);
+    const child=vanishPass(ns);
+    let sc=-negamax(child,d-1-red,-beta,-alpha,ply+1);
+    if(red&&sc>alpha)sc=-negamax(child,d-1,-beta,-alpha,ply+1);
     if(sc>best){best=sc;bestMove=m;}
     if(best>alpha)alpha=best;
     if(alpha>=beta){onCut(s,m,d,ply);break;}}
   if(!any)best=inCheck(s,s.turn)?-(MATE-ply):0;
   if(best===-Infinity)return alpha; // No completed score: don't cache it.
-  if(key)storeTransposition(key,d,best,best<=originalAlpha?'upper':best>=beta?'lower':'exact',bestMove,ply);
+  if(key)storeTransposition(key,d,best,best<=originalAlpha?'upper':best>=beta?'lower':'exact',bestMove,ply,slot);
   return best;}
 /* 四档互斥策略概率（每手只抽一次），评分 100 = 一个兵。
    lossBand: 相对最优损失 100–300；suboptimal: 排除第一名、距第二名不超过 100。
    难度键与界面角色名无关。 */
 export const LEVELS={
-  easy:{d:3,timeMs:500,preferCheck:true,selection:{random:.10,lossBand:.60,suboptimal:.20,best:.10}},
-  normal:{d:4,timeMs:1000,selection:{random:.05,lossBand:.15,suboptimal:.40,best:.40}},
-  hard:{d:5,timeMs:2000,deepen:1,timeOnlyAtPieces:18,selection:{random:0,lossBand:.01,suboptimal:.20,best:.79}},
+  easy:{d:3,timeMs:475,preferCheck:true,selection:{random:.10,lossBand:.60,suboptimal:.20,best:.10}},
+  normal:{d:4,timeMs:950,selection:{random:.02,lossBand:.08,suboptimal:.40,best:.50}},
+  hard:{d:5,timeMs:1900,deepen:1,timeOnlyAtPieces:18,selection:{random:0,lossBand:.01,suboptimal:.20,best:.79}},
   // Lunatic 使用通用评估，不含手写开局原则项。
-  lunatic:{d:4,timeMs:3000,timeOnly:1,deepen:1,plain:1,
+  lunatic:{d:4,timeMs:2850,timeOnly:1,deepen:1,plain:1,
     selection:{random:0,lossBand:0,suboptimal:0,best:1}}
 };
 
@@ -268,13 +272,12 @@ export function rankMoves(s,d){
    这里改变的是**选哪一手**，不是某个深度的搜索值。 */
 export const PRUNE={
   on:1,                /* 根节点候选收窄 */
+  ttDeep:0,            /* 实验：允许更深的置换表结果满足较浅搜索 */
   /* 树内部的前向剪枝。只跳过安静走法（非吃子非升变非打入），
      而且被将军时完全不剪 —— 所以漏掉的是「中途出现重大劣势」那一类，
      不是所有战术。基线（不剪枝但浅）漏掉的战术更多，所以这个交换划算。
      inner=0 时 negamax 走精确路径，tests/golden.test.ts 测的就是那条。 */
-  inner:1,             /* 用户授权默认开启 futility + LMR；实验可显式关闭 */
-  futilityDepth:2,     /* 剩余深度 ≤ 这个值才做 futility */
-  futilityMargin:120,  /* 每层余量（评估单位）。静态评估 + 余量仍低于 alpha 就跳过 */
+  inner:1,             /* 内部剪枝仅保留 LMR；实验可显式关闭 */
   lmrAfter:3,          /* 前这么多手不削减 */
   lmrMinDepth:3,       /* 剩余深度 ≥ 这个值才削减 */
   /* 开局剪得更狠：开局分支因子最高，而多考虑一个开局候选的边际价值最低 ——
@@ -282,8 +285,6 @@ export const PRUNE={
      判据用场上子力（和 depthFor 用的是同一个信号）。 */
   openMaterial:55,     /* 双方非王子力合计 ≥ 这个值算开局 */
   openLmrAfter:1,      /* 开局阶段：第 2 手起就削减 */
-  openFutilityDepth:3, /* 开局阶段：剩余深度 ≤3 都做 futility */
-  openFutilityMargin:220,
   /* 层数 → 阈值（评估单位，100 = 1 分）。没列到的层沿用最后一个。
      越深阈值越紧：深层评估更可信，可以剪得更狠。 */
   margins:{1:1e9,2:1e9,3:200,4:70,5:30},
@@ -343,7 +344,7 @@ export function pickMove(s,d,selection=LEVELS.lunatic.selection,preferCheck=fals
   },{hist:posHist});
 }
 
-/** Analysis root search moved unchanged from the old HTML Worker.
+/** Analysis root search shared by the Worker and UI fallback.
  * Yields between root moves so the UI fallback can schedule short slices.
  * Worker and fallback consume this one implementation; neither implements search.
  */
@@ -365,13 +366,7 @@ export function* analysisSteps(s,{hist=[],plain=true}={}){
       let v;
       try{
         OPT.open=plain?0:1;
-        v=withSearchCache(()=>{
-        if(legal===1)return -negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
-        else{
-          v=-negamax(vanishPass(ns),depth-1,-(bv+1),-bv,1);
-          if(v>bv)v=-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1);
-          return v;
-        }},{hist});
+        v=withSearchCache(()=>-negamax(vanishPass(ns),depth-1,-Infinity,Infinity,1),{hist});
       }finally{OPT.open=saved;}
       if(v>bv){bv=v;best=m;}
       yield {progress:true};

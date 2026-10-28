@@ -2,7 +2,7 @@
 /* 本文件由 engine/extract.py 从单文件版机械抽取，之后手工改模块边界。
    抽取时不改任何逻辑 —— 行为必须和 tests/golden.json 完全一致，
    先搬后改：倒过来做的话出了差异分不清是搬错还是改错。 */
-import {ALFIL,ALL8,B,DIAG,GOLD,KNIGHT,ORTHO,REIMU_ATK,SILVER,W,at,def,file,fw,leapAtk,leapGen,lf,ok,promoOpts,rank,rt,slideAtk,slideGen} from './board.js';
+import {P,ALFIL,ALL8,B,DIAG,GOLD,KNIGHT,ORTHO,REIMU_ATK,SILVER,W,at,def,file,fw,leapAtk,leapGen,leapHits,slideHits,leapTable,lf,ok,promoOpts,rank,rt,slideAtk,slideGen} from './board.js';
 
 
 
@@ -10,18 +10,18 @@ import {ALFIL,ALL8,B,DIAG,GOLD,KNIGHT,ORTHO,REIMU_ATK,SILVER,W,at,def,file,fw,le
 
 
 
-def('k',{n:'王',g:'\u265A',v:4,slots:['k'],royal:1,atk:(s,i)=>leapAtk(s,i,ALL8),gen:(s,i)=>leapGen(s,i,ALL8)});
+def('k',{n:'王',g:'\u265A',v:4,slots:['k'],royal:1,atk:leapTable(ALL8),gen:(s,i)=>leapGen(s,i,ALL8)});
 def('q',{n:'后',g:'\u265B',v:9,slots:['q'],slider:1,atk:(s,i)=>slideAtk(s,i,ALL8),gen:(s,i)=>slideGen(s,i,ALL8)});
 def('r',{n:'车',g:'\u265C',v:5,slots:['r'],slider:1,atk:(s,i)=>slideAtk(s,i,ORTHO),gen:(s,i)=>slideGen(s,i,ORTHO)});
 def('b',{n:'象',g:'\u265D',v:3,slots:['n'],dev:1,atk:(s,i)=>slideAtk(s,i,DIAG),gen:(s,i)=>slideGen(s,i,DIAG)});
-def('n',{n:'马',g:'\u265E',v:3,slots:['n'],dev:1,atk:(s,i)=>leapAtk(s,i,KNIGHT),gen:(s,i)=>leapGen(s,i,KNIGHT)});
+def('n',{n:'马',g:'\u265E',v:3,slots:['n'],dev:1,atk:leapTable(KNIGHT),gen:(s,i)=>leapGen(s,i,KNIGHT)});
 
 export function pawnAtk(s,i,dirs){const p=s.b[i],r=rank(i),f=file(i),d=fw(p.c),o=[];
   for(const df of dirs)if(ok(r+d,f+df))o.push(at(r+d,f+df));return o;}
-export function pawnGen(s,i,dirs,dbl){
+export function pawnGen(s,i,dirs,dbl,capturesOnly=false){
   const p=s.b[i],me=p.c,opp=me===W?B:W,r=rank(i),f=file(i),d=fw(me),o=[];
   const last=me===W?0:7,home=me===W?6:1;
-  if(ok(r+d,f)){const one=at(r+d,f);
+  if(!capturesOnly&&ok(r+d,f)){const one=at(r+d,f);
     if(!s.b[one]){
       if(r+d===last)promoOpts().forEach(t=>o.push({from:i,to:one,promo:t}));
       else o.push({from:i,to:one});
@@ -97,19 +97,19 @@ export function dollDropOK(s,to,me){
     if(q&&q.c===me&&q.t==='doll')return false;}
   return true;}
 
-def('fairy',{n:'\u5996\u7CBE',g:'\u22C8',v:1.5,slots:['n','p'],dev:1,atk:(s,i)=>leapAtk(s,i,DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
+def('fairy',{n:'\u5996\u7CBE',g:'\u22C8',v:1.5,slots:['n','p'],dev:1,atk:leapTable(DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
 // 大妖精＝将棋的银将（正前＋四个斜向，吃走相同，不升变）
 def('daiyousei',{n:'\u5927\u5996\u7CBE',g:'\u29D3',v:2,slots:['n','p'],dev:1,
   atk:(s,i)=>leapAtk(s,i,SILVER(s.b[i].c)),
   gen:(s,i)=>leapGen(s,i,SILVER(s.b[i].c))});
 
 def('sunny',{n:'桑尼米尔克',g:'☼',v:1.5,slots:['n','p'],dev:1,lightbringer:1,max:1,
-  atk:(s,i)=>leapAtk(s,i,DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
+  atk:leapTable(DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
 def('cirno',{n:'琪露诺',g:'⑨',v:3,slots:['p'],freezer:1,limit:'sqcolor',
-  atk:(s,i)=>leapAtk(s,i,DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
+  atk:leapTable(DIAG),gen:(s,i)=>leapGen(s,i,DIAG)});
 
 def('reimu',{n:'\u7075\u68A6',g:'⛩︎',v:7.5,slots:['k','q','r','n'],
-  atk:(s,i)=>leapAtk(s,i,REIMU_ATK),
+  atk:leapTable(REIMU_ATK),
   gen:(s,i)=>{const me=s.b[i].c,opp=me===W?B:W,r=rank(i),f=file(i),o=[];
     for(const[dr,df]of ORTHO){let nr=r+dr,nf=f+df;      // 穿透式的车：只落空格，不吃子
       while(ok(nr,nf)){const t=at(nr,nf);if(!s.b[t])o.push({from:i,to:t});nr+=dr;nf+=df;}}
@@ -121,7 +121,7 @@ def('sanae',{n:'\u65E9\u82D7',g:'★',v:6,slots:['k','q','r'],slider:1,
   atk:(s,i)=>slideAtk(s,i,SANAE(s.b[i].c)),gen:(s,i)=>slideGen(s,i,SANAE(s.b[i].c))});
 
 def('lumia',{n:'\u9732\u7C73\u5A05',g:'\u271D\uFE0E',v:4,slots:['k','q','r','n','p'],dev:1,fogger:1,max:1,
-  atk:(s,i)=>leapAtk(s,i,ALL8),gen:(s,i)=>leapGen(s,i,ALL8)});
+  atk:leapTable(ALL8),gen:(s,i)=>leapGen(s,i,ALL8)});
 // 永江衣玖＝将棋飞车（车），落在对方底线可选择升变为龙王（车＋ferz）
 def('iku',{n:'\u6C38\u6C5F\u8863\u7396',g:'\u21AF',v:5.5,slots:['r'],slider:1,
   atk:(s,i)=>slideAtk(s,i,ORTHO),
@@ -140,7 +140,7 @@ def('koishi',{n:'\u53E4\u660E\u5730\u604B',g:'☏',v:1,slots:['n','p'],
   gen:(s,i)=>{const me=s.b[i].c,opp=me===W?B:W,o=[],d=-fw(me),r=rank(i),f=file(i);
     const seen=new Set([i]),qq=[i];
     // 每一跳的落点必须为空；斜跳可绕路，但不能跳后接吃子。
-    while(qq.length){const cur=qq.shift();
+    for(let head=0;head<qq.length;head++){const cur=qq[head];
       for(const[dr,df]of ALL8){const nr=rank(cur)+dr*2,nf=file(cur)+df*2;
         if(!ok(nr,nf))continue;const t=at(nr,nf);
         if(s.b[t]||seen.has(t))continue;seen.add(t);qq.push(t);o.push({from:i,to:t});}}
@@ -169,3 +169,38 @@ def('yukari',{n:'\u516B\u4E91\u7D2B',g:'\u9593',v:7,slots:['q','r'],royal:1,file
     const seen=new Set(),u=[];   // 角格的滑行与7格跳会指向同一格，去重
     for(const m of o){if(seen.has(m.to))continue;seen.add(m.to);u.push(m);}
     return u;}});
+
+// Reuse the same geometry for allocation-free attack checks and capture-only search.
+for(const [t,offs] of Object.entries({k:ALL8,n:KNIGHT,fairy:DIAG,sunny:DIAG,cirno:DIAG,lumia:ALL8,reimu:REIMU_ATK})){
+  P[t].hits=(s,i,target)=>leapHits(s,i,target,offs);
+  P[t].captures=(s,i)=>leapGen(s,i,offs,true);
+}
+for(const [t,dirs] of Object.entries({q:ALL8,r:ORTHO,b:DIAG})){
+  P[t].hits=(s,i,target)=>slideHits(s,i,target,dirs);
+  P[t].captures=(s,i)=>slideGen(s,i,dirs,true);
+}
+for(const [t,dirs] of Object.entries({alice:GOLD,daiyousei:SILVER})){
+  P[t].hits=(s,i,target)=>leapHits(s,i,target,dirs(s.b[i].c));
+  P[t].captures=(s,i)=>leapGen(s,i,dirs(s.b[i].c),true);
+}
+P.sanae.hits=(s,i,target)=>slideHits(s,i,target,SANAE(s.b[i].c));
+P.sanae.captures=(s,i)=>slideGen(s,i,SANAE(s.b[i].c),true);
+P.iku.hits=P.r.hits;
+P.ryuu.hits=(s,i,target)=>slideHits(s,i,target,ORTHO)||leapHits(s,i,target,DIAG);
+P.shanghai.hits=(s,i,target)=>slideHits(s,i,target,[[-fw(s.b[i].c),0]]);
+P.yukari.hits=(s,i,target)=>slideHits(s,i,target,rimDirs(i))||leapHits(s,i,target,LEAP7);
+for(const [t,dirs] of Object.entries({p:()=>[-1,1],rabbit:()=>[-1,1],keda:c=>[lf(c)],onmyo:c=>[rt(c)],ghost:()=>[0]})){
+  P[t].hits=(s,i,target)=>rank(target)-rank(i)===fw(s.b[i].c)&&dirs(s.b[i].c).includes(file(target)-file(i));
+}
+P.p.captures=(s,i)=>pawnGen(s,i,[-1,1],true,true);
+P.keda.captures=(s,i)=>pawnGen(s,i,[lf(s.b[i].c)],true,true);
+P.onmyo.captures=(s,i)=>pawnGen(s,i,[rt(s.b[i].c)],true,true);
+P.koishi.hits=(s,i,target)=>rank(target)-rank(i)===-fw(s.b[i].c)&&Math.abs(file(target)-file(i))<=1;
+P.koishi.captures=(s,i)=>leapGen(s,i,[-1,0,1].map(df=>[-fw(s.b[i].c),df]),true);
+
+const pawnWhite=leapTable([[-1,-1],[-1,1]]),pawnBlack=leapTable([[1,-1],[1,1]]);
+P.p.atk=P.rabbit.atk=(s,i)=>(s.b[i].c===W?pawnWhite:pawnBlack)(s,i);
+const goldWhite=leapTable(GOLD(W)),goldBlack=leapTable(GOLD(B));
+P.alice.atk=(s,i)=>(s.b[i].c===W?goldWhite:goldBlack)(s,i);
+const silverWhite=leapTable(SILVER(W)),silverBlack=leapTable(SILVER(B));
+P.daiyousei.atk=(s,i)=>(s.b[i].c===W?silverWhite:silverBlack)(s,i);

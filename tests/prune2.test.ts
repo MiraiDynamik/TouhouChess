@@ -1,4 +1,4 @@
-/* 树内部剪枝（futility + LMR）省多少、以及同样时间能多搜几层。
+/* 树内部剪枝（LMR）省多少、以及同样时间能多搜几层。
    「同样时间多搜几层」才是真正要看的量 —— 省时间本身没有价值，
    省下来换成深度才有。 */
 import {readFileSync} from 'node:fs';
@@ -33,7 +33,7 @@ const time = (s: any, d: number, inner: number) => {
   return {ms: performance.now() - t, v};
 };
 
-console.log('树内部剪枝（futility + LMR）\n');
+console.log('树内部剪枝（LMR）\n');
 console.log('深度'.padEnd(6) + '精确'.padStart(11) + '剪枝'.padStart(11) + '省'.padStart(8)
   + '   值差（评估单位，正=剪枝更高）');
 const tot: Record<number, [number, number]> = {};

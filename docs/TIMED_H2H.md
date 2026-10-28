@@ -2,7 +2,7 @@
 
 ## 测试内容
 
-双方都调用 `engine/search.ts` 的 `timedMove`，使用永琳配置、每手 3000 ms。唯一实验差异是 `PRUNE.inner`：开启方为 1，关闭方为 0；该开关同时启用 futility 和 LMR。双方的根节点候选收窄、评估权重和规则相同。脚本只修改独立实验进程里的开关，不改源码或游戏默认设置。
+双方都调用 `engine/search.ts` 的 `timedMove`，使用永琳配置、每手 3000 ms。唯一实验差异是 `PRUNE.inner`：开启方为 1，关闭方为 0；该开关目前只启用 LMR。双方的根节点候选收窄、评估权重和规则相同。脚本只修改独立实验进程里的开关，不改源码或游戏默认设置。
 
 - **香草组**：双方标准国际象棋阵容，43 点场上子力、2 点剩余弹药。
 - **随机对称组**：每对生成一个随机阵容，黑方上下镜像白方。两盘使用完全相同的阵容，交换开启剪枝方的颜色。
@@ -103,7 +103,7 @@ python -u lab/timed_h2h.py --pairs 5 --workers 1 --out lab/out/timed-h2h-3s
 | `games/*.json` | 每局完整存档，用于续跑及复核 |
 | `games/*.stderr.log` | Node 对局进程异常日志 |
 
-CSV 使用 UTF-8 BOM，便于 Windows Excel 读取中文。报告里的胜负统一从**开启 futility + LMR 的一方**看。
+CSV 使用 UTF-8 BOM，便于 Windows Excel 读取中文。报告里的胜负统一从**开启 LMR 的一方**看。
 
 只重新生成报告，不继续下棋：
 

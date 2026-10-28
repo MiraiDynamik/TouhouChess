@@ -13,7 +13,7 @@
      "level": "lunatic",        // easy | normal | hard | lunatic
                                 //   旧名 sage/youkai/human/baka 仍可用（见 LEVEL_ALIAS）
      "depthBonus": 0,           // 额外深度（叠加在 depthFor 的少子加深之上）
-     "prune": 0,                // 树内部前向剪枝（futility + LMR）。
+     "prune": 0,                // 树内部前向剪枝（LMR）。
                                 //   深度5 省 7 倍、深度6 省 13 倍，且测过的局面上
                                 //   搜索值未变。开了之后可以用更深的 fixedDepth。
      "pruneA": null,            // 只给被测方开/关（等时对局用），null = 跟随 prune

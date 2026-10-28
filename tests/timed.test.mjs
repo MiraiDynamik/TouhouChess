@@ -8,11 +8,11 @@ const game=createGame();game.preset();game.selectSide('b');game.preset();game.st
 const position=get(game).position,hist=get(game).posHist;
 const signature=m=>JSON.stringify([m.from,m.to,m.promo||null,m.drop||null,m.castle??null]);
 const legal=new Set(get(game).legal.map(signature));
-assert.equal(E.PRUNE.inner,1,'futility/LMR are enabled by default');
+assert.equal(E.PRUNE.inner,1,'LMR is enabled by default');
 // Flat probabilities: enumerate 100 equally spaced draws, not a statistical test.
 const selectionRandom=Math.random;
 try {
- const expected={easy:[10,60,20,10],normal:[5,15,40,40],hard:[0,1,20,79],lunatic:[0,0,0,100]};
+ const expected={easy:[10,60,20,10],normal:[2,8,40,50],hard:[0,1,20,79],lunatic:[0,0,0,100]};
  for(const [level,counts] of Object.entries(expected)){
   const actual={random:0,lossBand:0,suboptimal:0,best:0};
   for(let i=0;i<100;i++){Math.random=()=>(i+.5)/100;actual[E.drawMoveStrategy(E.LEVELS[level].selection)]++;}

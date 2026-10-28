@@ -48,6 +48,14 @@ for(const bound of ['exact','lower','upper']){
  assert.equal(probeTransposition(bound).bound,bound);
 }
 const sparse=E.buildState(map({e1:'k',a1:'r'}),map({e8:'k'}));
+// Deeper reuse remains independent of removed search experiments and defaults off.
+assert.equal(E.PRUNE.ttDeep,0);
+E.PRUNE.ttDeep=1;E.clearTranspositionTable();
+const deepValue=search(sparse,3),deepCutoffs=E.transpositionStats().cutoffs;
+assert.equal(search(sparse,2),deepValue);
+assert.equal(E.transpositionStats().cutoffs,deepCutoffs+1);
+E.PRUNE.ttDeep=0;
+assert.equal(search(sparse,2),search(sparse,2,{enabled:false}));
 E.clearTranspositionTable();const exact=search(sparse,3);
 assert.equal(search(sparse,3,{alpha:exact-1,beta:exact}),exact);
 E.clearTranspositionTable();search(sparse,3,{alpha:exact-1,beta:exact});

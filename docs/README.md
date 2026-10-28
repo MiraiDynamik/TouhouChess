@@ -7,11 +7,13 @@
 | [开发日志](DEVELOPMENT_LOG.md) | 从原 README 整理的架构与开发背景，以及后续变更记录 |
 | [前端开发说明](FRONTEND.md) | Svelte 组件、界面修改入口、Worker、构建与测试 |
 | [置换表](TRANSPOSITION_TABLE.md) | 缓存实现、东方棋适配、生命周期与性能验证 |
+| [第二阶段搜索实验](SEARCH_PHASE2.md) | 历史消融结果；PVS/futility已删除，目前仅保留LMR |
 | [Windows 等时对局](TIMED_H2H.md) | 三秒永琳剪枝对照实验、续跑、Markdown/CSV 报告 |
 | [棋子价值标定](PIECE_VALUE.md) | Windows 分阶段实验：先妖精对兵，再用兵与妖精标定恋 |
 | [妖精固定交换实验](FAIRY_EXCHANGE.md) | 当前入口：先验1.5，两妖精对三兵/一马，各500对，共2000局 |
 | [PGN 棋谱格式](PGN.md) | 标准 SAN/FEN 互通、仙灵扩展 v1、导入分析和实验导出 |
 | [Stockfish 对局](STOCKFISH_MATCH.md) | 开发者开启剪枝对阵 1320/1500 限强档位 |
+| [MadChess 低难度对照](MADCHESS_TESTING.md) | normal / hard 对照 650 / 1100 档，原生预算、换色试跑与续跑 |
 | [研究记录](RESEARCH.md) | 实验结论、证据、已作废结论和待研究事项 |
 | [实验计划](EXPERIMENT_PLAN.md) | 交接时的实验路线、判据和历史运行记录 |
 

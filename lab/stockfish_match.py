@@ -1,4 +1,4 @@
-"""Resumable vanilla developer(+futility/LMR) vs UCI-limited Stockfish. Stdlib only."""
+"""Resumable vanilla Eirin vs a UCI-limited engine. Stdlib only."""
 import argparse
 import csv
 import hashlib
@@ -75,11 +75,11 @@ def report(out, config):
         writer=csv.DictWriter(f,fieldnames=['id','elo','dev_side','result','score','plies','mean_dev_depth'])
         writer.writeheader(); writer.writerows(rows)
     tmp.replace(out/'games.csv')
-    text=[f"# {config.get('level','lunatic')} vs Stockfish", '',
-          f"Stockfish：{config['stockfish_name']}；Stockfish 每手 {config['time_ms']/1000:g} 秒；双方单线程，本进程内顺序对局。",
+    text=[f"# {config.get('level','lunatic')} vs {config['stockfish_name']}", '',
+          f"对手：{config['stockfish_name']}；对手每手 {config['time_ms']/1000:g} 秒；双方单线程，本进程内顺序对局。",
           ('本方使用游戏内各档原生思考预算。' if config.get('native_time') else '本方使用相同固定时间预算。')+
-          '开启置换表及 futility + LMR。标准香草起始阵容，每组交换颜色。', '',
-          '| Stockfish 限强档位 | 胜 | 和 | 负 | 未决/进行中 | 得分率 |',
+          '开启置换表及 LMR。标准香草起始阵容，每组交换颜色。', '',
+          '| 对手限强档位 | 胜 | 和 | 负 | 未决/进行中 | 得分率 |',
           '|---|---:|---:|---:|---:|---:|']
     for elo in config['elos']:
         group=[r for r in rows if r['elo']==elo]
@@ -87,15 +87,16 @@ def report(out, config):
         rate=f'{sum(scores)/len(scores):.1%}' if scores else '—'
         text.append(f"| {elo} | {scores.count(1)} | {scores.count(.5)} | {scores.count(0)} | {len(group)-len(scores)} | {rate} |")
     text += ['', '得分率 =（胜 + 0.5 × 和）/ 已判定局数。达到步数上限记为未决，不算和棋。',
-             '采用本项目终局判定：将杀、逼和、三次重复、50 回合；不额外按子力裁定。',
+             '采用共享引擎终局判定，包括标准棋子力不足；不按优势分数提前裁定。',
              '小样本仅用于寻找接近五五开的档位；重复同一起始局面不能代替多样化开局。',
-             'Stockfish UCI_Elo 是限强参数，不是本引擎的平台等级分；每手固定 3 秒也不同于其标定时限。',
-             'Stockfish 限强随机性不保证可重现；续跑会清空其置换表，可能改变后续走法。', '']
+             '对手 UCI_Elo 是限强参数，不能直接等同于 Chess.com 快棋等级分；固定每手预算也不同于其标定时限。',
+             '对手限强随机性不保证可重现；续跑会清空其置换表，可能改变后续走法。', '']
     tmp=out/'report.md.tmp'; tmp.write_text('\n'.join(text),encoding='utf8'); tmp.replace(out/'report.md')
 
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--stockfish',default='/opt/homebrew/bin/stockfish')
+    ap.add_argument('--engine-command',nargs='+',help='Alternative UCI command, e.g. dotnet MadChess.Engine.dll')
     ap.add_argument('--elos',type=int,nargs='+',default=[1320,1500])
     ap.add_argument('--pairs',type=int,default=2)
     ap.add_argument('--start-pair',type=int,default=1,help='First pair ID/seed, for independent batches')
@@ -115,7 +116,8 @@ def main():
     os.write(fd,str(os.getpid()).encode()); os.close(fd)
     sf=bridge=None; config=None
     try:
-        sf=Process([args.stockfish]); sf.send('uci'); options=sf.until('uciok')
+        command=args.engine_command or [args.stockfish]
+        sf=Process(command); sf.send('uci'); options=sf.until('uciok')
         line=next(l for l in options if l.startswith('option name UCI_Elo '))
         lo,hi=map(int,re.search(r'min (\d+) max (\d+)',line).groups())
         if any(e<lo or e>hi for e in args.elos):
@@ -128,15 +130,24 @@ def main():
         config=dict(elos=args.elos,pairs=args.pairs,time_ms=args.time_ms,max_ply=args.max_ply,
                     level=args.level,native_time=args.native_time,protocol=2,
                     source=digest.hexdigest(),stockfish_name=next(l[8:] for l in options if l.startswith('id name ')),
-                    stockfish_sha256=hashlib.sha256(Path(args.stockfish).read_bytes()).hexdigest())
+                    stockfish_sha256=hashlib.sha256(Path(command[0]).read_bytes()).hexdigest())
+        if args.engine_command:
+            # Include DLLs and configuration beside them in resume provenance.
+            config['engine_command']=command
+            config['engine_files']={str(p):hashlib.sha256(p.read_bytes()).hexdigest()
+                                    for arg in command[1:] if Path(arg).is_file()
+                                    for p in sorted(Path(arg).parent.glob('*')) if p.is_file()}
         if args.start_pair!=1: config['start_pair']=args.start_pair
         manifest=args.out/'manifest.json'
         if manifest.exists() and json.loads(manifest.read_text())!=config:
             raise ValueError('Configuration/source changed: use a new output directory')
         save(manifest,config)
-        for command in ['setoption name Threads value 1','setoption name Hash value 64',
-                        'setoption name UCI_LimitStrength value true']:
-            sf.send(command)
+        for name,value in [('Threads','1'),('Hash','64'),('UCI_LimitStrength','true')]:
+            supported=any(l.startswith(f'option name {name} ') for l in options)
+            if supported:
+                sf.send(f'setoption name {name} value {value}')
+            elif name=='UCI_LimitStrength':
+                raise ValueError('Opponent does not support UCI_LimitStrength')
         bridge=Process(['node','--import','tsx','cli/stockfish-bridge.mjs'])
         for elo in args.elos:
             for pair in range(args.start_pair,args.start_pair+args.pairs):
